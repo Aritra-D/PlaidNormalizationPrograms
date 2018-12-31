@@ -1,6 +1,6 @@
 % dataInformation for Plaid Normalization
 
-function [expDates, protocolNames,positionList,folderSourceString] = dataInformationPlaidNorm(monkeyName,gridType, OrientationTuningFlag)
+function [expDates, protocolNames,positionList] = dataInformationPlaidNorm(monkeyName,gridType, OrientationTuningFlag)
 if ~exist('gridType','var');                            gridType = 'microelectrode'; end
 if ~exist('OrientationTuningFlag','var');               OrientationTuningFlag = 0;      end 
 % 0 = Plaid Protocols, 
@@ -8,7 +8,7 @@ if ~exist('OrientationTuningFlag','var');               OrientationTuningFlag = 
 %(grating placed on the grid centre with orientation varying from 0-157.5
 % in 8 steps of 22.5 degrees)
 
-folderSourceString = 'E:\';
+% folderSourceString = 'E:\';
 if strcmp(monkeyName,'alpaH')
     [allExpDates,allProtocolNames,~,~] = getAllProtocols(monkeyName, gridType);
     if OrientationTuningFlag == 1
