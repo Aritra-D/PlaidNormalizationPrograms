@@ -312,6 +312,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
                 error(['No electrode found for analysis!'...
                         'Please try another session!'])
             end
+            analysisMethod = get(hAnalysisMethod,'val');
             analysisMeasure = get(hAnalysisType,'val');
             NormalizeDataFlag = get(hNormalizeData,'val');
             AbsoluteMeasuresFlag = get(hAbsoluteMeasures,'val');
@@ -332,13 +333,18 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
 
 %             PlotConstant = [4 2 0 -2 -4];
             if analysisMeasure == 1 % computing ERP
-                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,erpData.timeVals,erpData,plotColor,analysisMeasure,AbsoluteMeasuresFlag)
+                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,erpData.timeVals,erpData,plotColor,analysisMeasure,AbsoluteMeasuresFlag,NormalizeDataFlag)
             elseif analysisMeasure == 2 % computing Firing rate
-                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,firingRateData.timeVals,firingRateData,plotColor,analysisMeasure,AbsoluteMeasuresFlag)
+                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,firingRateData.timeVals,firingRateData,plotColor,analysisMeasure,AbsoluteMeasuresFlag,NormalizeDataFlag)
             elseif analysisMeasure == 3 % computing Raster Plot from spike data
                error('Still working on raster data!')
             elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6 % computing alpha
-                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,fftData.freqVals,fftData,plotColor,analysisMeasure,AbsoluteMeasuresFlag)
+                if analysisMethod == 1
+                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,fftData.freqVals,fftData,plotColor,analysisMeasure,AbsoluteMeasuresFlag,NormalizeDataFlag)
+                elseif analysisMethod ==2 
+                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,energyData.freqVals,energyData,plotColor,analysisMeasure,AbsoluteMeasuresFlag,NormalizeDataFlag)
+                end
+                    
             elseif analysisType == 7 % need to work on STA!
                 error('STA computation method not found') 
 
@@ -851,8 +857,8 @@ firingRateData.analysisDataST = firingRatesST;
 firingRateData.timeVals = xsFR;
 firingRateData.N = N;
 
-fftData.dataBL = fftDataST;
-fftData.dataST = fftDataBL;
+fftData.dataBL = fftDataBL;
+fftData.dataST = fftDataST;
 fftData.analysisDataBL = fftAmpBL;
 fftData.analysisDataST = fftAmpST;
 fftData.freqVals = freqVals;
@@ -864,13 +870,6 @@ energyData.analysisDataBL = energyValsBL;
 energyData.analysisDataST = energyValsST;
 energyData.freqVals = freqValsMT;
 energyData.N = N;
-
-
-
-
-
-
-
 
 end
 
@@ -974,6 +973,11 @@ function plotData(hPlot1,hPlot2,hPlot3,hPlot4,hPlot5,hPlot6,xs,data,colorName,an
 
 % Main 5x5 plot for Neural Measure
 if analysisMeasure == 1 || analysisMeasure == 2
+    if NormalizeDataFlag
+    % Normalize ERP and spike Data (fft or energy data need not be normalized
+    % as they are expressed in log units)
+    data = normalizeData(data);
+    end
     dataSize = size(data.data);
     if dataSize(1) == 1
         dataPlot = squeeze(squeeze(data.data(:,1,:,:,:)));
@@ -1001,6 +1005,10 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
             dataPlotST = squeeze(mean(squeeze(data.dataST(:,1,:,:,:)),1));
         end
     end
+    % When Change in neural measures are to be plotted
+    if ~AbsoluteMeasuresFlag
+        dataPlotdiffSTvsBL = dataPlotST-dataPlotBL;
+    end
 end
     
 PlotConstant = [4 2 0 -2 -4];
@@ -1009,10 +1017,15 @@ for c1 = 1:5
         if analysisMeasure == 1 || analysisMeasure == 2
             plot(hPlot1(c1+PlotConstant(c1),c2),xs,squeeze(dataPlot(c1,c2,:)),'color',colorName);
         elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
+            if AbsoluteMeasuresFlag
             plot(hPlot1(c1+PlotConstant(c1),c2),xs,squeeze(dataPlotBL(c1,c2,:)),'g');
             hold(hPlot1(c1+PlotConstant(c1),c2),'on')
             plot(hPlot1(c1+PlotConstant(c1),c2),xs,squeeze(dataPlotST(c1,c2,:)),'k');
             hold(hPlot1(c1+PlotConstant(c1),c2),'off')
+            else
+                plot(hPlot1(c1+PlotConstant(c1),c2),xs,squeeze(dataPlotdiffSTvsBL(c1,c2,:)),'b');
+            end
+    
         end
     end
 end
@@ -1022,26 +1035,38 @@ end
 if dataSize(1)==1
     if analysisMeasure == 1 || analysisMeasure == 2
         analysisData = squeeze(data.analysisDataST(:,1,:,:));
+        analysisDataBL = squeeze(data.analysisDataBL(:,1,:,:));
     elseif analysisMeasure == 4 
         analysisData = squeeze(data.analysisDataST{1}(:,1,:,:));
+        analysisDataBL = squeeze(data.analysisDataBL{1}(:,1,:,:));
     elseif analysisMeasure == 5
         analysisData = squeeze(data.analysisDataST{2}(:,1,:,:));
+        analysisDataBL = squeeze(data.analysisDataBL{2}(:,1,:,:));
     elseif analysisMeasure == 6
         analysisData = squeeze(data.analysisDataST{3}(:,2,:,:));
+        analysisDataBL = squeeze(data.analysisDataBL{3}(:,2,:,:));
     end
 elseif dataSize(1)>1
     if analysisMeasure == 1 || analysisMeasure == 2
         analysisData = squeeze(mean(squeeze(data.analysisDataST(:,1,:,:)),1));
+        analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL(:,1,:,:)),1));
     elseif analysisMeasure == 4
         analysisData = squeeze(mean(squeeze(data.analysisDataST{1}(:,1,:,:)),1));
+        analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{1}(:,1,:,:)),1));
     elseif analysisMeasure == 5
         analysisData = squeeze(mean(squeeze(data.analysisDataST{2}(:,1,:,:)),1));
+        analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{2}(:,1,:,:)),1));
     elseif analysisMeasure == 6
         analysisData = squeeze(mean(squeeze(data.analysisDataST{3}(:,2,:,:)),1));
+        analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{3}(:,2,:,:)),1));
     end
 end
-   
+if ~AbsoluteMeasuresFlag
+    analysisData = analysisData-analysisDataBL;
+end
+
 imagesc(flip(analysisData,1),'parent',hPlot2);colorbar(hPlot2);
+
 
 % Contrast Response curves Row-Wise & Column-wise
 cValsUnique = [0 12.5 25 50 100];
