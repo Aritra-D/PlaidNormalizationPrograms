@@ -32,9 +32,13 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         session = get(hSession,'val'); 
         fileNameStringTMP = fileNameStringListArray{session};
         if strcmp(fileNameStringTMP{1}(1:5),'alpaH')
-            monkeyName = 'alpaH'; 
+            monkeyName = 'alpaH';
+            expDate = fileNameStringTMP{1}(6:11);
+            protocolName = fileNameStringTMP{1}(12:end);
         elseif strcmp(fileNameStringTMP{1}(1:7),'kesariH')
             monkeyName = 'kesariH';
+            expDate = fileNameStringTMP{1}(8:13);
+            protocolName = fileNameStringTMP{1}(14:end);
         end
         gridType = 'Microelectrode';
 
@@ -277,7 +281,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         plotHandles = getPlotHandles(numRows,numCols,gridPos,gap);
         
         % RF Positions with Stimulus Centre
-        hRFCentresandStim = ...
+        hOriTuning = ...
             getPlotHandles(1,1,[0.52 0.35 0.14 0.25],0.05,0.05,1);
         
         % Color Matrix of Neural measures in a 5x5 contrast conditions
@@ -290,6 +294,9 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         hRowCRF = getPlotHandles(1,1,[0.7 0.35 0.1 0.1],0.001,0.001,1);
         hColumnCRF = getPlotHandles(1,1,[0.7 0.05 0.1 0.1],0.001,0.001,1);
         
+        textH1 = getPlotHandles(1,1,[0.2 0.65 0.01 0.01]); set(textH1,'Visible','Off');
+        textH2 = getPlotHandles(1,1,[0.02 0.25 0.01 0.01]); set(textH2,'Visible','Off');
+
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         freqRanges{1} = [8 12]; % alpha
         freqRanges{2} = [30 60]; % gamma
@@ -305,6 +312,19 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             electrodeString = get(hElectrode,'val'); 
             if length(fileNameStringTMP) ==1
                 ElectrodeListTMP = ElectrodeListSession(electrodeString);
+                % Get Parameter Combinations
+                gridType = 'microelectrode';
+                folderName = fullfile(folderSourceString,'data',...
+                                        monkeyName,gridType,expDate,protocolName);
+                % Get folders
+                folderExtract = fullfile(folderName,'extractedData');
+                [~,~,~,~,~,~,oValsUnique,~,~,~,~,~,~,oValsUnique2,~,~] = loadParameterCombinations(folderExtract);
+                % Ori Tuning Dataset (Only Shown for each Session)
+                OriTuningProtocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)];
+                [computationVals,PO,OS] = getPrefOriAndOriSelectivitySpikes(monkeyName,expDate,OriTuningProtocolName,folderSourceString,gridType);
+                oriTuningData.PO_TMP = PO(ElectrodeListTMP{1});
+                oriTuningData.OS_TMP = OS(ElectrodeListTMP{1});
+                oriTuningData.FR_TMP = computationVals(ElectrodeListTMP{1},:);
             elseif length(fileNameStringTMP)>1
                 ElectrodeListTMP = ElectrodeListSession;
             end
@@ -326,11 +346,23 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
 
             plotColor = colorNames(get(hChooseColor,'val'));
             holdOnState = get(hHoldOn,'val'); %#ok<NASGU>
-            
+
             [erpData,firingRateData,fftData,energyData,~] = getData(folderSourceString,...
              fileNameStringTMP,ElectrodeListTMP,erpRange,blRange,...
              stRange,freqRanges); 
 
+             % OriTuning Plot
+             colorNamesOriTuning = hsv(10);
+             oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
+             if length(fileNameStringTMP) ==1
+                 for index = 1:length(ElectrodeListTMP{1})
+                    plot(hOriTuning,oValsUnique_Tuning,oriTuningData.FR_TMP(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
+                    text(0.4,index*0.07+0.5,['PO: ' num2str(oriTuningData.PO_TMP(index)) ',OS: ' num2str(oriTuningData.OS_TMP(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hOriTuning);
+                    hold(hOriTuning,'on');
+                 end
+                 hold(hOriTuning,'off');
+             else
+             end
 %             PlotConstant = [4 2 0 -2 -4];
             if analysisMeasure == 1 % computing ERP
                 plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,erpData.timeVals,erpData,plotColor,analysisMeasure,AbsoluteMeasuresFlag,NormalizeDataFlag)
@@ -348,212 +380,46 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             elseif analysisType == 7 % need to work on STA!
                 error('STA computation method not found') 
 
-            
-                
-%                 if analysisType == 1 % compute ERP
-%                     DataSize = size(erpData);
-%                     if DataSize(1)==1
-%                         erpData = squeeze(erpData(:,1,:,:,:));
-%                     elseif DataSize(1)>1
-%                         erpData = squeeze(mean(squeeze(erpData(:,1,:,:,:)),1));
-%                     end
-%                     for c1 = 1:5
-%                         for c2=1:5
-%                             plot(plotHandles(c1+PlotConstant(c1),c2),timeVals,...
-%                                 squeeze(erpData(c1,c2,:)),'color',plotColor);
-%                         end
-%                     end
-%                     %color Coded Matrix of firing Rate
-%                     if DataSize(1)==1
-%                         RMSvalsERP = squeeze(RMSvalsERP(:,1,:,:));
-%                     elseif DataSize(1)>1
-%                         RMSvalsERP = squeeze(mean(squeeze(RMSvalsERP(:,1,:,:)),1));
-%                     end
-%                     RMSvalsFlipped = ...
-%                         [RMSvalsERP(5,:);RMSvalsERP(4,:);...
-%                         RMSvalsERP(3,:);RMSvalsERP(2,:);RMSvalsERP(1,:);];
-%                     imagesc(RMSvalsFlipped,'parent',hNeuralMeasureColorMatrix);
-%                     colorbar(hNeuralMeasureColorMatrix);
-%                     
-%                     % CRF Row-wise & Column-wise
-%                      CRFColors = jet(length(cValsUnique));
-%                         for iCon = 1:5
-%                             plot(plotHandles2(1,iCon),cValsUnique,RMSvalsERP(iCon,:),...
-%                                 'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                             plot(plotHandles3(1,iCon),cValsUnique2,RMSvalsERP(:,iCon),...
-%                                 'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                             plot(hRowCRF(1,1),cValsUnique,RMSvalsERP(iCon,:),...
-%                                 'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                             hold(hRowCRF(1,1),'on')
-%                             plot(hColumnCRF(1,1),cValsUnique2,RMSvalsERP(:,iCon),...
-%                                 'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                             hold(hColumnCRF(1,1),'on')
-%                         end
-%                      hold(hRowCRF(1,1),'off'); hold(hColumnCRF(1,1),'off')
-                     
-%                 elseif analysisType == 4 || analysisType == 5
-%                         if size(fftDataBL)==size(fftDataST)
-%                             DataSize = size(fftDataST);
-%                         else
-%                             error('Size of fftDataBL and fftDataST do not match!')
-%                         end
-%                         
-%                         if DataSize(1)==1
-%                         fftDataBL = squeeze(fftDataBL(:,1,:,:,:));
-%                         fftDataST = squeeze(fftDataST(:,1,:,:,:));
-%                         elseif DataSize(1)>1
-%                         fftDataBL = squeeze(mean(squeeze(fftDataBL(:,1,:,:,:)),1));
-%                         fftDataST = squeeze(mean(squeeze(fftDataST(:,1,:,:,:)),1));
-%                         end
-%                         
-%                         for c1 = 1:5
-%                             for c2=1:5
-%                                 plot(plotHandles(c1+PlotConstant(c1),c2),freqVals,...
-%                                     squeeze(fftDataBL(c1,c2,:)),'g');
-%                                 hold(plotHandles(c1+PlotConstant(c1),c2),'on')
-%                                 plot(plotHandles(c1+PlotConstant(c1),c2),freqVals,...
-%                                     squeeze(fftDataST(c1,c2,:)),'k');
-%                                 hold(plotHandles(c1+PlotConstant(c1),c2),'off')
-%                             end
-%                         end
-%                         
-%                         if analysisType == 4 
-%                         %color Coded Matrix of firing Rate
-%                         if DataSize(1)==1
-%                             alphaData = squeeze(mean(alphaData(:,1,:,:,:),5));
-%                         elseif DataSize(1)>1
-%                             alphaData =...
-%                                 squeeze(mean(squeeze(mean(alphaData(:,1,:,:,:),5)),1));
-%                         end
-%                         alphaDataFlipped = ...
-%                             [alphaData(5,:);alphaData(4,:);...
-%                             alphaData(3,:);alphaData(2,:);alphaData(1,:);];
-%                         imagesc(alphaDataFlipped,'parent',hNeuralMeasureColorMatrix);
-%                         colorbar(hNeuralMeasureColorMatrix);
-%                     
-%                         % CRF Row-wise & Column-wise
-%                          CRFColors = jet(length(cValsUnique));
-%                             for iCon = 1:5
-%                                 plot(plotHandles2(1,iCon),cValsUnique,alphaData(iCon,:),...
-%                                     'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                                 plot(plotHandles3(1,iCon),cValsUnique2,alphaData(:,iCon),...
-%                                     'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                                 plot(hRowCRF(1,1),cValsUnique,alphaData(iCon,:),...
-%                                     'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                                 hold(hRowCRF(1,1),'on')
-%                                 plot(hColumnCRF(1,1),cValsUnique2,alphaData(:,iCon),...
-%                                     'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                                 hold(hColumnCRF(1,1),'on')
-%                             end
-%                          hold(hRowCRF(1,1),'off'); hold(hColumnCRF(1,1),'off')
-%                          
-%                         elseif analysisType == 5
-%                         %color Coded Matrix of firing Rate
-%                         if DataSize(1)==1
-%                             gammaData = squeeze(mean(gammaData(:,1,:,:,:),5));
-%                         elseif DataSize(1)>1
-%                             gammaData = squeeze(mean(squeeze(mean(gammaData(:,1,:,:,:),5)),1));
-%                         end
-%                         gammaDataFlipped = ...
-%                             [gammaData(5,:);gammaData(4,:);...
-%                             gammaData(3,:);gammaData(2,:);gammaData(1,:);];
-%                         imagesc(gammaDataFlipped,'parent',hNeuralMeasureColorMatrix);
-%                         colorbar(hNeuralMeasureColorMatrix);
-%                     
-%                         % CRF Row-wise & Column-wise
-%                          CRFColors = jet(length(cValsUnique));
-%                             for iCon = 1:5
-%                                 plot(plotHandles2(1,iCon),cValsUnique,gammaData(iCon,:),...
-%                                     'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                                 plot(plotHandles3(1,iCon),cValsUnique2,gammaData(:,iCon),...
-%                                     'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                                 plot(hRowCRF(1,1),cValsUnique,gammaData(iCon,:),...
-%                                     'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                                 hold(hRowCRF(1,1),'on')
-%                                 plot(hColumnCRF(1,1),cValsUnique2,gammaData(:,iCon),...
-%                                     'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                                 hold(hColumnCRF(1,1),'on')
-%                             end
-%                          hold(hRowCRF(1,1),'off'); hold(hColumnCRF(1,1),'off')                            
-%                             
-%                         end
-%                         
-%                    elseif analysisType == 8
-%                         if size(fftDataBL)==size(fftDataST)
-%                             DataSize = size(fftDataST);
-%                         else
-%                             error('Size of fftDataBL and fftDataST do not match!')
-%                         end
-%                         
-%                         if DataSize(1)==1
-%                         fftDataBL = squeeze(fftDataBL(:,2,:,:,:));
-%                         fftDataST = squeeze(fftDataST(:,2,:,:,:));
-%                         elseif DataSize(1)>1
-%                         fftDataBL = squeeze(mean(squeeze(fftDataBL(:,2,:,:,:)),1));
-%                         fftDataST = squeeze(mean(squeeze(fftDataST(:,2,:,:,:)),1));
-%                         end
-%                         
-%                         for c1 = 1:5
-%                             for c2=1:5
-%                                 plot(plotHandles(c1+PlotConstant(c1),c2),...
-%                                     freqVals,squeeze(fftDataBL(c1,c2,:)),'g');
-%                                 hold(plotHandles(c1+PlotConstant(c1),c2),'on')
-%                                 plot(plotHandles(c1+PlotConstant(c1),c2),...
-%                                     freqVals,squeeze(fftDataST(c1,c2,:)),'k');
-%                                 hold(plotHandles(c1+PlotConstant(c1),c2),'off')
-%                             end
-%                         end
-%                         
-%                         
-%                         %color Coded Matrix of firing Rate
-%                         if DataSize(1)==1
-%                             ssvepData = squeeze(mean(ssvepData(:,2,:,:,:),5));
-%                         elseif DataSize(1)>1
-%                             ssvepData = squeeze(mean(squeeze(mean(ssvepData(:,2,:,:,:),5)),1));
-%                         end
-%                         ssvepDataFlipped = ...
-%                             [ssvepData(5,:);ssvepData(4,:);...
-%                             ssvepData(3,:);ssvepData(2,:);ssvepData(1,:);];
-%                         imagesc(ssvepDataFlipped,'parent',hNeuralMeasureColorMatrix);
-%                         colorbar(hNeuralMeasureColorMatrix);
-%                     
-%                         % CRF Row-wise & Column-wise
-%                          CRFColors = jet(length(cValsUnique));
-%                             for iCon = 1:5
-%                                 plot(plotHandles2(1,iCon),cValsUnique,ssvepData(iCon,:),...
-%                                     'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                                 plot(plotHandles3(1,iCon),cValsUnique2,ssvepData(:,iCon),...
-%                                     'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                                 plot(hRowCRF(1,1),cValsUnique,ssvepData(iCon,:),...
-%                                     'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                                 hold(hRowCRF(1,1),'on')
-%                                 plot(hColumnCRF(1,1),cValsUnique2,ssvepData(:,iCon),...
-%                                     'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-%                                 hold(hColumnCRF(1,1),'on')
-%                             end
-%                          hold(hRowCRF(1,1),'off'); hold(hColumnCRF(1,1),'off')
-%                         
-%                 end
             end
             
             if analysisMeasure<=3 %ERP or spikes
                 xMin = str2double(get(hStimMin,'String'));
                 xMax = str2double(get(hStimMax,'String'));
-            elseif analysisType <=6  % LFP fft analysis
+            elseif analysisMeasure <=6  % LFP fft analysis
                 xMin = str2double(get(hFFTMin,'String'));
                 xMax = str2double(get(hFFTMax,'String'));                
             else
                 xMin = str2double(get(hSTAMin,'String'));
                 xMax = str2double(get(hSTAMax,'String'));
             end
-            
-            YLabel = get(hNeuralMeasureColorMatrix,'YTickLabel');
-            set(hNeuralMeasureColorMatrix,'YTickLabel',flipud(YLabel));
+
+            if length(fileNameStringTMP) ==1
+                textH1 = getPlotHandles(1,1,[0.2 0.65 0.01 0.01]);
+                set(textH1,'Visible','Off');
+                text(0.35,1.15,['Orientation: ' num2str(oValsUnique2)],'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
+                
+                textH2 = getPlotHandles(1,1,[0.02 0.25 0.01 0.01]);
+                set(textH2,'Visible','Off');
+                text(0.35,1.15,['Orientation: ' num2str(oValsUnique)],'unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
+                
+            end
+            flippedcValsUnique2 = flip(cValsUnique2);
+            for c = 1:5
+            title(plotHandles(1,c),[num2str(cValsUnique(c)) ' %']);
+            ylabel(plotHandles(c,1),[num2str(flippedcValsUnique2(c)) ' %'],'fontWeight','bold');
+            end
+            set(hNeuralMeasureColorMatrix,'XTickLabel',cValsUnique);
+            set(hNeuralMeasureColorMatrix,'YTickLabel',flip(cValsUnique2));
+            set(hOriTuning,'XTickLabel',oValsUnique_Tuning);
+            title(hOriTuning,'Ori Tuning (Spike Data)');
+%             YLabel = get(hNeuralMeasureColorMatrix,'YTickLabel');
+%             set(hNeuralMeasureColorMatrix,'YTickLabel',flipud(YLabel));
             rescaleData(plotHandles,xMin,xMax,getYLims(plotHandles));
             rescaleData(plotHandles2,0,100,getYLims(plotHandles2));
             rescaleData(plotHandles3,0,100,getYLims(plotHandles3));
             rescaleData(hRowCRF,0,100,getYLims(hRowCRF));
             rescaleData(hColumnCRF,0,100,getYLims(hColumnCRF));
+            rescaleData(hOriTuning,0,160,getYLims(hOriTuning));
         end 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -619,8 +485,9 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         claGivenPlotHandle(hRowCRF);
         claGivenPlotHandle(hColumnCRF);
         claGivenPlotHandle(hNeuralMeasureColorMatrix);
-        claGivenPlotHandle(hRFCentresandStim)
-       
+        claGivenPlotHandle(hOriTuning);
+        delete(findobj(textH1,'type','text'));
+        delete(findobj(textH2,'type','text'));
         function claGivenPlotHandle(plotHandles)
             [numRows,numCols] = size(plotHandles);
             for i=1:numRows
@@ -670,17 +537,6 @@ if length(fileNameStringTMP)>1
         energyData.analysisdataST = cat(1,energyData.analysisdataST,energyDataTMP.analysisdataST);
         
         electrodeArray = [];
-%         psthData = cat(1,psthData,psthDataTMP);
-%         firingRates = cat(1,firingRates,firingRatesTMP);
-%         erpData = cat(1,erpData,erpDataTMP);
-%         fftDataBL = cat(1,fftDataBL,fftDataBLTMP);
-%         fftDataST = cat(1,fftDataST,fftDataSTTMP);
-%         alphaData = cat(1,alphaData,alphaDataTMP);
-%         gammaData = cat(1,gammaData,gammaDataTMP);
-%         ssvepData = cat(1,ssvepData,ssvepDataTMP);
-%         RMSvalsERP = cat(1,RMSvalsERP,RMSvalsERPTMP);
-        
-%         disp(size(firingRates));
     end
 end
 end
@@ -748,12 +604,6 @@ stPos = find(timeVals>=stRange(1),1)+ (1:rangePos);
 erpPos = find(timeVals>=erpRange(1),1)+ (1:erpRangePos);
 freqVals = 0:1/diff(range):Fs-1/diff(range);
 numFreqs = length(freqRanges);
-% alphaRangeHz = [8 12];
-% gammaRangeHz = [30 60];
-% ssvepFreqHz = 16;
-% alphaPos = intersect(find(freqVals>=alphaRangeHz(1)),find(freqVals<=alphaRangeHz(2)));
-% gammaPos = intersect(find(freqVals>=gammaRangeHz(1)),find(freqVals<=gammaRangeHz(2)));
-% ssvepPos = find(freqVals==ssvepFreqHz);
 unitID = 0;
 for iElec = 1:length(ElectrodeList)
     % Get LFP data
@@ -832,12 +682,6 @@ for iElec = 1:length(ElectrodeList)
                            energyValsST{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{i}));
                            energyValsBL{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{i}));
                        end
-                       
-                       
-%                        alphaData(iElec,t,c1,c2,:) = fftST(alphaPos); %alphaPowerBL(iElec,t,c1,c2,:) = fftBL(alphaPos);
-%                        gammaData(iElec,t,c1,c2,:) = fftST(gammaPos); %gammaPowerBL(iElec,t,c1,c2,:) = fftBL(gammaPos);
-% 
-%                        ssvepData(iElec,t,c1,c2) = fftST(ssvepPos);    %#ok<FNDSB> %ssvepPowerBL(iElec,t,c1,c2) = fftBL(ssvepPos);
                     end
                 end
             end
@@ -969,7 +813,7 @@ for iElec = 1:size(x,1)
     end
 end
 end
-function plotData(hPlot1,hPlot2,hPlot3,hPlot4,hPlot5,hPlot6,xs,data,colorName,analysisMeasure,AbsoluteMeasuresFlag)
+function plotData(hPlot1,hPlot2,hPlot3,hPlot4,hPlot5,hPlot6,xs,data,colorName,analysisMeasure,AbsoluteMeasuresFlag,NormalizeDataFlag)
 
 % Main 5x5 plot for Neural Measure
 if analysisMeasure == 1 || analysisMeasure == 2
