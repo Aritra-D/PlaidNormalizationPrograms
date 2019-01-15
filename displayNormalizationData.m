@@ -273,8 +273,8 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         startXPos = staticStartPos; startYPos = 0.05; mainTabHeight = 0.55; 
         mainTabWidth = 0.4;     
         
-        cValsUnique = [0 12.5 25 50 100];
-        cValsUnique2 = [0 12.5 25 50 100];
+        cValsUnique = [0 12.5 25 50 100]./2;
+        cValsUnique2 = [0 12.5 25 50 100]./2;
         numRows = length(cValsUnique); numCols = length(cValsUnique2);
         gridPos=[0.02+startXPos startYPos mainTabWidth mainTabHeight];
         gap = 0.002;
@@ -282,17 +282,19 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         
         % RF Positions with Stimulus Centre
         hOriTuning = ...
-            getPlotHandles(1,1,[0.52 0.35 0.14 0.25],0.05,0.05,1);
+            getPlotHandles(1,1,[0.52 0.38 0.14 0.22],0.05,0.05,1);
         
         % Color Matrix of Neural measures in a 5x5 contrast conditions
         hNeuralMeasureColorMatrix = ...
             getPlotHandles(1,1,[0.52 0.05 0.14 0.25],0.001,0.001,1);
         
         plotHandles2= getPlotHandles(1,5,[0.7 0.5 0.25 0.1],0.001,0.001,1);
-        plotHandles3= getPlotHandles(1,5,[0.7 0.2 0.25 0.1],0.001,0.001,1);
+        plotHandles3= getPlotHandles(1,5,[0.7 0.35 0.25 0.1],0.001,0.001,1);
         
-        hRowCRF = getPlotHandles(1,1,[0.7 0.35 0.1 0.1],0.001,0.001,1);
-        hColumnCRF = getPlotHandles(1,1,[0.7 0.05 0.1 0.1],0.001,0.001,1);
+        hRowCRF = getPlotHandles(1,1,[0.85 0.2 0.1 0.1],0.001,0.001,1);
+        hColumnCRF = getPlotHandles(1,1,[0.85 0.05 0.1 0.1],0.001,0.001,1);
+        
+        hNormIndex = getPlotHandles(1,1,[0.7 0.05 0.12 0.25],0.001,0.001,1); %#ok<NASGU>
         
         textH1 = getPlotHandles(1,1,[0.2 0.65 0.01 0.01]); set(textH1,'Visible','Off');
         textH2 = getPlotHandles(1,1,[0.02 0.25 0.01 0.01]); set(textH2,'Visible','Off');
@@ -350,6 +352,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             [erpData,firingRateData,fftData,energyData,~] = getData(folderSourceString,...
              fileNameStringTMP,ElectrodeListTMP,erpRange,blRange,...
              stRange,freqRanges); 
+             
 
              % OriTuning Plot
              colorNamesOriTuning = hsv(10);
@@ -410,15 +413,15 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             end
             set(hNeuralMeasureColorMatrix,'XTickLabel',cValsUnique);
             set(hNeuralMeasureColorMatrix,'YTickLabel',flip(cValsUnique2));
-            set(hOriTuning,'XTickLabel',oValsUnique_Tuning);
+%             set(hOriTuning,'XTickLabel',oValsUnique_Tuning);
             title(hOriTuning,'Ori Tuning (Spike Data)');
 %             YLabel = get(hNeuralMeasureColorMatrix,'YTickLabel');
 %             set(hNeuralMeasureColorMatrix,'YTickLabel',flipud(YLabel));
             rescaleData(plotHandles,xMin,xMax,getYLims(plotHandles));
-            rescaleData(plotHandles2,0,100,getYLims(plotHandles2));
-            rescaleData(plotHandles3,0,100,getYLims(plotHandles3));
-            rescaleData(hRowCRF,0,100,getYLims(hRowCRF));
-            rescaleData(hColumnCRF,0,100,getYLims(hColumnCRF));
+            rescaleData(plotHandles2,0,50,getYLims(plotHandles2));
+            rescaleData(plotHandles3,0,50,getYLims(plotHandles3));
+            rescaleData(hRowCRF,0,50,getYLims(hRowCRF));
+            rescaleData(hColumnCRF,0,50,getYLims(hColumnCRF));
             rescaleData(hOriTuning,0,160,getYLims(hOriTuning));
         end 
 
@@ -439,8 +442,8 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         end
 
         rescaleData(plotHandles,xMin,xMax,getYLims(plotHandles));
-        rescaleData(plotHandles2,0,100,getYLims(plotHandles2));
-        rescaleData(plotHandles3,0,100,getYLims(plotHandles3));
+        rescaleData(plotHandles2,0,50,getYLims(plotHandles2));
+        rescaleData(plotHandles3,0,50,getYLims(plotHandles3));
 
     end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -851,7 +854,11 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     end
     % When Change in neural measures are to be plotted
     if ~AbsoluteMeasuresFlag
-        dataPlotdiffSTvsBL = dataPlotST-dataPlotBL;
+        if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
+            dataPlotdiffSTvsBL = 10*(dataPlotST-dataPlotBL); % Change in Power expressed in deciBel
+        else
+            dataPlotdiffSTvsBL = dataPlotST-dataPlotBL; 
+        end
     end
 end
     
@@ -906,15 +913,21 @@ elseif dataSize(1)>1
     end
 end
 if ~AbsoluteMeasuresFlag
-    analysisData = analysisData-analysisDataBL;
+    if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
+        analysisData = 10*(analysisData-analysisDataBL); % Change in power expressed in deciBel
+    else
+        analysisData = analysisData-analysisDataBL; % No need to do this for ERP & firing Rate
+    end
 end
 
 imagesc(flip(analysisData,1),'parent',hPlot2);colorbar(hPlot2);
-
+NIAnalysisData = flip(analysisData,1);
+NormIndex = (NIAnalysisData(1,5)+ NIAnalysisData(5,1))/NIAnalysisData(5,5);
+title(hPlot2,['NI: ',num2str(NormIndex)],'fontWeight','bold');
 
 % Contrast Response curves Row-Wise & Column-wise
-cValsUnique = [0 12.5 25 50 100];
-cValsUnique2 = [0 12.5 25 50 100];
+cValsUnique = [0 12.5 25 50 100]./2;
+cValsUnique2 = [0 12.5 25 50 100]./2;
 CRFColors = jet(length(cValsUnique));
 for iCon = 1:5
     plot(hPlot3(1,iCon),cValsUnique,analysisData(iCon,:),...
