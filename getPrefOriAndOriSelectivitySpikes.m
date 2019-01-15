@@ -27,7 +27,7 @@ tLen = length(tValsUnique);
 % blRange = [-0.2 0];
 % stRange = [0.2 0.4];
 % For orientation selectivity analysis
-timeForComputation = [200 400]/1000; % s
+timeForComputation = [150 400]/1000; % s
 
 % neuralChannelString = getNeuralStringFromValues(neuralChannelsStored,SourceUnitIDs);
 unitID = 0;

@@ -1,6 +1,6 @@
 function displayNormalizationData(folderSourceString)
 
-if ~exist('folderSourceString','var');      folderSourceString = 'E:\'; end
+if ~exist('folderSourceString','var');      folderSourceString = 'M:\data\PlaidNorm\'; end
 
 % Display Options
 fontSizeSmall = 10; fontSizeMedium = 12; fontSizeLarge = 16; % Fonts
@@ -522,8 +522,9 @@ if length(fileNameStringTMP)>1
         [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~] = getDataSingleSession(folderSourceString,fileNameStringTMP,...
             ElectrodeListTMP{i},erpRange,blRange,stRange,freqRanges);
         
-        erpData.data = cat(1,erpData.data,erpData.dataTMP);
-        erpData.analysisData = cat(1,erpData.analysisData,erpDataTMP.analysisData);
+        erpData.data = cat(1,erpData.data,erpDataTMP.data);
+        erpData.analysisDataBL = cat(1,erpData.analysisDataBL,erpDataTMP.analysisDataBL);
+        erpData.analysisDataST = cat(1,erpData.analysisDataST,erpDataTMP.analysisDataST);
         
         firingRateData.data = cat(1,firingRateData.data,firingRateDataTMP.data);
         firingRateData.analysisDataBL = cat(1,firingRateData.analysisDataBL,firingRateDataTMP.analysisDataBL);
@@ -531,13 +532,13 @@ if length(fileNameStringTMP)>1
         
         fftData.dataBL = cat(1,fftData.dataBL,fftDataTMP.dataBL);
         fftData.dataST = cat(1,fftData.dataST,fftDataTMP.dataST);
-        fftData.analysisdataBL = cat(1,fftData.analysisdataBL,fftDataTMP.analysisdataBL);
-        fftData.analysisdataST = cat(1,fftData.analysisdataST,fftDataTMP.analysisdataST);
+        fftData.analysisdataBL = cat(1,fftData.analysisDataBL,fftDataTMP.analysisDataBL);
+        fftData.analysisdataST = cat(1,fftData.analysisDataST,fftDataTMP.analysisDataST);
         
         energyData.dataBL = cat(1,energyData.dataBL,energyDataTMP.dataBL);
         energyData.dataST = cat(1,energyData.dataST,energyDataTMP.dataST);
-        energyData.analysisdataBL = cat(1,energyData.analysisdataBL,energyDataTMP.analysisdataBL);
-        energyData.analysisdataST = cat(1,energyData.analysisdataST,energyDataTMP.analysisdataST);
+        energyData.analysisdataBL = cat(1,energyData.analysisDataBL,energyDataTMP.analysisDataBL);
+        energyData.analysisdataST = cat(1,energyData.analysisDataST,energyDataTMP.analysisDataST);
         
         electrodeArray = [];
     end
