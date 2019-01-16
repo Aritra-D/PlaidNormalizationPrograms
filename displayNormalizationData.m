@@ -813,7 +813,11 @@ end
 function normData = normalizeData(x)
 for iElec = 1:size(x,1)
     for t = 1:size(x,2)
-%         normData = x(iElec
+        normData.data(iElec,t,:,:,:) = x.data(iElec,t,:,:,:)./max(max(max(abs(x.data(iElec,t,:,:,:)))));
+        normData.analysisDataBL(iElec,t,:,:) = x.analysisDataBL(iElec,t,:,:)./max(max(abs(x.analysisDataBL(iElec,t,:,:))));
+        normData.analysisDataST(iElec,t,:,:) = x.analysisDataST(iElec,t,:,:)./max(max(abs(x.analysisDataST(iElec,t,:,:))));
+        normData.timeVals = x.timeVals;
+        normData.N = x.N;
     end
 end
 end
