@@ -1,4 +1,4 @@
-function [tmpElectrodeStringList,tmpElectrodeArrayList,allElecs,monkeyNameList] = getGoodElectrodesDetails(folderSourceString)
+function [tmpElectrodeStringList,tmpElectrodeArrayList,allElecs,monkeyNameList] = getGoodElectrodesDetails(folderSourceString,oriSelectiveFlag)
 % gridType = 'microelectrode';
 monkeyNameList{1} = 'alpaH'; monkeyNameList{2} = 'kesariH';
 gridType = 'microelectrode';
@@ -14,7 +14,7 @@ for i=1:2
     tmpElectrodeListStr = cell(1,numSessions);
     numElecs = 0;
     for SessionNum = 1:numSessions
-        [tmpElectrodeListArray{SessionNum},tmpElectrodeListStr{SessionNum},goodElectrodes] = getGoodElectrodesSingleSession(monkeyNameList{i},gridType,SessionNum,folderSourceString);
+        [tmpElectrodeListArray{SessionNum},tmpElectrodeListStr{SessionNum},goodElectrodes] = getGoodElectrodesSingleSession(monkeyNameList{i},gridType,SessionNum,folderSourceString,oriSelectiveFlag);
         numElecs = numElecs+length(goodElectrodes);
     end
     tmpElectrodeStringList{i} = tmpElectrodeListStr;

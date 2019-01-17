@@ -23,9 +23,12 @@ hSession = uicontrol('Parent',hSessionPanel,'Unit','Normalized', ...
                     'BackgroundColor', backgroundColor, 'Position', ...
                     [0.4 0.83 0.2 0.16], 'Style','popup','String',...
                     fileNameStringAll,'FontSize',fontSizeLarge);
-
+                
+hOriTunedCheckbox = uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
+    'Position',[0.65 0.1 0.1 0.6],'Style','checkbox','String','Ori-tuned Elecs',...
+    'FontSize',fontSizeMedium);
 uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
-    'Position',[0.7 0.1 0.2 0.8],'Style','pushbutton','String','Select',...
+    'Position',[0.75 0.1 0.1 0.8],'Style','pushbutton','String','Select Session',...
     'FontSize',fontSizeMedium,'Callback',{@selectSession_Callback});
 
     function selectSession_Callback(~,~)
@@ -41,6 +44,8 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             protocolName = fileNameStringTMP{1}(14:end);
         end
         gridType = 'Microelectrode';
+        
+        oriSelectiveFlag = get(hOriTunedCheckbox,'val');
 
         % Show electrodes on Grid
         electrodeGridPos = [0.05 panelStartHeight 0.2 panelHeight];
@@ -49,7 +54,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
 
         %%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%
         [ElectrodeStringListAll,ElectrodeArrayListAll]= ...
-            getElectrodesList(folderSourceString);
+            getElectrodesList(folderSourceString,oriSelectiveFlag);
         ElectrodeListSession = ElectrodeArrayListAll{session};
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -98,11 +103,11 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             'Style','popup','String',analysisTypeString,...
             'FontSize',fontSizeMedium);  
         
-        hAbsoluteMeasures = uicontrol('Parent',hParameterPanel,...
+        hRelativeMeasures = uicontrol('Parent',hParameterPanel,...
             'Unit','Normalized', ...
             'Position',[0 1-5*paramsHeight 1 paramsHeight], ...
             'Style','togglebutton',...
-            'String','Show Absolute Measures',...
+            'String','Show Relative Measures (Stimulus - Baseline)',...
             'FontSize',fontSizeMedium);
         
         hNormalizeData = uicontrol('Parent',hParameterPanel,...
@@ -286,7 +291,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         
         % Color Matrix of Neural measures in a 5x5 contrast conditions
         hNeuralMeasureColorMatrix = ...
-            getPlotHandles(1,1,[0.52 0.05 0.14 0.25],0.001,0.001,1);
+            getPlotHandles(1,1,[0.52 0.05 0.14 0.25],0.001,0.001,1); 
         
         plotHandles2= getPlotHandles(1,5,[0.7 0.5 0.25 0.1],0.001,0.001,1);
         plotHandles3= getPlotHandles(1,5,[0.7 0.35 0.25 0.1],0.001,0.001,1);
@@ -337,7 +342,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             analysisMethod = get(hAnalysisMethod,'val');
             analysisMeasure = get(hAnalysisType,'val');
             NormalizeDataFlag = get(hNormalizeData,'val');
-            AbsoluteMeasuresFlag = get(hAbsoluteMeasures,'val');
+            relativeMeasuresFlag = get(hRelativeMeasures,'val');
             
             erpRange = [str2double(get(hERPMin,'String'))...
                         str2double(get(hERPMax,'String'))];
@@ -368,16 +373,16 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
              end
 %             PlotConstant = [4 2 0 -2 -4];
             if analysisMeasure == 1 % computing ERP
-                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,erpData.timeVals,erpData,plotColor,analysisMeasure,AbsoluteMeasuresFlag,NormalizeDataFlag)
+                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,erpData.timeVals,erpData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
             elseif analysisMeasure == 2 % computing Firing rate
-                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,firingRateData.timeVals,firingRateData,plotColor,analysisMeasure,AbsoluteMeasuresFlag,NormalizeDataFlag)
+                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,firingRateData.timeVals,firingRateData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
             elseif analysisMeasure == 3 % computing Raster Plot from spike data
                error('Still working on raster data!')
             elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6 % computing alpha
                 if analysisMethod == 1
-                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,fftData.freqVals,fftData,plotColor,analysisMeasure,AbsoluteMeasuresFlag,NormalizeDataFlag)
+                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,fftData.freqVals,fftData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
                 elseif analysisMethod ==2 
-                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,energyData.freqVals,energyData,plotColor,analysisMeasure,AbsoluteMeasuresFlag,NormalizeDataFlag)
+                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,energyData.freqVals,energyData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
                 end
                     
             elseif analysisType == 7 % need to work on STA!
@@ -771,9 +776,9 @@ fileNameStringAll = cat(2,fileNameStringAll,['all (N=' num2str(length(allNames))
 fileNameStringListArray{pos} = allNames;
 end
 
-function [ElectrodeStringListAll,ElectrodeArrayListAll] = getElectrodesList(folderSourceString)
+function [ElectrodeStringListAll,ElectrodeArrayListAll] = getElectrodesList(folderSourceString,oriSelectiveFlag)
 
-[tmpElectrodeStringList,tmpElectrodeArrayList,allElecs,monkeyNameList] = getGoodElectrodesDetails(folderSourceString);
+[tmpElectrodeStringList,tmpElectrodeArrayList,allElecs,monkeyNameList] = getGoodElectrodesDetails(folderSourceString,oriSelectiveFlag);
 
 ElectrodeStringListAll = ''; 
 ElectrodeArrayListAll = [];
@@ -821,7 +826,7 @@ for iElec = 1:size(x,1)
     end
 end
 end
-function plotData(hPlot1,hPlot2,hPlot3,hPlot4,hPlot5,hPlot6,xs,data,colorName,analysisMeasure,AbsoluteMeasuresFlag,NormalizeDataFlag)
+function plotData(hPlot1,hPlot2,hPlot3,hPlot4,hPlot5,hPlot6,xs,data,colorName,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
 
 % Main 5x5 plot for Neural Measure
 if analysisMeasure == 1 || analysisMeasure == 2
@@ -837,6 +842,8 @@ if analysisMeasure == 1 || analysisMeasure == 2
         dataPlot = squeeze(mean(squeeze(data.data(:,1,:,:,:)),1));
     end
     dataPlot = flip(dataPlot,1); % Flipping data Row-wise 
+%     dataPlot = flip(flip(permute(dataPlot,[2 1 3]),1),2);
+
 elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     if size(data.dataBL) == size(data.dataST) 
         dataSize = size(data.dataST);
@@ -860,7 +867,7 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     end
     dataPlotBL = flip(dataPlotBL,1); dataPlotST = flip(dataPlotST,1); % Flipping data Row-wise 
     % When Change in neural measures are to be plotted
-    if ~AbsoluteMeasuresFlag
+    if relativeMeasuresFlag
         if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
             dataPlotdiffSTvsBL = 10*(dataPlotST-dataPlotBL); % Change in Power expressed in deciBel
         else
@@ -876,7 +883,7 @@ for c1 = 1:5
         if analysisMeasure == 1 || analysisMeasure == 2
             plot(hPlot1(c1,c2),xs,squeeze(dataPlot(c1,c2,:)),'color',colorName);
         elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
-            if AbsoluteMeasuresFlag
+            if ~relativeMeasuresFlag
             plot(hPlot1(c1,c2),xs,squeeze(dataPlotBL(c1,c2,:)),'g');
             hold(hPlot1(c1,c2),'on')
             plot(hPlot1(c1,c2),xs,squeeze(dataPlotST(c1,c2,:)),'k');
@@ -920,7 +927,7 @@ elseif dataSize(1)>1
         analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{3}(:,2,:,:)),1));
     end
 end
-if ~AbsoluteMeasuresFlag
+if relativeMeasuresFlag
     if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
         analysisData = 10*(analysisData-analysisDataBL); % Change in power expressed in deciBel
     else
@@ -928,7 +935,7 @@ if ~AbsoluteMeasuresFlag
     end
 end
 
-imagesc(flip(analysisData,1),'parent',hPlot2);colorbar(hPlot2);
+imagesc(flip(analysisData,1),'parent',hPlot2);colorbar(hPlot2);set(hPlot2,'Position',[0.52 0.05 0.12 0.25]);
 NIAnalysisData = flip(analysisData,1);
 NormIndex = (NIAnalysisData(1,5)+ NIAnalysisData(5,1))/NIAnalysisData(5,5);
 title(hPlot2,['NI: ',num2str(NormIndex)],'fontWeight','bold');
