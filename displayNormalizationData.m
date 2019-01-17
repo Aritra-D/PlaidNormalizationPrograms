@@ -355,7 +355,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
              
 
              % OriTuning Plot
-             colorNamesOriTuning = hsv(10);
+             colorNamesOriTuning = hsv(30);
              oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
              if length(fileNameStringTMP) ==1
                  for index = 1:length(ElectrodeListTMP{1})
@@ -836,6 +836,7 @@ if analysisMeasure == 1 || analysisMeasure == 2
     elseif dataSize(1) >1
         dataPlot = squeeze(mean(squeeze(data.data(:,1,:,:,:)),1));
     end
+    dataPlot = flip(dataPlot,1); % Flipping data Row-wise 
 elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     if size(data.dataBL) == size(data.dataST) 
         dataSize = size(data.dataST);
@@ -857,6 +858,7 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
             dataPlotST = squeeze(mean(squeeze(data.dataST(:,1,:,:,:)),1));
         end
     end
+    dataPlotBL = flip(dataPlotBL,1); dataPlotST = flip(dataPlotST,1); % Flipping data Row-wise 
     % When Change in neural measures are to be plotted
     if ~AbsoluteMeasuresFlag
         if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
@@ -867,19 +869,20 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     end
 end
     
-PlotConstant = [4 2 0 -2 -4];
+% PlotConstant = [4 2 0 -2 -4];
+
 for c1 = 1:5
     for c2 = 1:5
         if analysisMeasure == 1 || analysisMeasure == 2
-            plot(hPlot1(c1+PlotConstant(c1),c2),xs,squeeze(dataPlot(c1,c2,:)),'color',colorName);
+            plot(hPlot1(c1,c2),xs,squeeze(dataPlot(c1,c2,:)),'color',colorName);
         elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
             if AbsoluteMeasuresFlag
-            plot(hPlot1(c1+PlotConstant(c1),c2),xs,squeeze(dataPlotBL(c1,c2,:)),'g');
-            hold(hPlot1(c1+PlotConstant(c1),c2),'on')
-            plot(hPlot1(c1+PlotConstant(c1),c2),xs,squeeze(dataPlotST(c1,c2,:)),'k');
-            hold(hPlot1(c1+PlotConstant(c1),c2),'off')
+            plot(hPlot1(c1,c2),xs,squeeze(dataPlotBL(c1,c2,:)),'g');
+            hold(hPlot1(c1,c2),'on')
+            plot(hPlot1(c1,c2),xs,squeeze(dataPlotST(c1,c2,:)),'k');
+            hold(hPlot1(c1,c2),'off')
             else
-                plot(hPlot1(c1+PlotConstant(c1),c2),xs,squeeze(dataPlotdiffSTvsBL(c1,c2,:)),'b');
+                plot(hPlot1(c1,c2),xs,squeeze(dataPlotdiffSTvsBL(c1,c2,:)),'b');
             end
     
         end

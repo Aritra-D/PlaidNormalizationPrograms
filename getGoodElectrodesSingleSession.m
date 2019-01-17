@@ -10,7 +10,7 @@ if ~exist('unitID', 'var');                          unitID = 0;                
 if ~exist('spikeCutoff', 'var');                     spikeCutoff = 20;                      end
 if ~exist('snrCutoff', 'var');                       snrCutoff = 2;                         end
 if ~exist('timeRangeFRComputation', 'var');          timeRangeFRComputation = [0.15 .4];    end
-if ~exist('contrastIndexList', 'var');               contrastIndexList = 1:5;               end
+if ~exist('contrastIndexList', 'var');               contrastIndexList =[1 5];                 end
 if ~exist('dRange', 'var');                          dRange = [0 0.75];                     end
 
     
@@ -93,7 +93,7 @@ end
 end
 function goodElectrodes = getRateAndSNRInfo(monkeyName,expDate,protocolName,folderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList)
 
-% Good electrodes: >spikeCutoff spikes between 150-400 ms & SNR>snrCutoff
+% Good electrodes: spikes>spikeCutoff between 150-400 ms for individual gratings at 50% contrast & SNR>snrCutoff
 % Returns all electrodes that meet these criteria
 % Modification - We allow different intervals for computation of firing
 % rates.
@@ -107,6 +107,6 @@ end
 
 y=load(fullfile(folderSave,[monkeyName expDate protocolName 'unsortedSNR.mat']));
 
-goodPos = (x.SourceUnitID==unitID)&(min(min(x.nStim(:,contrastIndexList,contrastIndexList),[],2),[],3)'>spikeCutoff)&((y.snr>snrCutoff)==1);
+goodPos = (x.SourceUnitID==unitID)&(min(min(x.nStim(:,contrastIndexList(1),contrastIndexList(2)),[],2),[],3)'>spikeCutoff)|(min(min(x.nStim(:,contrastIndexList(2),contrastIndexList(1)),[],2),[],3)'>spikeCutoff)&((y.snr>snrCutoff)==1);
 goodElectrodes = x.neuralChannelsStored(goodPos);
 end
