@@ -28,6 +28,7 @@ if strcmp(monkeyName,'alpaH')
     end
     
     positionList = [3.3 -2.8];
+    
     oriList{1} = [0 90];
     oriList{2} = [45 135];
     oriList{3} = [22.5 112.5];
@@ -62,6 +63,7 @@ elseif strcmp(monkeyName,'kesariH')
     end
     
     positionList = [0.5 -1.75];
+    
     oriList{1} = [0 90];
     oriList{2} = [45 135];
     oriList{3} = [22.5 112.5]; % Drifting grating, no SSVEP measure

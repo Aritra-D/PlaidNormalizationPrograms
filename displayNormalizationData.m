@@ -342,28 +342,15 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             electrodeString = get(hElectrode,'val'); 
             if length(fileNameStringTMP) ==1
                 ElectrodeListTMP = ElectrodeListSession(electrodeString);
-                % Get Parameter Combinations
-                gridType = 'microelectrode';
-                folderName = fullfile(folderSourceString,'data',...
-                                        monkeyName,gridType,expDate,protocolName);
-                % Get folders
-                folderExtract = fullfile(folderName,'extractedData');
-                [~,~,~,~,~,~,oValsUnique,~,~,~,~,~,~,oValsUnique2,~,~] = loadParameterCombinations(folderExtract);
-                
-                % Ori Tuning Dataset (Only Shown for each Session)
-                OriTuningProtocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)];
-                [computationVals,PO,OS] = getPrefOriAndOriSelectivitySpikes(monkeyName,expDate,OriTuningProtocolName,folderSourceString,gridType);
-                oriTuningData.PO_TMP = PO(ElectrodeListTMP{1});
-                oriTuningData.OS_TMP = OS(ElectrodeListTMP{1});
-                oriTuningData.FR_TMP = computationVals(ElectrodeListTMP{1},:);
-                
+                if isempty(ElectrodeListTMP{1})
+                    error(['No electrode found for analysis!'...
+                            'Please try another session!'])
+                end
             elseif length(fileNameStringTMP)>1
                 ElectrodeListTMP = ElectrodeListSession;
             end
-            if isempty(ElectrodeListTMP{1})
-                error(['No electrode found for analysis!'...
-                        'Please try another session!'])
-            end
+            
+            
             analysisMethod = get(hAnalysisMethod,'val');
             analysisMeasure = get(hAnalysisType,'val');
             NormalizeDataFlag = get(hNormalizeData,'val');
@@ -577,20 +564,24 @@ end
 
 
 
-function [erpData,firingRateData,fftData,energyData,electrodeArray] = ...
+function [erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray] = ...
     getDataSingleSession(folderSourceString,fileNameStringTMP,...
     ElectrodeListTMP,erpRange,blRange,stRange,freqRanges)
 
 if strcmp(fileNameStringTMP{1}(1:5),'alpaH')       
     monkeyName = 'alpaH'; 
     expDate = fileNameStringTMP{1}(6:11); 
-    protocolName = fileNameStringTMP{1}(12:end); 
+    protocolName = fileNameStringTMP{1}(12:end);
+    oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
 elseif strcmp(fileNameStringTMP{1}(1:7),'kesariH')
     monkeyName = 'kesariH';
     expDate = fileNameStringTMP{1}(8:13); 
     protocolName = fileNameStringTMP{1}(14:end);
+    oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
 end
 gridType = 'microelectrode';
+
+
 folderName = fullfile(folderSourceString,'data',...
                         monkeyName,gridType,expDate,protocolName);
 
@@ -599,159 +590,181 @@ folderExtract = fullfile(folderName,'extractedData');
 folderSegment = fullfile(folderName,'segmentedData');
 folderLFP = fullfile(folderSegment,'LFP');
 folderSpikes = fullfile(folderSegment,'Spikes');
+% folderSave = fullfile(folderName,'savedData');
+% 
+% fileToSave = fullfile(folderSave,[fileNameStringTMP '_savedData.mat']);
+% 
+% if exist(fileToSave,'file')
+%     disp(['Loading file ' fileToSave]);
+% else
 
-% Get Combinations
-[parameterCombinations,parameterCombinations2,...
-    aValsUnique,eValsUnique,~,~,oValsUnique,cValsUnique,tValsUnique, ...
-    aValsUnique2,eValsUnique2,~,~,oValsUnique2,cValsUnique2,tValsUnique2] = ...
-    loadParameterCombinations(folderExtract);
+    % Get OrientationTuning Data
+    [computationVals,PO,OS] = getPrefOriAndOriSelectivitySpikes(monkeyName,expDate,oriTuning_protocolName,folderSourceString,gridType);
+    oriTuningData.PO = PO(ElectrodeListTMP{1});
+    oriTuningData.OS = OS(ElectrodeListTMP{1});
+    oriTuningData.FR = computationVals(ElectrodeListTMP{1},:);
 
-if aValsUnique ~= aValsUnique2 || eValsUnique ~= eValsUnique2
-    error('Azimuths and/or elevations do not match!');
-end                                          
-a=1; e=1; s=1; f=1; o=1; 
-if tValsUnique ~= tValsUnique2
-    error('Azimuths and/or elevations do not match!');
-else
-    tList = 1:length(tValsUnique);
-end
+    % Get Combinations
+    [parameterCombinations,parameterCombinations2,...
+        aValsUnique,eValsUnique,~,~,oValsUnique,cValsUnique,tValsUnique, ...
+        aValsUnique2,eValsUnique2,~,~,oValsUnique2,cValsUnique2,tValsUnique2] = ...
+        loadParameterCombinations(folderExtract);
 
-c1List = 1:length(cValsUnique);
-c2List = 1:length(cValsUnique2);
-
-
-% TimeVals info
-[~,timeVals,~,~] = loadlfpInfo(folderLFP);
-if iscell(ElectrodeListTMP)
-ElectrodeList = cell2mat(ElectrodeListTMP);
-else
-    ElectrodeList = ElectrodeListTMP;
-end
-
-electrodeArray = ElectrodeList;
-Fs = round(1/(timeVals(2)-timeVals(1)));
-range = blRange;
-rangePos = round(diff(range)*Fs);
-erpRangePos = round(diff(erpRange)*Fs);
-blPos = find(timeVals>=blRange(1),1)+ (1:rangePos);
-stPos = find(timeVals>=stRange(1),1)+ (1:rangePos);
-erpPos = find(timeVals>=erpRange(1),1)+ (1:erpRangePos);
-freqVals = 0:1/diff(range):Fs-1/diff(range);
-numFreqs = length(freqRanges);
-unitID = 0;
-for iElec = 1:length(ElectrodeList)
-    % Get LFP data
-    clear analogData
-    load(fullfile(folderLFP,['elec' num2str(ElectrodeList(iElec)) '.mat']));
-    % Get Spike data
-    clear spikeData
-    load(fullfile(folderSpikes,['elec' num2str(ElectrodeList(iElec)) '_SID' num2str(unitID) '.mat']));
-
-%     Get bad trials
-    badTrialFile = fullfile(folderSegment,'badTrials.mat');
-    if ~exist(badTrialFile,'file')
-        disp('Bad trial file does not exist...');
-        badTrials=[];
+    if aValsUnique ~= aValsUnique2 || eValsUnique ~= eValsUnique2
+        error('Azimuths and/or elevations do not match!');
+    end                                          
+    a=1; e=1; s=1; f=1; o=1; 
+    if tValsUnique ~= tValsUnique2
+        error('Azimuths and/or elevations do not match!');
     else
-        badTrials = loadBadTrials(badTrialFile);
-        disp([num2str(length(badTrials)) ' bad trials']);
+        tList = 1:length(tValsUnique);
     end
-    % Set up MT
-%     Fs              = round(1/(timeVals(2)-timeVals(1)));
-    params.tapers   = [1 1];
-    params.pad      = -1;
-    params.Fs       = Fs;
-    params.fpass    = [0 100];
-    params.trialave = 1;
-    for t = 1:length(tList)
-        for c1=1:length(c1List)
-            for c2=1:length(c2List)
 
-                clear goodPos fftBL fftST erp dataBL dataST
-                goodPos = parameterCombinations{a,e,s,f,o,c1List(c1),tList(t)};
-                goodPos2 = parameterCombinations2{a,e,s,f,o,c2List(c2),tList(t)};
-                goodPos = intersect(goodPos,goodPos2);
-                goodPos = setdiff(goodPos,badTrials);
+    c1List = 1:length(cValsUnique);
+    c2List = 1:length(cValsUnique2);
 
-                if isempty(goodPos)
-                    disp('No entries for this combination..');
-                else
-                    disp(['pos=(' num2str(c1) ',' num2str(c2) ') ,n=' num2str(length(goodPos))]);
-                    N(iElec,t,c1,c2) = length(goodPos);
-                    
-                    if round(diff(blRange)*Fs) ~= round(diff(stRange)*Fs)
-                        disp('baseline and stimulus ranges are not the same');
+
+    % TimeVals info
+    [~,timeVals,~,~] = loadlfpInfo(folderLFP);
+    if iscell(ElectrodeListTMP)
+    ElectrodeList = cell2mat(ElectrodeListTMP);
+    else
+        ElectrodeList = ElectrodeListTMP;
+    end
+
+    electrodeArray = ElectrodeList;
+    Fs = round(1/(timeVals(2)-timeVals(1)));
+    range = blRange;
+    rangePos = round(diff(range)*Fs);
+    erpRangePos = round(diff(erpRange)*Fs);
+    blPos = find(timeVals>=blRange(1),1)+ (1:rangePos);
+    stPos = find(timeVals>=stRange(1),1)+ (1:rangePos);
+    erpPos = find(timeVals>=erpRange(1),1)+ (1:erpRangePos);
+    freqVals = 0:1/diff(range):Fs-1/diff(range);
+    numFreqs = length(freqRanges);
+    unitID = 0;
+    for iElec = 1:length(ElectrodeList)
+        % Get LFP data
+        clear analogData
+        load(fullfile(folderLFP,['elec' num2str(ElectrodeList(iElec)) '.mat']));
+        % Get Spike data
+        clear spikeData
+        load(fullfile(folderSpikes,['elec' num2str(ElectrodeList(iElec)) '_SID' num2str(unitID) '.mat']));
+
+    %     Get bad trials
+        badTrialFile = fullfile(folderSegment,'badTrials.mat');
+        if ~exist(badTrialFile,'file')
+            disp('Bad trial file does not exist...');
+            badTrials=[];
+        else
+            badTrials = loadBadTrials(badTrialFile);
+            disp([num2str(length(badTrials)) ' bad trials']);
+        end
+        % Set up MT
+    %     Fs              = round(1/(timeVals(2)-timeVals(1)));
+        params.tapers   = [1 1];
+        params.pad      = -1;
+        params.Fs       = Fs;
+        params.fpass    = [0 100];
+        params.trialave = 1;
+        for t = 1:length(tList)
+            for c1=1:length(c1List)
+                for c2=1:length(c2List)
+
+                    clear goodPos fftBL fftST erp dataBL dataST
+                    goodPos = parameterCombinations{a,e,s,f,o,c1List(c1),tList(t)};
+                    goodPos2 = parameterCombinations2{a,e,s,f,o,c2List(c2),tList(t)};
+                    goodPos = intersect(goodPos,goodPos2);
+                    goodPos = setdiff(goodPos,badTrials);
+
+                    if isempty(goodPos)
+                        disp('No entries for this combination..');
                     else
-                       [psthData(iElec,t,c1,c2,:),xsFR] = getPSTH(spikeData(goodPos),10,[timeVals(1) timeVals(end)]);
-                       erp = mean(analogData(goodPos,:),1); %#ok<NODEF>
-                       erpDataTMP(iElec,t,c1,c2,:) = erp;
-                       RMSvalsBL(iElec,t,c1,c2) = rms(erp(blPos));
-                       RMSvalsERP(iElec,t,c1,c2) = rms(erp(erpPos));
-                       
-                       firingRatesST(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),stRange))/diff(stRange);
-                       firingRatesBL(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),blRange))/diff(blRange);
-                       
-                       fftBL = log10(squeeze(mean(abs(fft(analogData(goodPos,blPos),[],2)))));
-                       fftST = log10(squeeze(mean(abs(fft(analogData(goodPos,stPos),[],2)))));
-                       
-                       fftDataBL(iElec,t,c1,c2,:) = fftBL;
-                       fftDataST(iElec,t,c1,c2,:) = fftST;
-                       
-                       %Power by MT method
-                       dataBL = analogData(goodPos,blPos)';
-                       [tmpEBL,freqValsBL] = mtspectrumc(dataBL,params);
-                       dataST = analogData(goodPos,stPos)';
-                       [tmpEST,freqValsST] = mtspectrumc(dataST,params);
-                       
-                       if isequal(freqValsBL,freqValsST)
-                           freqValsMT = freqValsST;
-                       end
-                       
-                       mEnergyVsFreqBL(iElec,t,c1,c2,:) = conv2Log(tmpEBL);
-                       mEnergyVsFreqST(iElec,t,c1,c2,:) = conv2Log(tmpEST);
-                       
-                       for i=1:numFreqs
-                           fftAmpST{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{i}));
-                           fftAmpBL{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{i}));
-                           energyValsST{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{i}));
-                           energyValsBL{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{i}));
-                       end
+                        disp(['pos=(' num2str(c1) ',' num2str(c2) ') ,n=' num2str(length(goodPos))]);
+                        N(iElec,t,c1,c2) = length(goodPos);
+
+                        if round(diff(blRange)*Fs) ~= round(diff(stRange)*Fs)
+                            disp('baseline and stimulus ranges are not the same');
+                        else
+                           [psthData(iElec,t,c1,c2,:),xsFR] = getPSTH(spikeData(goodPos),10,[timeVals(1) timeVals(end)]);
+                           erp = mean(analogData(goodPos,:),1); %#ok<NODEF>
+                           erpDataTMP(iElec,t,c1,c2,:) = erp;
+                           RMSvalsBL(iElec,t,c1,c2) = rms(erp(blPos));
+                           RMSvalsERP(iElec,t,c1,c2) = rms(erp(erpPos));
+
+                           firingRatesST(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),stRange))/diff(stRange);
+                           firingRatesBL(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),blRange))/diff(blRange);
+
+                           fftBL = log10(squeeze(mean(abs(fft(analogData(goodPos,blPos),[],2)))));
+                           fftST = log10(squeeze(mean(abs(fft(analogData(goodPos,stPos),[],2)))));
+
+                           fftDataBL(iElec,t,c1,c2,:) = fftBL;
+                           fftDataST(iElec,t,c1,c2,:) = fftST;
+
+                           %Power by MT method
+                           dataBL = analogData(goodPos,blPos)';
+                           [tmpEBL,freqValsBL] = mtspectrumc(dataBL,params);
+                           dataST = analogData(goodPos,stPos)';
+                           [tmpEST,freqValsST] = mtspectrumc(dataST,params);
+
+                           if isequal(freqValsBL,freqValsST)
+                               freqValsMT = freqValsST;
+                           end
+
+                           mEnergyVsFreqBL(iElec,t,c1,c2,:) = conv2Log(tmpEBL);
+                           mEnergyVsFreqST(iElec,t,c1,c2,:) = conv2Log(tmpEST);
+
+                           for i=1:numFreqs
+                               fftAmpST{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{i}));
+                               fftAmpBL{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{i}));
+                               energyValsST{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{i}));
+                               energyValsBL{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{i}));
+                           end
+                        end
                     end
                 end
             end
         end
     end
-end
 
 
-% dataPlot = segregate_Pref_Null_data(dataPlot);
-%     dataPlot = flip(flip(permute(dataPlot,[2 1 3]),1),2);
-erpData.data = erpDataTMP;
-erpData.analysisDataBL = RMSvalsBL;
-erpData.analysisDataST = RMSvalsERP;
-erpData.timeVals = timeVals;
-erpData.N = N;
+    erpData.data = erpDataTMP;
+    erpData.analysisDataBL = RMSvalsBL;
+    erpData.analysisDataST = RMSvalsERP;
+    erpData.timeVals = timeVals;
+    erpData.N = N;
 
-firingRateData.data = psthData;
-firingRateData.analysisDataBL = firingRatesBL;
-firingRateData.analysisDataST = firingRatesST;
-firingRateData.timeVals = xsFR;
-firingRateData.N = N;
+    firingRateData.data = psthData;
+    firingRateData.analysisDataBL = firingRatesBL;
+    firingRateData.analysisDataST = firingRatesST;
+    firingRateData.timeVals = xsFR;
+    firingRateData.N = N;
 
-fftData.dataBL = fftDataBL;
-fftData.dataST = fftDataST;
-fftData.analysisDataBL = fftAmpBL;
-fftData.analysisDataST = fftAmpST;
-fftData.freqVals = freqVals;
-fftData.N = N;
+    fftData.dataBL = fftDataBL;
+    fftData.dataST = fftDataST;
+    fftData.analysisDataBL = fftAmpBL;
+    fftData.analysisDataST = fftAmpST;
+    fftData.freqVals = freqVals;
+    fftData.N = N;
 
-energyData.dataBL=mEnergyVsFreqBL;
-energyData.dataST=mEnergyVsFreqST;
-energyData.analysisDataBL = energyValsBL;
-energyData.analysisDataST = energyValsST;
-energyData.freqVals = freqValsMT;
-energyData.N = N;
+    energyData.dataBL=mEnergyVsFreqBL;
+    energyData.dataST=mEnergyVsFreqST;
+    energyData.analysisDataBL = energyValsBL;
+    energyData.analysisDataST = energyValsST;
+    energyData.freqVals = freqValsMT;
+    energyData.N = N;
+    
+    elecs_neededtoFlipped = electrodeListTMP(find(abs(oriTuningData.PO-oValsUnique)<abs(oriTuningData.PO-oValsUnique2)));
+    erpData = segregate_Pref_Null_data(erpData,elecs_neededtoFlipped);
+    firingRateData = segregate_Pref_Null_data(firingRateData,elecs_neededtoFlipped);
+    fftData = segregate_Pref_Null_data(fftData,elecs_neededtoFlipped);
+    energyData = segregate_Pref_Null_data(energyData,elecs_neededtoFlipped);
+    
+    %     dataPlot = flip(flip(permute(dataPlot,[2 1 3]),1),2);
 
+%     % Save Data for particular session
+%     save(fileToSave,'erpData','firingRateData','fftData','energyData','oriTuningData');
+% end
 end
 
 % Accessory Functions
@@ -991,7 +1004,14 @@ end
 hold(hPlot5(1,1),'off'); hold(hPlot6(1,1),'off')
 end
 function data = segregate_Pref_Null_data(data)
-    
+    if length(data) == 4
+        data.data(elecs_neededtoFlipped,t,:,:,:) = flip(flip(permute(data.data,[2 1 3]),1),2);
+    elseif length(data) == 5
+        data.dataBL = flip(flip(permute(data.dataBL,[2 1 3]),1),2);
+        data.dataST = flip(flip(permute(data.dataST,[2 1 3]),1),2);
+    end
+    data.analysisDataBL = flip(flip(permute(data.dataBL,[2 1]),1),2);
+    data.analysisDataST = flip(flip(permute(data.dataST,[2 1]),1),2);    
 end
 function [analogChannelsStored,timeVals,goodStimPos,analogInputNums] = loadlfpInfo(folderLFP) %#ok<*STOUT>
 load(fullfile(folderLFP,'lfpInfo.mat'));
