@@ -65,22 +65,21 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         %%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%
         [ElectrodeStringListAll,ElectrodeArrayListAll]= ...
             getElectrodesList(monkeyName,sessionNum,oriSelectiveFlag,folderSourceString);
-        if sessionNum <=22
+        if sessionNum <=22 % Single Session for either monkey
             ElectrodeListSession = ElectrodeArrayListAll{1};
             ElectrodeStringSession = ElectrodeStringListAll{1};
-        elseif sessionNum == 23
+        elseif sessionNum == 23 % all Sessions for alpaH
             ElectrodeListSession = ElectrodeArrayListAll{13};
             ElectrodeStringSession = ElectrodeStringListAll{13};
-        elseif sessionNum == 24
+        elseif sessionNum == 24 % all Sessions for kesariH
             ElectrodeListSession = ElectrodeArrayListAll{11};
             ElectrodeStringSession = ElectrodeStringListAll{11};
-        elseif sessionNum == 25
+        elseif sessionNum == 25 % all Sessions for both monkeys combined
             ElectrodeListSession = ElectrodeArrayListAll{25};
             ElectrodeStringSession = ElectrodeStringListAll{25};
         end
 
-    
-        
+
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%% Parameters panel %%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
@@ -331,7 +330,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         freqRanges{1} = [8 12]; % alpha
         freqRanges{2} = [30 60]; % gamma
-        freqRanges{3} = [16 16];         % SSVEP
+        freqRanges{3} = [16 16];  % SSVEP
         
 %         freqRangeStr = {'alpha','gamma','SSVEP'};
 %         numFreqRanges = length(freqRanges);        
@@ -350,12 +349,14 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
                 % Get folders
                 folderExtract = fullfile(folderName,'extractedData');
                 [~,~,~,~,~,~,oValsUnique,~,~,~,~,~,~,oValsUnique2,~,~] = loadParameterCombinations(folderExtract);
+                
                 % Ori Tuning Dataset (Only Shown for each Session)
                 OriTuningProtocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)];
                 [computationVals,PO,OS] = getPrefOriAndOriSelectivitySpikes(monkeyName,expDate,OriTuningProtocolName,folderSourceString,gridType);
                 oriTuningData.PO_TMP = PO(ElectrodeListTMP{1});
                 oriTuningData.OS_TMP = OS(ElectrodeListTMP{1});
                 oriTuningData.FR_TMP = computationVals(ElectrodeListTMP{1},:);
+                
             elseif length(fileNameStringTMP)>1
                 ElectrodeListTMP = ElectrodeListSession;
             end
@@ -395,7 +396,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
                  hold(hOriTuning,'off');
              else
              end
-%             PlotConstant = [4 2 0 -2 -4];
+             
             if analysisMeasure == 1 % computing ERP
                 plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,erpData.timeVals,erpData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
             elseif analysisMeasure == 2 % computing Firing rate
@@ -408,7 +409,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
                 elseif analysisMethod ==2 
                     plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,energyData.freqVals,energyData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
                 end
-                    
+
             elseif analysisType == 7 % need to work on STA!
                 error('STA computation method not found') 
 
@@ -601,8 +602,8 @@ folderSpikes = fullfile(folderSegment,'Spikes');
 
 % Get Combinations
 [parameterCombinations,parameterCombinations2,...
-    aValsUnique,eValsUnique,~,~,~,cValsUnique,tValsUnique, ...
-    aValsUnique2,eValsUnique2,~,~,~,cValsUnique2,tValsUnique2] = ...
+    aValsUnique,eValsUnique,~,~,oValsUnique,cValsUnique,tValsUnique, ...
+    aValsUnique2,eValsUnique2,~,~,oValsUnique2,cValsUnique2,tValsUnique2] = ...
     loadParameterCombinations(folderExtract);
 
 if aValsUnique ~= aValsUnique2 || eValsUnique ~= eValsUnique2
@@ -722,6 +723,9 @@ for iElec = 1:length(ElectrodeList)
     end
 end
 
+
+% dataPlot = segregate_Pref_Null_data(dataPlot);
+%     dataPlot = flip(flip(permute(dataPlot,[2 1 3]),1),2);
 erpData.data = erpDataTMP;
 erpData.analysisDataBL = RMSvalsBL;
 erpData.analysisDataST = RMSvalsERP;
@@ -867,9 +871,12 @@ if analysisMeasure == 1 || analysisMeasure == 2
     elseif dataSize(1) >1
         dataPlot = squeeze(mean(squeeze(data.data(:,1,:,:,:)),1));
     end
-    dataPlot = flip(dataPlot,1); % Flipping data Row-wise 
-%     dataPlot = flip(flip(permute(dataPlot,[2 1 3]),1),2);
-
+    dataPlot = flip(dataPlot,1); % Flipping data Row-wise so that positive x-axis and positive y-axis denotes increase in Contrast
+    
+    % Flipping data to 
+    % Preferred direction(ColumnWise - along x-axis) and 
+    % null direction (Rowwise - along positive y-axis)
+    
 elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     if size(data.dataBL) == size(data.dataST) 
         dataSize = size(data.dataST);
@@ -902,8 +909,7 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     end
 end
     
-% PlotConstant = [4 2 0 -2 -4];
-
+% Plotting 5x5 plots for raw Neural Measures
 for c1 = 1:5
     for c2 = 1:5
         if analysisMeasure == 1 || analysisMeasure == 2
@@ -922,7 +928,7 @@ for c1 = 1:5
     end
 end
 
-% Color coded Matrix of Neural Measure
+% Color coded 5x5 Matrix of raw Neural Measures
 
 if dataSize(1)==1
     if analysisMeasure == 1 || analysisMeasure == 2
@@ -983,6 +989,9 @@ for iCon = 1:5
     hold(hPlot6(1,1),'on')
 end
 hold(hPlot5(1,1),'off'); hold(hPlot6(1,1),'off')
+end
+function data = segregate_Pref_Null_data(data)
+    
 end
 function [analogChannelsStored,timeVals,goodStimPos,analogInputNums] = loadlfpInfo(folderLFP) %#ok<*STOUT>
 load(fullfile(folderLFP,'lfpInfo.mat'));
