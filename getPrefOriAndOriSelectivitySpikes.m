@@ -34,7 +34,7 @@ unitID = 0;
 % Get bad trials
 badTrialFile = fullfile(folderSegment,'badTrials.mat');
 if ~exist(badTrialFile,'file')
-    disp('Bad trial file does not exist...');
+%     disp('Bad trial file does not exist...');
     badTrials=[];
 else
     badTrials = loadBadTrials(badTrialFile);
@@ -54,9 +54,7 @@ end
         else
             continue
         end
-
         % Main Loop
-
         for iOri = 1:oLen
             clear goodPos
             goodPos = parameterCombinations{aLen,eLen,sLen,fLen,iOri,cLen,tLen};
@@ -65,16 +63,16 @@ end
             if isempty(goodPos)
                 disp('No entries for this combination..')
             else
-                disp(['pos=' num2str(iOri) ',n=' num2str(length(goodPos))]);
+%                 disp(['pos=' num2str(iOri) ',n=' num2str(length(goodPos))]);
                 % compute spikes
                 clear firingRate
                 firingRate = mean(getSpikeCounts(spikeData(goodPos),timeForComputation))/diff(timeForComputation);
                 computationVals(iElec,iOri) = firingRate;
             end
         end
-        if iElec == 1 || iElec == length(neuralChannelsStored)
-        disp(['Orientation selectivity values calculated between ' num2str(timeForComputation(1)) '-' num2str(timeForComputation(2))  ' s']);
-        end
+%         if iElec == 1 %|| iElec == length(neuralChannelsStored)
+%          disp(['Orientation selectivity values calculated between ' num2str(timeForComputation(1)) '-' num2str(timeForComputation(2))  ' s']);
+%         end
 %         disp(['orientation values: ' num2str(computationVals)]);
         [PO(iElec),OS(iElec)] = getOrientationTuning(computationVals(iElec,:),oValsUnique);
 %         disp(['elec: ' num2str(iElec) ', prefOri: ' num2str(round(PO(iElec))) ', sel: ' num2str(OS(iElec))]);

@@ -32,16 +32,21 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
     'FontSize',fontSizeMedium,'Callback',{@selectSession_Callback});
 
     function selectSession_Callback(~,~)
-        session = get(hSession,'val'); 
-        fileNameStringTMP = fileNameStringListArray{session};
-        if strcmp(fileNameStringTMP{1}(1:5),'alpaH')
-            monkeyName = 'alpaH';
+        sessionNum = get(hSession,'val'); 
+        fileNameStringTMP = fileNameStringListArray{sessionNum};
+        if sessionNum <=12 || sessionNum == 23 || sessionNum == 25
+            monkeyName = fileNameStringTMP{1}(1:5);
             expDate = fileNameStringTMP{1}(6:11);
             protocolName = fileNameStringTMP{1}(12:end);
-        elseif strcmp(fileNameStringTMP{1}(1:7),'kesariH')
-            monkeyName = 'kesariH';
+            
+        elseif sessionNum >12 && sessionNum <= 22 || sessionNum == 24
+            monkeyName = fileNameStringTMP{1}(1:7);
             expDate = fileNameStringTMP{1}(8:13);
             protocolName = fileNameStringTMP{1}(14:end);
+            if sessionNum>=12 && sessionNum<=22
+                sessionNum = sessionNum-12; % SessionNums for monkey: kesariH
+            end
+            
         end
         gridType = 'Microelectrode';
         
@@ -51,11 +56,30 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         electrodeGridPos = [0.05 panelStartHeight 0.2 panelHeight];
         hElectrodesonGrid = showElectrodeLocations(electrodeGridPos,[], ...
         [],[],1,0,gridType,monkeyName); %#ok<NASGU>
+        
+        if sessionNum == 25
+            monkeyName = 'all';
+        end
+            
 
         %%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%
         [ElectrodeStringListAll,ElectrodeArrayListAll]= ...
-            getElectrodesList(folderSourceString,oriSelectiveFlag);
-        ElectrodeListSession = ElectrodeArrayListAll{session};
+            getElectrodesList(monkeyName,sessionNum,oriSelectiveFlag,folderSourceString);
+        if sessionNum <=22
+            ElectrodeListSession = ElectrodeArrayListAll{1};
+            ElectrodeStringSession = ElectrodeStringListAll{1};
+        elseif sessionNum == 23
+            ElectrodeListSession = ElectrodeArrayListAll{13};
+            ElectrodeStringSession = ElectrodeStringListAll{13};
+        elseif sessionNum == 24
+            ElectrodeListSession = ElectrodeArrayListAll{11};
+            ElectrodeStringSession = ElectrodeStringListAll{11};
+        elseif sessionNum == 25
+            ElectrodeListSession = ElectrodeArrayListAll{25};
+            ElectrodeStringSession = ElectrodeStringListAll{25};
+        end
+
+    
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%% Parameters panel %%%%%%%%%%%%%%%%%%%%%
@@ -72,7 +96,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         hElectrode = uicontrol('Parent',hParameterPanel,...
             'Unit','Normalized','BackgroundColor', backgroundColor, ...
             'Position',[0.5 1-paramsHeight 0.5 paramsHeight],...
-            'Style','popup','String',ElectrodeStringListAll{session},...
+            'Style','popup','String',ElectrodeStringSession,...
             'FontSize',fontSizeMedium);
         
         % Analysis Method
@@ -776,40 +800,42 @@ fileNameStringAll = cat(2,fileNameStringAll,['all (N=' num2str(length(allNames))
 fileNameStringListArray{pos} = allNames;
 end
 
-function [ElectrodeStringListAll,ElectrodeArrayListAll] = getElectrodesList(folderSourceString,oriSelectiveFlag)
+function [ElectrodeStringListAll,ElectrodeArrayListAll] = getElectrodesList(monkeyName,sessionNum,oriSelectiveFlag,folderSourceString)
 
-[tmpElectrodeStringList,tmpElectrodeArrayList,allElecs,monkeyNameList] = getGoodElectrodesDetails(folderSourceString,oriSelectiveFlag);
+[tmpElectrodeStringList,tmpElectrodeArrayList,allElecs,monkeyNameList] = getGoodElectrodesDetails(monkeyName,sessionNum,oriSelectiveFlag,folderSourceString);
 
-ElectrodeStringListAll = ''; 
-ElectrodeArrayListAll = [];
-
-for i=1:length(monkeyNameList)
-        ElectrodeStringListAll = cat(2,ElectrodeStringListAll,tmpElectrodeStringList{i});
-        ElectrodeArrayListAll = cat(2,ElectrodeArrayListAll,tmpElectrodeArrayList{i});
-         
-end
-
-Sessions = length(ElectrodeArrayListAll);
-pos = Sessions+1;
-for i=1:length(monkeyNameList)
-    clear j
-    for j = 1:length(tmpElectrodeArrayList{i})
-        ElectrodeArrayListAll{1,pos}{1,j} = tmpElectrodeArrayList{1,i}{1,j}{1,end};
-    end
-    ElectrodeStringListAll{1,pos} = ['all (N=' num2str(allElecs(i)) ')'];
-    pos=pos+1;
-end
-
-AllSessions = length(ElectrodeArrayListAll)+1;
-
-for k=1:length(tmpElectrodeArrayList{1})+length(tmpElectrodeArrayList{2})
-    ElectrodeArrayListAll{1,AllSessions}{1,k} = ElectrodeArrayListAll{1,k}{1,end};
-    ElectrodeStringListAll{1,AllSessions} = ['all (N=' num2str(sum(allElecs)) ')'];
-end
+    ElectrodeStringListAll = ''; 
+    ElectrodeArrayListAll = [];
     
+    for i=1:length(monkeyNameList)
+            ElectrodeStringListAll = cat(2,ElectrodeStringListAll,tmpElectrodeStringList{i});
+            ElectrodeArrayListAll = cat(2,ElectrodeArrayListAll,tmpElectrodeArrayList{i});
 
-
+    end
+    if sessionNum >=23
+        Sessions = length(ElectrodeArrayListAll);
+        pos = Sessions+1;
+        for i=1:length(monkeyNameList)
+            clear j
+            for j = 1:length(tmpElectrodeArrayList{i})
+                ElectrodeArrayListAll{1,pos}{1,j} = tmpElectrodeArrayList{1,i}{1,j}{1,end};
+            end
+            ElectrodeStringListAll{1,pos} = ['all (N=' num2str(allElecs(i)) ')'];
+            pos=pos+1;
+        end
+    end
+    AllSessions = length(ElectrodeArrayListAll)+1;
+    
+    if sessionNum == 25
+        for k=1:length(tmpElectrodeArrayList{1})+length(tmpElectrodeArrayList{2})
+            ElectrodeArrayListAll{1,AllSessions}{1,k} = ElectrodeArrayListAll{1,k}{1,end};
+            ElectrodeStringListAll{1,AllSessions} = ['all (N=' num2str(sum(allElecs)) ')'];
+        end
+    end
+    
 end
+
+
 function eValue = getMeanEnergyForAnalysis(mEnergy,freq,freqRange)
 
 posToAverage = intersect(find(freq>=freqRange(1)),find(freq<=freqRange(2)));
