@@ -374,15 +374,15 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
              % OriTuning Plot
              colorNamesOriTuning = hsv(30);
              oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
-             if length(fileNameStringTMP) ==1
-                 for index = 1:length(ElectrodeListTMP{1})
-                    plot(hOriTuning,oValsUnique_Tuning,oriTuningData.FR_TMP(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
-                    text(0.4,index*0.07+0.5,['PO: ' num2str(oriTuningData.PO_TMP(index)) ',OS: ' num2str(oriTuningData.OS_TMP(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hOriTuning);
-                    hold(hOriTuning,'on');
-                 end
-                 hold(hOriTuning,'off');
-             else
-             end
+%              if length(fileNameStringTMP) ==1
+%                  for index = 1:length(ElectrodeListTMP{1})
+%                     plot(hOriTuning,oValsUnique_Tuning,oriTuningData.FR_TMP(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
+%                     text(0.4,index*0.07+0.5,['PO: ' num2str(oriTuningData.PO_TMP(index)) ',OS: ' num2str(oriTuningData.OS_TMP(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hOriTuning);
+%                     hold(hOriTuning,'on');
+%                  end
+%                  hold(hOriTuning,'off');
+%              else
+%              end
              
             if analysisMeasure == 1 % computing ERP
                 plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,erpData.timeVals,erpData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
@@ -412,17 +412,20 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
                 xMin = str2double(get(hSTAMin,'String'));
                 xMax = str2double(get(hSTAMax,'String'));
             end
-
-            if length(fileNameStringTMP) ==1
+% 
+            
                 textH1 = getPlotHandles(1,1,[0.2 0.65 0.01 0.01]);
                 set(textH1,'Visible','Off');
-                text(0.35,1.15,['Orientation: ' num2str(oValsUnique2)],'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
-                
                 textH2 = getPlotHandles(1,1,[0.02 0.25 0.01 0.01]);
                 set(textH2,'Visible','Off');
-                text(0.35,1.15,['Orientation: ' num2str(oValsUnique)],'unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
                 
-            end
+%             if length(fileNameStringTMP) ==1 && length(ElectrodeListTMP{1})==1    
+%                 text(0.35,1.15,['Null Orientation: ' num2str(oValsUnique)],'unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
+%                 text(0.35,1.15,['Preferred Orientation: ' num2str(oValsUnique2)],'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
+%             else
+%                 text(0.35,1.15,'Null Orientation','unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
+%                 text(0.35,1.15,'Preferred Orientation' ,'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
+%             end
             flippedcValsUnique2 = flip(cValsUnique2);
             for c = 1:5
             title(plotHandles(1,c),[num2str(cValsUnique(c)) ' %']);
@@ -527,7 +530,7 @@ function[erpData,firingRateData,fftData,energyData,electrodeArray] = ...
 numDatasets = length(fileNameStringTMP);
 disp(['Working on dataset 1 of ' num2str(numDatasets)]);
 [erpData,firingRateData,fftData,energyData,electrodeArray]...
-= getDataSingleSession(folderSourceString,fileNameStringTMP,...
+= getDataSingleSession(folderSourceString,fileNameStringTMP{1},...
 ElectrodeListTMP{1},erpRange,blRange,stRange,freqRanges); 
 
 if length(fileNameStringTMP)>1
@@ -536,7 +539,7 @@ if length(fileNameStringTMP)>1
            continue
         end
         disp(['Working on dataset ' num2str(i) ' of ' num2str(length(fileNameStringTMP))]);
-        [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~] = getDataSingleSession(folderSourceString,fileNameStringTMP,...
+        [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~] = getDataSingleSession(folderSourceString,fileNameStringTMP{i},...
             ElectrodeListTMP{i},erpRange,blRange,stRange,freqRanges);
         
         erpData.data = cat(1,erpData.data,erpDataTMP.data);
@@ -568,15 +571,15 @@ function [erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray
     getDataSingleSession(folderSourceString,fileNameStringTMP,...
     ElectrodeListTMP,erpRange,blRange,stRange,freqRanges)
 
-if strcmp(fileNameStringTMP{1}(1:5),'alpaH')       
+if strcmp(fileNameStringTMP(1:5),'alpaH')       
     monkeyName = 'alpaH'; 
-    expDate = fileNameStringTMP{1}(6:11); 
-    protocolName = fileNameStringTMP{1}(12:end);
+    expDate = fileNameStringTMP(6:11); 
+    protocolName = fileNameStringTMP(12:end);
     oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
-elseif strcmp(fileNameStringTMP{1}(1:7),'kesariH')
+elseif strcmp(fileNameStringTMP(1:7),'kesariH')
     monkeyName = 'kesariH';
-    expDate = fileNameStringTMP{1}(8:13); 
-    protocolName = fileNameStringTMP{1}(14:end);
+    expDate = fileNameStringTMP(8:13); 
+    protocolName = fileNameStringTMP(14:end);
     oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
 end
 gridType = 'microelectrode';
@@ -591,18 +594,18 @@ folderSegment = fullfile(folderName,'segmentedData');
 folderLFP = fullfile(folderSegment,'LFP');
 folderSpikes = fullfile(folderSegment,'Spikes');
 % folderSave = fullfile(folderName,'savedData');
-% 
-% fileToSave = fullfile(folderSave,[fileNameStringTMP '_savedData.mat']);
-% 
+% mkdir(folderSave);
+% fileToSave = fullfile(folderSave,'oriTuningData.mat');
+
 % if exist(fileToSave,'file')
 %     disp(['Loading file ' fileToSave]);
 % else
 
     % Get OrientationTuning Data
     [computationVals,PO,OS] = getPrefOriAndOriSelectivitySpikes(monkeyName,expDate,oriTuning_protocolName,folderSourceString,gridType);
-    oriTuningData.PO = PO(ElectrodeListTMP{1});
-    oriTuningData.OS = OS(ElectrodeListTMP{1});
-    oriTuningData.FR = computationVals(ElectrodeListTMP{1},:);
+    oriTuningData.PO = PO(ElectrodeListTMP);
+    oriTuningData.OS = OS(ElectrodeListTMP);
+    oriTuningData.FR = computationVals(ElectrodeListTMP,:);
 
     % Get Combinations
     [parameterCombinations,parameterCombinations2,...
@@ -620,7 +623,7 @@ folderSpikes = fullfile(folderSegment,'Spikes');
         tList = 1:length(tValsUnique);
     end
 
-    c1List = 1:length(cValsUnique);
+    c1List = length(cValsUnique):-1:1; %  Flipping data Row-wise so that positive x-axis and positive y-axis denotes increase in Contrast
     c2List = 1:length(cValsUnique2);
 
 
@@ -680,18 +683,19 @@ folderSpikes = fullfile(folderSegment,'Spikes');
                     if isempty(goodPos)
                         disp('No entries for this combination..');
                     else
-                        disp(['pos=(' num2str(c1) ',' num2str(c2) ') ,n=' num2str(length(goodPos))]);
-                        N(iElec,t,c1,c2) = length(goodPos);
+                        disp(['pos=(' num2str(c1List(c1)) ',' num2str(c2List(c2)) ') ,n=' num2str(length(goodPos))]);
+                        N(iElec,t,c1List(c1),c2List(c2)) = length(goodPos);
 
                         if round(diff(blRange)*Fs) ~= round(diff(stRange)*Fs)
                             disp('baseline and stimulus ranges are not the same');
                         else
-                           [psthData(iElec,t,c1,c2,:),xsFR] = getPSTH(spikeData(goodPos),10,[timeVals(1) timeVals(end)]);
+                           
                            erp = mean(analogData(goodPos,:),1); %#ok<NODEF>
                            erpDataTMP(iElec,t,c1,c2,:) = erp;
                            RMSvalsBL(iElec,t,c1,c2) = rms(erp(blPos));
                            RMSvalsERP(iElec,t,c1,c2) = rms(erp(erpPos));
-
+                            
+                           [psthData(iElec,t,c1,c2,:),xsFR] = getPSTH(spikeData(goodPos),10,[timeVals(1) timeVals(end)]);
                            firingRatesST(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),stRange))/diff(stRange);
                            firingRatesBL(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),blRange))/diff(blRange);
 
@@ -727,7 +731,6 @@ folderSpikes = fullfile(folderSegment,'Spikes');
         end
     end
 
-
     erpData.data = erpDataTMP;
     erpData.analysisDataBL = RMSvalsBL;
     erpData.analysisDataST = RMSvalsERP;
@@ -754,16 +757,15 @@ folderSpikes = fullfile(folderSegment,'Spikes');
     energyData.freqVals = freqValsMT;
     energyData.N = N;
     
-    elecs_neededtoFlipped = electrodeListTMP(find(abs(oriTuningData.PO-oValsUnique)<abs(oriTuningData.PO-oValsUnique2)));
+    elecs_neededtoFlipped = find(abs(oriTuningData.PO-oValsUnique)<abs(oriTuningData.PO-oValsUnique2));
     erpData = segregate_Pref_Null_data(erpData,elecs_neededtoFlipped);
     firingRateData = segregate_Pref_Null_data(firingRateData,elecs_neededtoFlipped);
     fftData = segregate_Pref_Null_data(fftData,elecs_neededtoFlipped);
     energyData = segregate_Pref_Null_data(energyData,elecs_neededtoFlipped);
     
-    %     dataPlot = flip(flip(permute(dataPlot,[2 1 3]),1),2);
 
 %     % Save Data for particular session
-%     save(fileToSave,'erpData','firingRateData','fftData','energyData','oriTuningData');
+%     save(fileToSave,'oriTuningData');
 % end
 end
 
@@ -884,7 +886,7 @@ if analysisMeasure == 1 || analysisMeasure == 2
     elseif dataSize(1) >1
         dataPlot = squeeze(mean(squeeze(data.data(:,1,:,:,:)),1));
     end
-    dataPlot = flip(dataPlot,1); % Flipping data Row-wise so that positive x-axis and positive y-axis denotes increase in Contrast
+%     dataPlot = flip(dataPlot,1); % Flipping data Row-wise so that positive x-axis and positive y-axis denotes increase in Contrast
     
     % Flipping data to 
     % Preferred direction(ColumnWise - along x-axis) and 
@@ -911,7 +913,7 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
             dataPlotST = squeeze(mean(squeeze(data.dataST(:,1,:,:,:)),1));
         end
     end
-    dataPlotBL = flip(dataPlotBL,1); dataPlotST = flip(dataPlotST,1); % Flipping data Row-wise 
+%     dataPlotBL = flip(dataPlotBL,1); dataPlotST = flip(dataPlotST,1); % Flipping data Row-wise 
     % When Change in neural measures are to be plotted
     if relativeMeasuresFlag
         if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
@@ -980,8 +982,8 @@ if relativeMeasuresFlag
     end
 end
 
-imagesc(flip(analysisData,1),'parent',hPlot2);colorbar(hPlot2);set(hPlot2,'Position',[0.52 0.05 0.12 0.25]);
-NIAnalysisData = flip(analysisData,1);
+imagesc(analysisData,'parent',hPlot2);colorbar(hPlot2);set(hPlot2,'Position',[0.52 0.05 0.12 0.25]);
+NIAnalysisData = analysisData;
 NormIndex = (NIAnalysisData(1,5)+ NIAnalysisData(5,1))/NIAnalysisData(5,5);
 title(hPlot2,['NI: ',num2str(NormIndex)],'fontWeight','bold');
 
@@ -1003,15 +1005,31 @@ for iCon = 1:5
 end
 hold(hPlot5(1,1),'off'); hold(hPlot6(1,1),'off')
 end
-function data = segregate_Pref_Null_data(data)
-    if length(data) == 4
-        data.data(elecs_neededtoFlipped,t,:,:,:) = flip(flip(permute(data.data,[2 1 3]),1),2);
-    elseif length(data) == 5
-        data.dataBL = flip(flip(permute(data.dataBL,[2 1 3]),1),2);
-        data.dataST = flip(flip(permute(data.dataST,[2 1 3]),1),2);
+function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
+    for iElec = 1:length(elecs_neededtoFlipped)
+        for iTF = 1:2
+            disp ([num2str(iElec), ' ' num2str(iTF)])
+            if numel(fieldnames(data)) == 5
+                data.data(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.data(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
+            elseif numel(fieldnames(data)) == 6
+                data.dataBL(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.dataBL(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
+                data.dataST(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.dataST(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
+            end
+            
+            if ~iscell(data.analysisDataBL) && ~iscell(data.analysisDataST)
+                data.analysisDataBL(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataBL(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+                data.analysisDataST(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataST(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+            elseif iscell(data.analysisDataBL) && iscell(data.analysisDataST)
+                for iCell = 1:length(data.analysisDataBL)
+                    data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+                    data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+%                 data.analysisDataBL(elecs_neededtoFlipped(iElec),iTF,:,:) = cellfun(@(x) flip(flip(permute(squeeze(x(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2),data.analysisDataBL,'UniformOutput',false);
+%                 data.analysisDataST(elecs_neededtoFlipped(iElec),iTF,:,:) = cellfun(@(x) flip(flip(permute(squeeze(x(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2),data.analysisDataST,'UniformOutput',false);
+                end
+            end
+        end
     end
-    data.analysisDataBL = flip(flip(permute(data.dataBL,[2 1]),1),2);
-    data.analysisDataST = flip(flip(permute(data.dataST,[2 1]),1),2);    
+  
 end
 function [analogChannelsStored,timeVals,goodStimPos,analogInputNums] = loadlfpInfo(folderLFP) %#ok<*STOUT>
 load(fullfile(folderLFP,'lfpInfo.mat'));
