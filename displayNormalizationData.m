@@ -593,16 +593,20 @@ folderExtract = fullfile(folderName,'extractedData');
 folderSegment = fullfile(folderName,'segmentedData');
 folderLFP = fullfile(folderSegment,'LFP');
 folderSpikes = fullfile(folderSegment,'Spikes');
-% folderSave = fullfile(folderName,'savedData');
-% mkdir(folderSave);
-% fileToSave = fullfile(folderSave,'oriTuningData.mat');
 
-% if exist(fileToSave,'file')
-%     disp(['Loading file ' fileToSave]);
-% else
+folderSave = fullfile(folderName,'savedData');
+if ~exist(folderSave,'folder')
+    mkdir(folderSave);
+end
+fileToSave = fullfile(folderSave,'oriTuningData.mat');
 
+if exist(fileToSave,'file')
+    disp(['Loading file ' fileToSave]);
+else
     % Get OrientationTuning Data
     [computationVals,PO,OS] = getPrefOriAndOriSelectivitySpikes(monkeyName,expDate,oriTuning_protocolName,folderSourceString,gridType);
+end
+
     oriTuningData.PO = PO(ElectrodeListTMP);
     oriTuningData.OS = OS(ElectrodeListTMP);
     oriTuningData.FR = computationVals(ElectrodeListTMP,:);
