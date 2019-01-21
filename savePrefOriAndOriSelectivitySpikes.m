@@ -84,9 +84,11 @@ end
     
 
 
-fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*timeForComputation(1)) 'ms_' num2str(1000*timeForComputation(1)) 'ms.mat']);
-
-save(fileToSave,'computationVals','PO','OS');
+fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*timeForComputation(1)) 'ms_' num2str(1000*timeForComputation(2)) 'ms.mat']);
+if exist(fileToSave,'file')
+else
+    save(fileToSave,'computationVals','PO','OS');
+end
 end
 
 % load Data

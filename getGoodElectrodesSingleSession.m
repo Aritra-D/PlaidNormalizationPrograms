@@ -72,7 +72,7 @@ if getOriSelectiveFlag
    if ~exist(folderSave,'dir')
        mkdir(folderSave);
    end
-   fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*timeRangeFRComputation(1)) 'ms_' num2str(1000*timeRangeFRComputation(1)) 'ms.mat']);
+   fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*timeRangeFRComputation(1)) 'ms_' num2str(1000*timeRangeFRComputation(2)) 'ms.mat']);
    if exist(fileToSave,'file')
        load(fileToSave)
    else

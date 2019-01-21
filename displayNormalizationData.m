@@ -348,22 +348,26 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
                     error(['No electrode found for analysis!'...
                             'Please try another session!'])
                 end
-                 % OriTuning Plot
-                 colorNamesOriTuning = hsv(30);
-                 oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
-                 folderName = fullfile(folderSourceString,'data',monkeyName,gridType,expDate,oriTuning_protocolName);
-                 folderSave = fullfile(folderName,'savedData');
-                 fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*stimPeriod(1)) 'ms_' num2str(1000*stimPeriod(1)) 'ms.mat']);
-                 load(fileToSave)
-                 oriData.PO = PO(ElectrodeListTMP{1});
-                 oriData.OS = OS(ElectrodeListTMP{1});
-                 oriData.FR = computationVals(ElectrodeListTMP{1},:); %#ok<NODEF>
-                     for index = 1:length(ElectrodeListTMP{1})
-                        plot(hOriTuning,oValsUnique_Tuning,oriData.FR(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
-                        text(0.4,index*0.07+0.5,['PO: ' num2str(oriData.PO(index)) ',OS: ' num2str(oriData.OS_TMP(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hOriTuning);
-                        hold(hOriTuning,'on');
-                     end
-                     hold(hOriTuning,'off');
+%                  % OriTuning Plot
+%                  colorNamesOriTuning = hsv(30);
+%                  oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
+                 folderName = fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName);
+                 folderExtract = fullfile(folderName,'extractedData');
+
+                 [~,~,~,~,~,~,oValsUnique,~,~,~,~,~,~,oValsUnique2,~,~] = loadParameterCombinations(folderExtract);
+                 
+%                  folderSave = fullfile(folderName,'savedData');
+%                  fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*stimPeriod(1)) 'ms_' num2str(1000*stimPeriod(1)) 'ms.mat']);
+%                  load(fileToSave)
+%                  oriData.PO = PO(ElectrodeListTMP{1});
+%                  oriData.OS = OS(ElectrodeListTMP{1});
+%                  oriData.FR = computationVals(ElectrodeListTMP{1},:); %#ok<NODEF>
+%                      for index = 1:length(ElectrodeListTMP{1})
+%                         plot(hOriTuning,oValsUnique_Tuning,oriData.FR(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
+%                         text(0.4,index*0.07+0.5,['PO: ' num2str(oriData.PO(index)) ',OS: ' num2str(oriData.OS_TMP(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hOriTuning);
+%                         hold(hOriTuning,'on');
+%                      end
+%                      hold(hOriTuning,'off');
             elseif length(fileNameStringTMP)>1
                 ElectrodeListTMP = ElectrodeListSession;
             end
@@ -389,7 +393,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
 %              else
 %              end
 
-            [erpData,firingRateData,fftData,energyData,~] = getData(folderSourceString,...
+            [erpData,firingRateData,fftData,energyData,oriTuningData,~] = getData(folderSourceString,...
              fileNameStringTMP,ElectrodeListTMP,erpRange,blRange,...
              stRange,freqRanges); 
              
@@ -397,16 +401,16 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
            
              
             if analysisMeasure == 1 % computing ERP
-                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,erpData.timeVals,erpData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,erpData.timeVals,erpData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
             elseif analysisMeasure == 2 % computing Firing rate
-                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,firingRateData.timeVals,firingRateData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,firingRateData.timeVals,firingRateData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
             elseif analysisMeasure == 3 % computing Raster Plot from spike data
                error('Still working on raster data!')
             elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6 % computing alpha
                 if analysisMethod == 1
-                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,fftData.freqVals,fftData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,fftData.freqVals,fftData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
                 elseif analysisMethod ==2 
-                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,energyData.freqVals,energyData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,energyData.freqVals,energyData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
                 end
 
             elseif analysisType == 7 % need to work on STA!
@@ -431,13 +435,13 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
                 textH2 = getPlotHandles(1,1,[0.02 0.25 0.01 0.01]);
                 set(textH2,'Visible','Off');
                 
-%             if length(fileNameStringTMP) ==1 && length(ElectrodeListTMP{1})==1    
-%                 text(0.35,1.15,['Null Orientation: ' num2str(oValsUnique)],'unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
-%                 text(0.35,1.15,['Preferred Orientation: ' num2str(oValsUnique2)],'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
-%             else
-%                 text(0.35,1.15,'Null Orientation','unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
-%                 text(0.35,1.15,'Preferred Orientation' ,'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
-%             end
+            if length(fileNameStringTMP) ==1 && length(ElectrodeListTMP{1})==1    
+                text(0.35,1.15,['Null Orientation: ' num2str(oValsUnique)],'unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
+                text(0.35,1.15,['Preferred Orientation: ' num2str(oValsUnique2)],'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
+            else
+                text(0.35,1.15,'Null Orientation','unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
+                text(0.35,1.15,'Preferred Orientation' ,'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
+            end
             flippedcValsUnique2 = flip(cValsUnique2);
             for c = 1:5
             title(plotHandles(1,c),[num2str(cValsUnique(c)) ' %']);
@@ -521,6 +525,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         claGivenPlotHandle(hColumnCRF);
         claGivenPlotHandle(hNeuralMeasureColorMatrix);
         claGivenPlotHandle(hOriTuning);
+        claGivenPlotHandle(hNormIndex);
         delete(findobj(textH1,'type','text'));
         delete(findobj(textH2,'type','text'));
         function claGivenPlotHandle(plotHandles)
@@ -535,13 +540,13 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function[erpData,firingRateData,fftData,energyData,electrodeArray] = ...
+function[erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray] = ...
     getData(folderSourceString,fileNameStringTMP,ElectrodeListTMP,...
     erpRange,blRange,stRange,freqRanges)
 
 numDatasets = length(fileNameStringTMP);
 disp(['Working on dataset 1 of ' num2str(numDatasets)]);
-[erpData,firingRateData,fftData,energyData,electrodeArray]...
+[erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray]...
 = getDataSingleSession(folderSourceString,fileNameStringTMP{1},...
 ElectrodeListTMP{1},erpRange,blRange,stRange,freqRanges); 
 
@@ -551,7 +556,7 @@ if length(fileNameStringTMP)>1
            continue
         end
         disp(['Working on dataset ' num2str(i) ' of ' num2str(length(fileNameStringTMP))]);
-        [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~] = getDataSingleSession(folderSourceString,fileNameStringTMP{i},...
+        [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~,~] = getDataSingleSession(folderSourceString,fileNameStringTMP{i},...
             ElectrodeListTMP{i},erpRange,blRange,stRange,freqRanges);
         
         erpData.data = cat(1,erpData.data,erpDataTMP.data);
@@ -571,8 +576,9 @@ if length(fileNameStringTMP)>1
         energyData.dataST = cat(1,energyData.dataST,energyDataTMP.dataST);
         energyData.analysisdataBL = cat(1,energyData.analysisDataBL,energyDataTMP.analysisDataBL);
         energyData.analysisdataST = cat(1,energyData.analysisDataST,energyDataTMP.analysisDataST);
-        
-%         oriTuningDataTMP.PO = cat(
+
+% Combining OriData across sessions need to be done!        
+%         oriTuningDataTMP.PO = 
 %         oriTuningDataTMP.OS
 %         oriTuningDataTMP.FR
         
@@ -603,6 +609,8 @@ gridType = 'microelectrode';
 
 folderName = fullfile(folderSourceString,'data',...
                         monkeyName,gridType,expDate,protocolName);
+tuningProtocol_folderName =  fullfile(folderSourceString,'data',...
+                        monkeyName,gridType,expDate,oriTuning_protocolName);                           
 
 % Get folders
 folderExtract = fullfile(folderName,'extractedData');
@@ -610,17 +618,18 @@ folderSegment = fullfile(folderName,'segmentedData');
 folderLFP = fullfile(folderSegment,'LFP');
 folderSpikes = fullfile(folderSegment,'Spikes');
 
-folderSave = fullfile(folderName,'savedData');
+folderSave = fullfile(tuningProtocol_folderName,'savedData');
 if ~exist(folderSave,'dir')
     mkdir(folderSave);
 end
-fileToSave = fullfile(folderSave,'oriTuningData.mat');
+fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*stRange(1)) 'ms_' num2str(1000*stRange(2)) 'ms.mat']);
 
 if exist(fileToSave,'file')
     disp(['Loading file ' fileToSave]);
+    load(fileToSave);
 else
     % Get OrientationTuning Data
-    [computationVals,PO,OS] = getPrefOriAndOriSelectivitySpikes(monkeyName,expDate,oriTuning_protocolName,folderSourceString,gridType);
+    [computationVals,PO,OS] = savePrefOriAndOriSelectivitySpikes(monkeyName,expDate,oriTuning_protocolName,folderSourceString,gridType);
 end
 
     oriTuningData.PO = PO(ElectrodeListTMP);
@@ -891,7 +900,21 @@ for iElec = 1:size(x,1)
     end
 end
 end
-function plotData(hPlot1,hPlot2,hPlot3,hPlot4,hPlot5,hPlot6,hPlot7,xs,data,colorName,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+function plotData(hPlot1,hPlot2,hPlot3,hPlot4,hPlot5,hPlot6,hPlot7,hPlot8,sessionNum,xs,data,oriTuningData,colorName,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+
+dataSize = size(data.data);
+colorNamesOriTuning = hsv(30);
+oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
+
+if sessionNum <=12
+    for index = 1:dataSize
+    plot(hPlot8,oValsUnique_Tuning,oriTuningData.FR(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
+    text(0.4,index*0.07+0.5,['PO: ' num2str(oriTuningData.PO(index)) ',OS: ' num2str(oriTuningData.OS(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hPlot8);
+    hold(hPlot8,'on');
+    end
+    hold(hPlot8,'off');
+else
+end
 
 % Main 5x5 plot for Neural Measure
 if analysisMeasure == 1 || analysisMeasure == 2
@@ -986,7 +1009,7 @@ elseif dataSize(1)>1
         for iElec= 1:size(data.analysisDataST,1)
             clear electrodeVals
             electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:));
-            NI_population(iElec) = electrodeVals(1,1)+electrodeVals(5,5)/electrodeVals(1,5);
+            NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
         end
     elseif analysisMeasure == 4
         analysisData = squeeze(mean(squeeze(data.analysisDataST{1}(:,1,:,:)),1));
@@ -994,7 +1017,7 @@ elseif dataSize(1)>1
         for iElec= 1:size(data.analysisDataST{1},1)
             clear electrodeVals
             electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:));
-            NI_population(iElec) = electrodeVals(1,1)+electrodeVals(5,5)/electrodeVals(1,5);
+            NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
         end        
     elseif analysisMeasure == 5
         analysisData = squeeze(mean(squeeze(data.analysisDataST{2}(:,1,:,:)),1));
@@ -1002,7 +1025,7 @@ elseif dataSize(1)>1
         for iElec= 1:size(data.analysisDataST{2},1)
             clear electrodeVals
             electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:));
-            NI_population(iElec) = electrodeVals(1,1)+electrodeVals(5,5)/electrodeVals(1,5);
+            NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
         end        
     elseif analysisMeasure == 6
         analysisData = squeeze(mean(squeeze(data.analysisDataST{3}(:,2,:,:)),1));
@@ -1010,7 +1033,7 @@ elseif dataSize(1)>1
         for iElec= 1:size(data.analysisDataST{3},1)
             clear electrodeVals
             electrodeVals =  squeeze(data.analysisDataST{3}(iElec,2,:,:));
-            NI_population(iElec) = electrodeVals(1,1)+electrodeVals(5,5)/electrodeVals(1,5);
+            NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
         end        
     end
 end
@@ -1026,8 +1049,11 @@ imagesc(analysisData,'parent',hPlot2);colorbar(hPlot2);set(hPlot2,'Position',[0.
 NIAnalysisData = analysisData;
 NormIndex = (NIAnalysisData(1,1)+ NIAnalysisData(5,5))/NIAnalysisData(1,5);
 title(hPlot2,['NI: ',num2str(NormIndex)],'fontWeight','bold');
+
+if sessionNum>12
 % NI population histogram
 histogram(hPlot7,NI_population);
+end
 
 % Contrast Response curves Row-Wise & Column-wise
 cValsUnique = [0 12.5 25 50 100]./2;
