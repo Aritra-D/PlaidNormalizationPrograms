@@ -67,14 +67,24 @@ if getOriSelectiveFlag
    [tuning_expDates,tuning_protocolNames,~] = dataInformationPlaidNorm(monkeyName,gridType,1);
    tuning_expDate = tuning_expDates{SessionNum};
    tuning_protocolName = tuning_protocolNames{SessionNum};
-   [~,prefOri, ~] = getPrefOriAndOriSelectivitySpikes(monkeyName,tuning_expDate,tuning_protocolName,folderSourceString,gridType);
+   folderName = fullfile(folderSourceString,'data',monkeyName,gridType,tuning_expDate,tuning_protocolName);
+   folderSave = fullfile(folderName,'savedData');
+   if ~exist(folderSave,'dir')
+       mkdir(folderSave);
+   end
+   fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*timeRangeFRComputation(1)) 'ms_' num2str(1000*timeRangeFRComputation(1)) 'ms.mat']);
+   if exist(fileToSave,'file')
+       load(fileToSave)
+   else
+       [~,PO, ~] = savePrefOriAndOriSelectivitySpikes(monkeyName,tuning_expDate,tuning_protocolName,folderSourceString,gridType);
+   end
    oriCutOff = 15;
    if oriList{SessionNum}(1) == 0
-       oriSelectiveElectrodes = find((prefOri<=oriList{SessionNum}(1)+oriCutOff & prefOri>=oriList{SessionNum}(1)+180-oriCutOff) | ...
-                                     (prefOri<=oriList{SessionNum}(2)+oriCutOff & prefOri>=oriList{SessionNum}(2)-oriCutOff)); 
+       oriSelectiveElectrodes = find((PO<=oriList{SessionNum}(1)+oriCutOff & PO>=oriList{SessionNum}(1)+180-oriCutOff) | ...
+                                     (PO<=oriList{SessionNum}(2)+oriCutOff & PO>=oriList{SessionNum}(2)-oriCutOff)); 
    else
-       oriSelectiveElectrodes = find((prefOri<=oriList{SessionNum}(1)+oriCutOff & prefOri>=oriList{SessionNum}(1)-oriCutOff ) | ...
-                                     (prefOri<=oriList{SessionNum}(2)+oriCutOff & prefOri>=oriList{SessionNum}(2)-oriCutOff));
+       oriSelectiveElectrodes = find((PO<=oriList{SessionNum}(1)+oriCutOff & PO>=oriList{SessionNum}(1)-oriCutOff ) | ...
+                                     (PO<=oriList{SessionNum}(2)+oriCutOff & PO>=oriList{SessionNum}(2)-oriCutOff));
    end
    
     usefulElectrodes = intersect(usefulElectrodes,oriSelectiveElectrodes);

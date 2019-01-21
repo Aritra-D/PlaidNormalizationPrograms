@@ -7,7 +7,7 @@ folderExtract = fullfile(folderName,'extractedData');
 folderSegment = fullfile(folderName,'segmentedData');
 folderSpikes = fullfile(folderSegment,'Spikes');
 folderSave = fullfile(folderName,'savedData');
-if ~exist(folderSave,'folder')
+if ~exist(folderSave,'dir')
     mkdir(folderSave);
 end
 
