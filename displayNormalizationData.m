@@ -348,6 +348,22 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
                     error(['No electrode found for analysis!'...
                             'Please try another session!'])
                 end
+                 % OriTuning Plot
+                 colorNamesOriTuning = hsv(30);
+                 oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
+                 folderName = fullfile(folderSourceString,'data',monkeyName,gridType,expDate,oriTuning_protocolName);
+                 folderSave = fullfile(folderName,'savedData');
+                 fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*stimPeriod(1)) 'ms_' num2str(1000*stimPeriod(1)) 'ms.mat']);
+                 load(fileToSave)
+                 oriData.PO = PO(ElectrodeListTMP{1});
+                 oriData.OS = OS(ElectrodeListTMP{1});
+                 oriData.FR = computationVals(ElectrodeListTMP{1},:); %#ok<NODEF>
+                     for index = 1:length(ElectrodeListTMP{1})
+                        plot(hOriTuning,oValsUnique_Tuning,oriData.FR(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
+                        text(0.4,index*0.07+0.5,['PO: ' num2str(oriData.PO(index)) ',OS: ' num2str(oriData.OS_TMP(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hOriTuning);
+                        hold(hOriTuning,'on');
+                     end
+                     hold(hOriTuning,'off');
             elseif length(fileNameStringTMP)>1
                 ElectrodeListTMP = ElectrodeListSession;
             end
@@ -367,30 +383,17 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
 
             plotColor = colorNames(get(hChooseColor,'val'));
             holdOnState = get(hHoldOn,'val'); %#ok<NASGU>
+%             
+%             if length(fileNameStringTMP) ==1
+% 
+%              else
+%              end
 
             [erpData,firingRateData,fftData,energyData,~] = getData(folderSourceString,...
              fileNameStringTMP,ElectrodeListTMP,erpRange,blRange,...
              stRange,freqRanges); 
              
-            if length(fileNameStringTMP) ==1
-             % OriTuning Plot
-             colorNamesOriTuning = hsv(30);
-             oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
-             folderName = fullfile(folderSourceString,'data',monkeyName,gridType,expDate,oriTuning_protocolName);
-             folderSave = fullfile(folderName,'savedData');
-             fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*stimPeriod(1)) 'ms_' num2str(1000*stimPeriod(1)) 'ms.mat']);
-             load(fileToSave)
-             oriTuningData.PO = PO(ElectrodeListTMP{1});
-             oriTuningData.OS = OS(ElectrodeListTMP{1});
-             oriTuningData.FR = computationVals(ElectrodeListTMP{1},:); %#ok<NODEF>
-                 for index = 1:length(ElectrodeListTMP{1})
-                    plot(hOriTuning,oValsUnique_Tuning,oriTuningData.FR(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
-                    text(0.4,index*0.07+0.5,['PO: ' num2str(oriTuningData.PO(index)) ',OS: ' num2str(oriTuningData.OS_TMP(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hOriTuning);
-                    hold(hOriTuning,'on');
-                 end
-                 hold(hOriTuning,'off');
-             else
-             end
+
            
              
             if analysisMeasure == 1 % computing ERP
