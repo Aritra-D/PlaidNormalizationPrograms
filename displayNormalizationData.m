@@ -569,13 +569,17 @@ if length(fileNameStringTMP)>1
         
         fftData.dataBL = cat(1,fftData.dataBL,fftDataTMP.dataBL);
         fftData.dataST = cat(1,fftData.dataST,fftDataTMP.dataST);
-        fftData.analysisdataBL = cat(1,fftData.analysisDataBL,fftDataTMP.analysisDataBL);
-        fftData.analysisdataST = cat(1,fftData.analysisDataST,fftDataTMP.analysisDataST);
+        for j = 1:3
+            fftData.analysisDataBL{j} = cat(1,fftData.analysisDataBL{j},fftDataTMP.analysisDataBL{j});
+            fftData.analysisDataST{j} = cat(1,fftData.analysisDataST{j},fftDataTMP.analysisDataST{j});
+        end
         
         energyData.dataBL = cat(1,energyData.dataBL,energyDataTMP.dataBL);
         energyData.dataST = cat(1,energyData.dataST,energyDataTMP.dataST);
-        energyData.analysisdataBL = cat(1,energyData.analysisDataBL,energyDataTMP.analysisDataBL);
-        energyData.analysisdataST = cat(1,energyData.analysisDataST,energyDataTMP.analysisDataST);
+        for j =1:3
+            energyData.analysisDataBL{j} = cat(1,energyData.analysisDataBL{j},energyDataTMP.analysisDataBL{j});
+            energyData.analysisDataST{j} = cat(1,energyData.analysisDataST{j},energyDataTMP.analysisDataST{j});
+        end
 
 % Combining OriData across sessions need to be done!        
 %         oriTuningDataTMP.PO = 
@@ -902,19 +906,10 @@ end
 end
 function plotData(hPlot1,hPlot2,hPlot3,hPlot4,hPlot5,hPlot6,hPlot7,hPlot8,sessionNum,xs,data,oriTuningData,colorName,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
 
-dataSize = size(data.data);
-colorNamesOriTuning = hsv(30);
-oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
+% dataSize = size(data.data);
 
-if sessionNum <=12
-    for index = 1:dataSize
-    plot(hPlot8,oValsUnique_Tuning,oriTuningData.FR(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
-    text(0.4,index*0.07+0.5,['PO: ' num2str(oriTuningData.PO(index)) ',OS: ' num2str(oriTuningData.OS(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hPlot8);
-    hold(hPlot8,'on');
-    end
-    hold(hPlot8,'off');
-else
-end
+
+
 
 % Main 5x5 plot for Neural Measure
 if analysisMeasure == 1 || analysisMeasure == 2
@@ -929,6 +924,8 @@ if analysisMeasure == 1 || analysisMeasure == 2
     elseif dataSize(1) >1
         dataPlot = squeeze(mean(squeeze(data.data(:,1,:,:,:)),1));
     end
+    
+    
 %     dataPlot = flip(dataPlot,1); % Flipping data Row-wise so that positive x-axis and positive y-axis denotes increase in Contrast
     
     % Flipping data to 
@@ -1049,6 +1046,20 @@ imagesc(analysisData,'parent',hPlot2);colorbar(hPlot2);set(hPlot2,'Position',[0.
 NIAnalysisData = analysisData;
 NormIndex = (NIAnalysisData(1,1)+ NIAnalysisData(5,5))/NIAnalysisData(1,5);
 title(hPlot2,['NI: ',num2str(NormIndex)],'fontWeight','bold');
+
+if size(data.analysisDataST,1) == 1
+    if sessionNum <=12
+        colorNamesOriTuning = hsv(30);
+        oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
+        for index = 1:size(data.analysisDataST,1)
+        plot(hPlot8,oValsUnique_Tuning,oriTuningData.FR(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
+        text(0.4,index*0.07+0.5,['PO: ' num2str(oriTuningData.PO(index)) ',OS: ' num2str(oriTuningData.OS(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hPlot8);
+        hold(hPlot8,'on');
+        end
+        hold(hPlot8,'off');
+    else
+    end
+end
 
 if sessionNum>12
 % NI population histogram
