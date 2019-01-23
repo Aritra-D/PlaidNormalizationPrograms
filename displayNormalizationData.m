@@ -8,6 +8,8 @@ panelHeight = 0.2; panelStartHeight = 0.72; backgroundColor = 'w'; % Panels
 
 hFigure = figure(1);
 set(hFigure,'units','normalized','outerposition',[0 0 1 1])
+hFigure2 = figure(2);
+set(hFigure2,'units','normalized','outerposition',[0 0 1 1])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Session(s) panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -15,6 +17,7 @@ set(hFigure,'units','normalized','outerposition',[0 0 1 1])
 % FileNameString
 [fileNameStringAll,fileNameStringListArray] = getFileNameStringList;
 
+figure(1);
 hSessionPanel= uipanel('Title','Session(s)','titleposition','centertop',...
                 'fontSize',fontSizeLarge,'Unit','Normalized','Position',...
                 [0.05 0.925 0.9 0.08]);
@@ -38,12 +41,10 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             monkeyName = fileNameStringTMP{1}(1:5);
             expDate = fileNameStringTMP{1}(6:11);
             protocolName = fileNameStringTMP{1}(12:end);
-%             oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
         elseif sessionNum >12 && sessionNum <= 22 || sessionNum == 24
             monkeyName = fileNameStringTMP{1}(1:7);
             expDate = fileNameStringTMP{1}(8:13);
             protocolName = fileNameStringTMP{1}(14:end);
-%             oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
 
             if sessionNum>=12 && sessionNum<=22
                 sessionNum = sessionNum-12; % SessionNums for monkey: kesariH
@@ -308,10 +309,11 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         numRows = length(cValsUnique); numCols = length(cValsUnique2);
         gridPos=[0.02+startXPos startYPos mainTabWidth mainTabHeight];
         gap = 0.002;
+        
         figure(1);
         plotHandles = getPlotHandles(numRows,numCols,gridPos,gap);
         
-        % RF Positions with Stimulus Centre
+        % Orientation Tuning for electrodes of single session
         hOriTuning = ...
             getPlotHandles(1,1,[0.52 0.38 0.14 0.22],0.05,0.05,1);
         
@@ -319,24 +321,32 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         hNeuralMeasureColorMatrix = ...
             getPlotHandles(1,1,[0.52 0.05 0.14 0.25],0.001,0.001,1); 
         
+        % CRF plots for preferred Orientation (Row-wise)
         plotHandles2= getPlotHandles(1,5,[0.7 0.5 0.25 0.1],0.001,0.001,1);
+        
+        % CRF plots for null Orientation (column-wise)
         plotHandles3= getPlotHandles(1,5,[0.7 0.35 0.25 0.1],0.001,0.001,1);
         
+        % CRF plots for preferred Orientation (Overlaid)
         hRowCRF = getPlotHandles(1,1,[0.85 0.2 0.1 0.1],0.001,0.001,1);
+        
+        % CRF plots for null Orientation (Overlaid)
         hColumnCRF = getPlotHandles(1,1,[0.85 0.05 0.1 0.1],0.001,0.001,1);
         
+        % Population histogram of Normalization Index
         hNormIndex = getPlotHandles(1,1,[0.7 0.05 0.12 0.25],0.001,0.001,1);
         
+        % Defining text in new axes for Orientation Type (pref/null) [0/90; 22.5/112.5; 45/135; 67.5/157.5] 
         textH1 = getPlotHandles(1,1,[0.2 0.65 0.01 0.01]); set(textH1,'Visible','Off');
         textH2 = getPlotHandles(1,1,[0.02 0.25 0.01 0.01]); set(textH2,'Visible','Off');
         
-        
-        hFigure2 = figure(2);
-        set(hFigure2,'units','normalized','outerposition',[0 0 1 1])
+        % plots for 2nd annual Work Presentation (3rd Year)  
         figure(2);
-        hPlotPreferred = getPlotHandles(1,5,[0.05 0.7 0.5 0.15],0.002,0.002,1);
-        hOtherMeaures = getPlotHandles(1,3,[0.05 0.35 0.5 0.25],0.05,0.05,1);
-%         hNIpopulationHistogram = getPlotHandles(1,1,[0.3 0.3 0.2 0.3],0.001,0.001,1);
+        hPlotPreferred = getPlotHandles(1,5,[0.1 0.7 0.5 0.15],0.01,0.01,1); linkaxes(hPlotPreferred);
+        hOtherMeaures = getPlotHandles(1,3,[0.1 0.3 0.5 0.25],0.05,0.05,0);
+        
+        % Defining Text  in new axes for Figure 2
+        textH3 = getPlotHandles(1,1,[0.2 0.9 0.01 0.01]); set(textH3,'Visible','Off');
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         freqRanges{1} = [8 12]; % alpha
@@ -357,31 +367,14 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
                     error(['No electrode found for analysis!'...
                             'Please try another session!'])
                 end
-%                  % OriTuning Plot
-%                  colorNamesOriTuning = hsv(30);
-%                  oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
-                 folderName = fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName);
-                 folderExtract = fullfile(folderName,'extractedData');
+                folderName = fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName);
+                folderExtract = fullfile(folderName,'extractedData');
+                [~,~,~,~,~,~,oValsUnique,~,~,~,~,~,~,oValsUnique2,~,~] = loadParameterCombinations(folderExtract);
 
-                 [~,~,~,~,~,~,oValsUnique,~,~,~,~,~,~,oValsUnique2,~,~] = loadParameterCombinations(folderExtract);
-                 
-%                  folderSave = fullfile(folderName,'savedData');
-%                  fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*stimPeriod(1)) 'ms_' num2str(1000*stimPeriod(1)) 'ms.mat']);
-%                  load(fileToSave)
-%                  oriData.PO = PO(ElectrodeListTMP{1});
-%                  oriData.OS = OS(ElectrodeListTMP{1});
-%                  oriData.FR = computationVals(ElectrodeListTMP{1},:); %#ok<NODEF>
-%                      for index = 1:length(ElectrodeListTMP{1})
-%                         plot(hOriTuning,oValsUnique_Tuning,oriData.FR(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
-%                         text(0.4,index*0.07+0.5,['PO: ' num2str(oriData.PO(index)) ',OS: ' num2str(oriData.OS_TMP(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hOriTuning);
-%                         hold(hOriTuning,'on');
-%                      end
-%                      hold(hOriTuning,'off');
             elseif length(fileNameStringTMP)>1
                 ElectrodeListTMP = ElectrodeListSession;
             end
-            
-            
+  
             analysisMethod = get(hAnalysisMethod,'val');
             analysisMeasure = get(hAnalysisType,'val');
             NormalizeDataFlag = get(hNormalizeData,'val');
@@ -396,37 +389,66 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
 
             plotColor = colorNames(get(hChooseColor,'val'));
             holdOnState = get(hHoldOn,'val'); %#ok<NASGU>
-%             
-%             if length(fileNameStringTMP) ==1
-% 
-%              else
-%              end
+            
+            ColorNeuralMeasures = jet(5);
 
+            % get Data for Selected Session & Parameters
             [erpData,firingRateData,fftData,energyData,oriTuningData,~] = getData(folderSourceString,...
              fileNameStringTMP,ElectrodeListTMP,erpRange,blRange,...
              stRange,freqRanges); 
              
-
-           
-             
             if analysisMeasure == 1 % computing ERP
                 plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,erpData.timeVals,erpData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+                plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,erpData.timeVals,erpData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
             elseif analysisMeasure == 2 % computing Firing rate
                 plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,firingRateData.timeVals,firingRateData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+                plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,firingRateData.timeVals,firingRateData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
             elseif analysisMeasure == 3 % computing Raster Plot from spike data
-               error('Still working on raster data!')
+                error('Still working on raster data!')
             elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6 % computing alpha
                 if analysisMethod == 1
                     plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,fftData.freqVals,fftData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+                    plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,fftData.freqVals,fftData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
                 elseif analysisMethod ==2 
                     plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,energyData.freqVals,energyData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+                    plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,energyData.freqVals,energyData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
                 end
-
             elseif analysisType == 7 % need to work on STA!
                 error('STA computation method not found') 
-
             end
             
+            figure(1);
+            % Text for Orientation for main 5x5 Neural measure matrix
+            textH1 = getPlotHandles(1,1,[0.2 0.65 0.01 0.01]);
+            set(textH1,'Visible','Off');
+            textH2 = getPlotHandles(1,1,[0.02 0.25 0.01 0.01]);
+            set(textH2,'Visible','Off');
+                
+            if length(fileNameStringTMP) ==1 && length(ElectrodeListTMP{1})==1    
+                text(0.35,1.15,['Null Orientation: ' num2str(oValsUnique)],'unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
+                text(0.35,1.15,['Preferred Orientation: ' num2str(oValsUnique2)],'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
+            else
+                text(0.35,1.15,'Null Orientation','unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
+                text(0.35,1.15,'Preferred Orientation' ,'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
+            end
+            
+            flippedcValsUnique2 = flip(cValsUnique2);
+            for c = 1:5
+            title(plotHandles(1,c),[num2str(cValsUnique(c)) ' %']);
+            ylabel(plotHandles(c,1),[num2str(flippedcValsUnique2(c)) ' %'],'fontWeight','bold');
+            end
+            
+            % Setting xlabels and ylabels for Color matrix of neural
+            % measures
+            set(hNeuralMeasureColorMatrix,'XTickLabel',cValsUnique);
+            set(hNeuralMeasureColorMatrix,'YTickLabel',flip(cValsUnique2));
+            
+            % Setting title,xlabel and ylabel for OriTuning Plot
+            title(hOriTuning,'Ori Tuning for Single Session (Spike Data)');
+%             set(hOriTuning,'XTickLabel',oValsUnique_Tuning);
+
+
+            % Setting Plot Ranges
             if analysisMeasure<=3 %ERP or spikes
                 xMin = str2double(get(hStimMin,'String'));
                 xMax = str2double(get(hStimMax,'String'));
@@ -437,37 +459,23 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
                 xMin = str2double(get(hSTAMin,'String'));
                 xMax = str2double(get(hSTAMax,'String'));
             end
-% 
             
-                textH1 = getPlotHandles(1,1,[0.2 0.65 0.01 0.01]);
-                set(textH1,'Visible','Off');
-                textH2 = getPlotHandles(1,1,[0.02 0.25 0.01 0.01]);
-                set(textH2,'Visible','Off');
-                
-            if length(fileNameStringTMP) ==1 && length(ElectrodeListTMP{1})==1    
-                text(0.35,1.15,['Null Orientation: ' num2str(oValsUnique)],'unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
-                text(0.35,1.15,['Preferred Orientation: ' num2str(oValsUnique2)],'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
-            else
-                text(0.35,1.15,'Null Orientation','unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
-                text(0.35,1.15,'Preferred Orientation' ,'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
-            end
-            flippedcValsUnique2 = flip(cValsUnique2);
-            for c = 1:5
-            title(plotHandles(1,c),[num2str(cValsUnique(c)) ' %']);
-            ylabel(plotHandles(c,1),[num2str(flippedcValsUnique2(c)) ' %'],'fontWeight','bold');
-            end
-            set(hNeuralMeasureColorMatrix,'XTickLabel',cValsUnique);
-            set(hNeuralMeasureColorMatrix,'YTickLabel',flip(cValsUnique2));
-%             set(hOriTuning,'XTickLabel',oValsUnique_Tuning);
-            title(hOriTuning,'Ori Tuning (Spike Data)');
-%             YLabel = get(hNeuralMeasureColorMatrix,'YTickLabel');
-%             set(hNeuralMeasureColorMatrix,'YTickLabel',flipud(YLabel));
+            figure(2)
+            % Text for Orientation for main 5x5 Neural measure matrix
+%             textH3 = getPlotHandles(1,1,[0.2 0.65 0.01 0.01]);
+%             set(textH3,'Visible','Off');
+            text(0.35,1.15,'Contrast along Preferred Orientation','unit','normalized','fontsize',20,'fontweight','bold','parent',textH3);
+
             rescaleData(plotHandles,xMin,xMax,getYLims(plotHandles));
             rescaleData(plotHandles2,0,50,getYLims(plotHandles2));
             rescaleData(plotHandles3,0,50,getYLims(plotHandles3));
             rescaleData(hRowCRF,0,50,getYLims(hRowCRF));
             rescaleData(hColumnCRF,0,50,getYLims(hColumnCRF));
             rescaleData(hOriTuning,0,160,getYLims(hOriTuning));
+            rescaleData(hPlotPreferred,xMin,xMax,getYLims(hPlotPreferred));
+            rescaleData(hOtherMeaures(1),0,50,getYLims(hOtherMeaures(1)));
+            
+
         end 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -537,6 +545,10 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         claGivenPlotHandle(hNormIndex);
         delete(findobj(textH1,'type','text'));
         delete(findobj(textH2,'type','text'));
+        delete(findobj(textH3,'type','text'));
+        
+        claGivenPlotHandle(hPlotPreferred);
+        claGivenPlotHandle(hOtherMeaures);
         function claGivenPlotHandle(plotHandles)
             [numRows,numCols] = size(plotHandles);
             for i=1:numRows
@@ -915,11 +927,6 @@ end
 end
 function plotData(hPlot1,hPlot2,hPlot3,hPlot4,hPlot5,hPlot6,hPlot7,hPlot8,sessionNum,xs,data,oriTuningData,colorName,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
 
-% dataSize = size(data.data);
-
-
-
-
 % Main 5x5 plot for Neural Measure
 if analysisMeasure == 1 || analysisMeasure == 2
     if NormalizeDataFlag
@@ -934,13 +941,7 @@ if analysisMeasure == 1 || analysisMeasure == 2
         dataPlot = squeeze(mean(squeeze(data.data(:,1,:,:,:)),1));
     end
     
-    
-%     dataPlot = flip(dataPlot,1); % Flipping data Row-wise so that positive x-axis and positive y-axis denotes increase in Contrast
-    
-    % Flipping data to 
-    % Preferred direction(ColumnWise - along x-axis) and 
-    % null direction (Rowwise - along positive y-axis)
-    
+  
 elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     if size(data.dataBL) == size(data.dataST) 
         dataSize = size(data.dataST);
@@ -962,7 +963,6 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
             dataPlotST = squeeze(mean(squeeze(data.dataST(:,2,:,:,:)),1));
         end
     end
-%     dataPlotBL = flip(dataPlotBL,1); dataPlotST = flip(dataPlotST,1); % Flipping data Row-wise 
     % When Change in neural measures are to be plotted
     if relativeMeasuresFlag
         if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
@@ -1062,7 +1062,7 @@ if size(data.analysisDataST,1) == 1
         oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
         for index = 1:size(data.analysisDataST,1)
         plot(hPlot8,oValsUnique_Tuning,oriTuningData.FR(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
-        text(0.4,index*0.07+0.5,['PO: ' num2str(oriTuningData.PO(index)) ',OS: ' num2str(oriTuningData.OS(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hPlot8);
+        text(0.05,index*0.1+0.5,['PO: ' num2str(oriTuningData.PO(index)) ',OS: ' num2str(oriTuningData.OS(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hPlot8);
         hold(hPlot8,'on');
         end
         hold(hPlot8,'off');
@@ -1094,6 +1094,231 @@ for iCon = 1:5
 end
 hold(hPlot5(1,1),'off'); hold(hPlot6(1,1),'off')
 end
+function plotDataFig2(hPlot1,hPlot2,sessionNum,xs,data,colors,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+cValsUnique = [0 12.5 25 50 100]./2;
+% Main 5x5 plot for Neural Measure
+if analysisMeasure == 1 || analysisMeasure == 2
+    if NormalizeDataFlag
+    % Normalize ERP and spike Data (fft or energy data need not be normalized
+    % as they are expressed in log units)
+    data = normalizeData(data);
+    end
+    dataSize = size(data.data);
+    if dataSize(1) == 1
+        dataPlot = squeeze(squeeze(data.data(:,1,:,:,:)));
+    elseif dataSize(1) >1
+        dataPlot = squeeze(mean(squeeze(data.data(:,1,:,:,:)),1));
+    end
+elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
+    if size(data.dataBL) == size(data.dataST) 
+        dataSize = size(data.dataST);
+    else
+        error('Size of fftDataBL and fftDataST do not match!')
+    end
+    if dataSize(1) == 1
+        dataPlotBL = squeeze(data.dataBL(:,1,:,:,:));
+        dataPlotST = squeeze(data.dataST(:,1,:,:,:));
+        if analysisMeasure == 6
+            dataPlotBL = squeeze(data.dataBL(:,2,:,:,:));
+            dataPlotST = squeeze(data.dataST(:,2,:,:,:));    
+        end
+    elseif dataSize(1) >1
+        dataPlotBL = squeeze(mean(squeeze(data.dataBL(:,1,:,:,:)),1));
+        dataPlotST = squeeze(mean(squeeze(data.dataST(:,1,:,:,:)),1));
+        if analysisMeasure == 6
+            dataPlotBL = squeeze(mean(squeeze(data.dataBL(:,2,:,:,:)),1));
+            dataPlotST = squeeze(mean(squeeze(data.dataST(:,2,:,:,:)),1));
+        end
+    end
+    % When Change in neural measures are to be plotted
+    if relativeMeasuresFlag
+        if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
+            dataPlotdiffSTvsBL = 10*(dataPlotST-dataPlotBL); % Change in Power expressed in deciBel
+        else
+            dataPlotdiffSTvsBL = dataPlotST-dataPlotBL; 
+        end
+    end
+end
+
+% Plotting 5x5 plots for raw Neural Measures
+cFlipped = 5:-1:1;
+for c1 = 1:5
+    for c2 = 1:5
+        if analysisMeasure == 1 || analysisMeasure == 2
+            plot(hPlot1(1,c2),xs,squeeze(dataPlot(cFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
+            
+            hold(hPlot1(1,c2),'on');
+            
+        elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
+            if ~relativeMeasuresFlag
+            plot(hPlot1(1,c2),xs,squeeze(dataPlotBL(c1,c2,:)),'k');
+            hold(hPlot1(1,c2),'on')
+            plot(hPlot1(1,c2),xs,squeeze(dataPlotST(c1,c2,:)),'color',colors(c1,:,:));
+            hold(hPlot1(1,c2),'off')
+            else
+                plot(hPlot1(1,c2),xs,squeeze(dataPlotdiffSTvsBL(c1,c2,:)),'color',colors(c1,:,:));
+            end
+            
+        end
+        
+        text(0.05,c1*0.12+0.3,['Null: ',num2str(cValsUnique(c1)) ' %'],'color',colors(c1,:,:),'unit','normalized','parent',hPlot1(1))
+        title(hPlot1(1,c2),[num2str(cValsUnique(c2)) ' %'])
+    end
+end
+hold(hPlot1(1,c2),'off');
+% % Color coded 5x5 Matrix of raw Neural Measures
+
+if dataSize(1)==1
+    if analysisMeasure == 1 || analysisMeasure == 2
+        analysisData = squeeze(data.analysisDataST(:,1,:,:));
+        analysisDataBL = squeeze(data.analysisDataBL(:,1,:,:));
+    elseif analysisMeasure == 4 
+        analysisData = squeeze(data.analysisDataST{1}(:,1,:,:));
+        analysisDataBL = squeeze(data.analysisDataBL{1}(:,1,:,:));
+    elseif analysisMeasure == 5
+        analysisData = squeeze(data.analysisDataST{2}(:,1,:,:));
+        analysisDataBL = squeeze(data.analysisDataBL{2}(:,1,:,:));
+    elseif analysisMeasure == 6
+        analysisData = squeeze(data.analysisDataST{3}(:,2,:,:));
+        analysisDataBL = squeeze(data.analysisDataBL{3}(:,2,:,:));
+    end
+elseif dataSize(1)>1
+    if analysisMeasure == 1 || analysisMeasure == 2
+        analysisData = squeeze(mean(squeeze(data.analysisDataST(:,1,:,:)),1));
+        analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL(:,1,:,:)),1));
+        for iElec= 1:size(data.analysisDataST,1)
+            clear electrodeVals
+            electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:));
+            NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
+        end
+    elseif analysisMeasure == 4
+        analysisData = squeeze(mean(squeeze(data.analysisDataST{1}(:,1,:,:)),1));
+        analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{1}(:,1,:,:)),1));
+        for iElec= 1:size(data.analysisDataST{1},1)
+            clear electrodeVals
+            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:));
+            NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
+        end        
+    elseif analysisMeasure == 5
+        analysisData = squeeze(mean(squeeze(data.analysisDataST{2}(:,1,:,:)),1));
+        analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{2}(:,1,:,:)),1));
+        for iElec= 1:size(data.analysisDataST{2},1)
+            clear electrodeVals
+            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:));
+            NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
+        end        
+    elseif analysisMeasure == 6
+        analysisData = squeeze(mean(squeeze(data.analysisDataST{3}(:,2,:,:)),1));
+        analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{3}(:,2,:,:)),1));
+        for iElec= 1:size(data.analysisDataST{3},1)
+            clear electrodeVals
+            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,2,:,:));
+            NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
+        end        
+    end
+end
+if relativeMeasuresFlag
+    if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
+        analysisData = 10*(analysisData-analysisDataBL); % Change in power expressed in deciBel
+    else
+        analysisData = analysisData-analysisDataBL; % No need to do this for ERP & firing Rate
+    end
+end
+
+imagesc(analysisData,'parent',hPlot2(3));
+% grid on;
+color_Bar = colorbar(hPlot2(3));% 
+colorYlabelHandle = get(color_Bar,'Ylabel');
+YlabelString = 'Spikes/s';
+set(colorYlabelHandle,'String',YlabelString,'fontSize',14);
+
+plotPos = get(hPlot2(3),'Position');
+set(hPlot2(3),'Position',[plotPos(1) plotPos(2) 0.12 plotPos(4)]);
+NIAnalysisData = analysisData;
+NormIndex = (NIAnalysisData(1,1)+ NIAnalysisData(5,5))/NIAnalysisData(1,5);
+title(hPlot2(3),['NI: ',num2str(NormIndex)],'fontWeight','bold');
+% 
+% if size(data.analysisDataST,1) == 1
+%     if sessionNum <=12
+%         colorNamesOriTuning = hsv(30);
+%         oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
+%         for index = 1:size(data.analysisDataST,1)
+%         plot(hPlot8,oValsUnique_Tuning,oriTuningData.FR(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
+%         text(0.4,index*0.07+0.5,['PO: ' num2str(oriTuningData.PO(index)) ',OS: ' num2str(oriTuningData.OS(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hPlot8);
+%         hold(hPlot8,'on');
+%         end
+%         hold(hPlot8,'off');
+%     else
+%     end
+% end
+% 
+if sessionNum>12
+% NI population histogram
+histogram(hPlot2(2),NI_population);
+end
+
+% Contrast Response curves Row-Wise & Column-wise
+
+% flippedcVals = flip(cValsUnique);
+% cValsUnique2 = [0 12.5 25 50 100]./2;
+conFlipped = 5:-1:1;
+CRFColors = jet(length(cValsUnique));
+for iCon = 1:5
+    plot(hPlot2(1),cValsUnique,analysisData(conFlipped(iCon),:),...
+        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
+    hold(hPlot2(1),'on')
+end
+hold(hPlot2(1),'off');
+
+displayRange(hPlot1,[0.2 0.4],getYLims(hPlot1),'k');
+tickLengthPlot = 2*get(hPlot2(1),'TickLength');
+
+for idx =1:5
+set(hPlot1(idx),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+end
+if analysisMeasure == 1||analysisMeasure == 2
+    xlabel(hPlot1(1),'Time(ms)');
+elseif analysisMeasure == 4||analysisMeasure == 5|| analysisMeasure == 6
+    xlabel(hPlot1(1),'Frequency(Hz)');
+end
+
+if analysisMeasure == 1
+    ylabel(hPlot1(1),'ERP (\mu V)');ylabel(hPlot2(1),'RMS value of ERP');
+elseif analysisMeasure == 2 
+    ylabel(hPlot1(1),'Spikes/s');ylabel(hPlot2(1),'spikes/s');
+elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6
+    if analysisMethod ==1
+        ylabel(hPlot1(1),'log_1_0 (FFT Amplitude)'); ylabel(hPlot2(1),'log_1_0 (FFT Amplitude)');
+        if relativeMeasuresFlag
+            ylabel(hPlot1(1),'Change in log_1_0 (FFT Amplitude)'); ylabel(hPlot2(1),'Change in log_1_0 (FFT Amplitude)')
+        end
+
+    elseif analysisMethod ==2
+        ylabel(hPlot1(1),'log_1_0 (Power)');ylabel(hPlot2(1),'log_1_0 (Power)')
+        if relativeMeasuresFlag
+            ylabel(hPlot1(1),'Change in Power (dB)');  ylabel(hPlot2(1),'Change in Power (dB)');
+        end
+    end
+
+end
+
+
+
+%             set(hOtherMeaures(1),'XScale','linear')
+set(hPlot2(1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+set(hPlot2(1),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
+xlabel(hPlot2(1),'Contrast (%)');
+title(hPlot2(1),'CRF along Pref Ori')
+
+set(hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+xlabel(hPlot2(2),'Normalization Index'); ylabel(hPlot2(2),'No. of Electrodes');
+title(hPlot2(2),'Population NI Histogram')
+
+set(hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+set(hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
+xlabel(hPlot2(3),'Contrast (%)');ylabel(hPlot2(3),'Contrast (%)');
+
+end
 function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
     for iElec = 1:length(elecs_neededtoFlipped)
         for iTF = 1:2
@@ -1112,8 +1337,6 @@ function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
                 for iCell = 1:length(data.analysisDataBL)
                     data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
                     data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
-%                 data.analysisDataBL(elecs_neededtoFlipped(iElec),iTF,:,:) = cellfun(@(x) flip(flip(permute(squeeze(x(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2),data.analysisDataBL,'UniformOutput',false);
-%                 data.analysisDataST(elecs_neededtoFlipped(iElec),iTF,:,:) = cellfun(@(x) flip(flip(permute(squeeze(x(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2),data.analysisDataST,'UniformOutput',false);
                 end
             end
         end
@@ -1128,6 +1351,23 @@ if ~exist('analogInputNums','var')
 end
 end
 
+function displayRange(plotHandles,range,yLims,colorName)
+[nX,nY] = size(plotHandles);
+%yLims = getYLims(plotHandles);
+
+yVals = yLims(1):(yLims(2)-yLims(1))/100:yLims(2);
+xVals1 = range(1) + zeros(1,length(yVals));
+xVals2 = range(2) + zeros(1,length(yVals));
+
+for i=1:nX
+    for j=1:nY
+        hold(plotHandles(i,j),'on');
+        plot(plotHandles(i,j),xVals1,yVals,'color',colorName);
+        plot(plotHandles(i,j),xVals2,yVals,'color',colorName);
+    end
+end
+
+end
 function yLims = getYLims(plotHandles)
 
 [numRows,numCols] = size(plotHandles);
@@ -1154,7 +1394,7 @@ end
 function rescaleData(plotHandles,xMin,xMax,yLims)
 
 [numRows,numCols] = size(plotHandles);
-labelSize=11;
+labelSize=14;
 for i=1:numRows
     for j=1:numCols
         axis(plotHandles(i,j),[xMin xMax yLims]);
