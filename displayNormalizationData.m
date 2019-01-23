@@ -38,12 +38,12 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             monkeyName = fileNameStringTMP{1}(1:5);
             expDate = fileNameStringTMP{1}(6:11);
             protocolName = fileNameStringTMP{1}(12:end);
-            oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
+%             oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
         elseif sessionNum >12 && sessionNum <= 22 || sessionNum == 24
             monkeyName = fileNameStringTMP{1}(1:7);
             expDate = fileNameStringTMP{1}(8:13);
             protocolName = fileNameStringTMP{1}(14:end);
-            oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
+%             oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
 
             if sessionNum>=12 && sessionNum<=22
                 sessionNum = sessionNum-12; % SessionNums for monkey: kesariH
@@ -308,6 +308,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         numRows = length(cValsUnique); numCols = length(cValsUnique2);
         gridPos=[0.02+startXPos startYPos mainTabWidth mainTabHeight];
         gap = 0.002;
+        figure(1);
         plotHandles = getPlotHandles(numRows,numCols,gridPos,gap);
         
         % RF Positions with Stimulus Centre
@@ -328,6 +329,14 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         
         textH1 = getPlotHandles(1,1,[0.2 0.65 0.01 0.01]); set(textH1,'Visible','Off');
         textH2 = getPlotHandles(1,1,[0.02 0.25 0.01 0.01]); set(textH2,'Visible','Off');
+        
+        
+        hFigure2 = figure(2);
+        set(hFigure2,'units','normalized','outerposition',[0 0 1 1])
+        figure(2);
+        hPlotPreferred = getPlotHandles(1,5,[0.05 0.7 0.5 0.15],0.002,0.002,1);
+        hOtherMeaures = getPlotHandles(1,3,[0.05 0.35 0.5 0.25],0.05,0.05,1);
+%         hNIpopulationHistogram = getPlotHandles(1,1,[0.3 0.3 0.2 0.3],0.001,0.001,1);
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         freqRanges{1} = [8 12]; % alpha
