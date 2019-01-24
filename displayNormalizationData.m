@@ -350,7 +350,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         freqRanges{1} = [8 12]; % alpha
-        freqRanges{2} = [30 60]; % gamma
+        freqRanges{2} = [30 80]; % gamma
         freqRanges{3} = [16 16];  % SSVEP
         
 %         freqRangeStr = {'alpha','gamma','SSVEP'};
@@ -915,8 +915,8 @@ posToAverage = intersect(find(freq>=freqRange(1)),find(freq<=freqRange(2)));
 eValue   = mean(mEnergy(posToAverage));
 end
 function normData = normalizeData(x)
-for iElec = 1:size(x,1)
-    for t = 1:size(x,2)
+for iElec = 1:size(x.data,1)
+    for t = 1:size(x.data,2)
         normData.data(iElec,t,:,:,:) = x.data(iElec,t,:,:,:)./max(max(max(abs(x.data(iElec,t,:,:,:)))));
         normData.analysisDataBL(iElec,t,:,:) = x.analysisDataBL(iElec,t,:,:)./max(max(abs(x.analysisDataBL(iElec,t,:,:))));
         normData.analysisDataST(iElec,t,:,:) = x.analysisDataST(iElec,t,:,:)./max(max(abs(x.analysisDataST(iElec,t,:,:))));
@@ -1015,7 +1015,7 @@ elseif dataSize(1)>1
         for iElec= 1:size(data.analysisDataST,1)
             clear electrodeVals
             electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:));
-            NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
+            NI_population(iElec) = abs((electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5));
         end
     elseif analysisMeasure == 4
         analysisData = squeeze(mean(squeeze(data.analysisDataST{1}(:,1,:,:)),1));
@@ -1023,7 +1023,7 @@ elseif dataSize(1)>1
         for iElec= 1:size(data.analysisDataST{1},1)
             clear electrodeVals
             electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:));
-            NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
+            NI_population(iElec) = abs((electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5));
         end        
     elseif analysisMeasure == 5
         analysisData = squeeze(mean(squeeze(data.analysisDataST{2}(:,1,:,:)),1));
@@ -1031,7 +1031,7 @@ elseif dataSize(1)>1
         for iElec= 1:size(data.analysisDataST{2},1)
             clear electrodeVals
             electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:));
-            NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
+            NI_population(iElec) = abs((electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5));
         end        
     elseif analysisMeasure == 6
         analysisData = squeeze(mean(squeeze(data.analysisDataST{3}(:,2,:,:)),1));
@@ -1039,7 +1039,7 @@ elseif dataSize(1)>1
         for iElec= 1:size(data.analysisDataST{3},1)
             clear electrodeVals
             electrodeVals =  squeeze(data.analysisDataST{3}(iElec,2,:,:));
-            NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
+            NI_population(iElec) = abs((electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5));
         end        
     end
 end
@@ -1094,6 +1094,8 @@ for iCon = 1:5
 end
 hold(hPlot5(1,1),'off'); hold(hPlot6(1,1),'off')
 end
+
+
 function plotDataFig2(hPlot1,hPlot2,sessionNum,xs,data,colors,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
 cValsUnique = [0 12.5 25 50 100]./2;
 % Main 5x5 plot for Neural Measure
@@ -1112,6 +1114,7 @@ if analysisMeasure == 1 || analysisMeasure == 2
 elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     if size(data.dataBL) == size(data.dataST) 
         dataSize = size(data.dataST);
+%         data.dataBL = 
     else
         error('Size of fftDataBL and fftDataST do not match!')
     end
@@ -1123,17 +1126,19 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
             dataPlotST = squeeze(data.dataST(:,2,:,:,:));    
         end
     elseif dataSize(1) >1
-        dataPlotBL = squeeze(mean(squeeze(data.dataBL(:,1,:,:,:)),1));
+        dataPlotBL = squeeze(mean(mean(mean(squeeze(data.dataBL(:,1,:,:,:)),3),2),1)); %CommonBaseline
+        dataPlotBL = reshape(repmat(dataPlotBL',[25 1]),[5 5 size(dataPlotBL)]);
         dataPlotST = squeeze(mean(squeeze(data.dataST(:,1,:,:,:)),1));
         if analysisMeasure == 6
-            dataPlotBL = squeeze(mean(squeeze(data.dataBL(:,2,:,:,:)),1));
+            dataPlotBL = squeeze(mean(mean(mean(squeeze(data.dataBL(:,2,:,:,:)),3),2),1)); %CommonBaseline
+            dataPlotBL = reshape(repmat(dataPlotBL',[25 1]),[5 5 size(dataPlotBL)]);
             dataPlotST = squeeze(mean(squeeze(data.dataST(:,2,:,:,:)),1));
         end
     end
     % When Change in neural measures are to be plotted
     if relativeMeasuresFlag
         if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
-            dataPlotdiffSTvsBL = 10*(dataPlotST-dataPlotBL); % Change in Power expressed in deciBel
+            dataPlotdiffSTvsBL = dataPlotST-dataPlotBL; % Change in Power expressed in deciBel
         else
             dataPlotdiffSTvsBL = dataPlotST-dataPlotBL; 
         end
@@ -1151,17 +1156,18 @@ for c1 = 1:5
             
         elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
             if ~relativeMeasuresFlag
-            plot(hPlot1(1,c2),xs,squeeze(dataPlotBL(c1,c2,:)),'k');
+            plot(hPlot1(1,c2),xs,squeeze(dataPlotBL(cFlipped(c1),c2,:)),'k');
             hold(hPlot1(1,c2),'on')
-            plot(hPlot1(1,c2),xs,squeeze(dataPlotST(c1,c2,:)),'color',colors(c1,:,:));
-            hold(hPlot1(1,c2),'off')
+            plot(hPlot1(1,c2),xs,squeeze(dataPlotST(cFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
+            
             else
-                plot(hPlot1(1,c2),xs,squeeze(dataPlotdiffSTvsBL(c1,c2,:)),'color',colors(c1,:,:));
+                plot(hPlot1(1,c2),xs,squeeze(dataPlotBL(cFlipped(c1),c2,:))-squeeze(dataPlotBL(cFlipped(c1),c2,:)),'k');
+                plot(hPlot1(1,c2),xs,squeeze(dataPlotdiffSTvsBL(cFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
             end
             
         end
         
-        text(0.05,c1*0.12+0.3,['Null: ',num2str(cValsUnique(c1)) ' %'],'color',colors(c1,:,:),'unit','normalized','parent',hPlot1(1))
+%         text(0.05,c1*0.12+0.3,['Null: ',num2str(cValsUnique(c1)) ' %'],'color',colors(c1,:,:),'unit','normalized','parent',hPlot1(1))
         title(hPlot1(1,c2),[num2str(cValsUnique(c2)) ' %'])
     end
 end
@@ -1188,7 +1194,11 @@ elseif dataSize(1)>1
         analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL(:,1,:,:)),1));
         for iElec= 1:size(data.analysisDataST,1)
             clear electrodeVals
-            electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:));
+            if ~relativeMeasuresFlag
+                electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:));
+            else
+                electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:))-squeeze(data.analysisDataBL(iElec,1,:,:));
+            end
             NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
         end
     elseif analysisMeasure == 4
@@ -1196,7 +1206,11 @@ elseif dataSize(1)>1
         analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{1}(:,1,:,:)),1));
         for iElec= 1:size(data.analysisDataST{1},1)
             clear electrodeVals
-            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:));
+            if ~relativeMeasuresFlag
+                electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:));
+            else
+                electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:))-squeeze(data.analysisDataBL{1}(iElec,1,:,:));
+            end
             NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
         end        
     elseif analysisMeasure == 5
@@ -1204,7 +1218,12 @@ elseif dataSize(1)>1
         analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{2}(:,1,:,:)),1));
         for iElec= 1:size(data.analysisDataST{2},1)
             clear electrodeVals
-            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:));
+            if ~relativeMeasuresFlag
+                electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:));
+            else
+                electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:))-squeeze(data.analysisDataBL{2}(iElec,1,:,:));
+
+            end
             NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
         end        
     elseif analysisMeasure == 6
@@ -1212,14 +1231,18 @@ elseif dataSize(1)>1
         analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{3}(:,2,:,:)),1));
         for iElec= 1:size(data.analysisDataST{3},1)
             clear electrodeVals
-            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,2,:,:));
+            if ~relativeMeasuresFlag
+                electrodeVals =  squeeze(data.analysisDataST{3}(iElec,2,:,:));
+            else
+                electrodeVals =  squeeze(data.analysisDataST{3}(iElec,2,:,:))-squeeze(data.analysisDataBL{3}(iElec,2,:,:));
+            end
             NI_population(iElec) = (electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5);
         end        
     end
 end
 if relativeMeasuresFlag
     if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
-        analysisData = 10*(analysisData-analysisDataBL); % Change in power expressed in deciBel
+        analysisData = analysisData-analysisDataBL; % Change in power expressed in deciBel
     else
         analysisData = analysisData-analysisDataBL; % No need to do this for ERP & firing Rate
     end
@@ -1229,7 +1252,17 @@ imagesc(analysisData,'parent',hPlot2(3));
 % grid on;
 color_Bar = colorbar(hPlot2(3));% 
 colorYlabelHandle = get(color_Bar,'Ylabel');
-YlabelString = 'Spikes/s';
+if analysisMeasure==2
+    YlabelString = 'Spikes/s';
+elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
+    if ~relativeMeasuresFlag
+        YlabelString = 'log_1_0(FFT Amplitude)';
+    else
+        YlabelString = 'log_1_0(\Delta FFT Amplitude)';
+    end
+    
+end
+
 set(colorYlabelHandle,'String',YlabelString,'fontSize',14);
 
 plotPos = get(hPlot2(3),'Position');
@@ -1270,7 +1303,16 @@ for iCon = 1:5
 end
 hold(hPlot2(1),'off');
 
-displayRange(hPlot1,[0.2 0.4],getYLims(hPlot1),'k');
+if analysisMeasure == 1||analysisMeasure == 2
+    displayRange(hPlot1,[0.2 0.4],getYLims(hPlot1),'k');
+elseif analysisMeasure ==4 
+    displayRange(hPlot1,[8 12],getYLims(hPlot1),'k');
+elseif analysisMeasure == 5  
+    displayRange(hPlot1,[30 80],getYLims(hPlot1),'k');
+elseif analysisMeasure == 6     
+    displayRange(hPlot1,[16 16],getYLims(hPlot1),'k');
+end
+
 tickLengthPlot = 2*get(hPlot2(1),'TickLength');
 
 for idx =1:5
@@ -1290,7 +1332,7 @@ elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6
     if analysisMethod ==1
         ylabel(hPlot1(1),'log_1_0 (FFT Amplitude)'); ylabel(hPlot2(1),'log_1_0 (FFT Amplitude)');
         if relativeMeasuresFlag
-            ylabel(hPlot1(1),'Change in log_1_0 (FFT Amplitude)'); ylabel(hPlot2(1),'Change in log_1_0 (FFT Amplitude)')
+            ylabel(hPlot1(1),'log_1_0 (\Delta FFT Amplitude)'); ylabel(hPlot2(1),'log_1_0 (\Delta FFT Amplitude)')
         end
 
     elseif analysisMethod ==2
@@ -1305,10 +1347,12 @@ end
 
 
 %             set(hOtherMeaures(1),'XScale','linear')
+text(0.5,0.3,['N = ' num2str(dataSize(1))],'color','k','unit','normalized','fontSize',14,'fontWeight','bold','parent',hPlot2(1))
 set(hPlot2(1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot2(1),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
 xlabel(hPlot2(1),'Contrast (%)');
 title(hPlot2(1),'CRF along Pref Ori')
+
 
 set(hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 xlabel(hPlot2(2),'Normalization Index'); ylabel(hPlot2(2),'No. of Electrodes');
@@ -1319,6 +1363,7 @@ set(hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTic
 xlabel(hPlot2(3),'Contrast (%)');ylabel(hPlot2(3),'Contrast (%)');
 
 end
+
 function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
     for iElec = 1:length(elecs_neededtoFlipped)
         for iTF = 1:2
