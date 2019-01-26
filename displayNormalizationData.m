@@ -1,6 +1,7 @@
 function displayNormalizationData(folderSourceString)
 
 if ~exist('folderSourceString','var');      folderSourceString = 'M:\data\PlaidNorm\'; end
+close all;
 
 % Display Options
 fontSizeSmall = 10; fontSizeMedium = 12; fontSizeLarge = 16; % Fonts
@@ -10,12 +11,13 @@ hFigure = figure(1);
 set(hFigure,'units','normalized','outerposition',[0 0 1 1])
 hFigure2 = figure(2);
 set(hFigure2,'units','normalized','outerposition',[0 0 1 1])
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Session(s) panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 % FileNameString
-[fileNameStringAll,fileNameStringListArray] = getFileNameStringList;
+[fileNameStringAll,fileNameStringListAll,fileNameStringListArray] = getFileNameStringList;
 
 figure(1);
 hSessionPanel= uipanel('Title','Session(s)','titleposition','centertop',...
@@ -35,53 +37,70 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
     'FontSize',fontSizeMedium,'Callback',{@selectSession_Callback});
 
     function selectSession_Callback(~,~)
+        % get Session Information
         sessionNum = get(hSession,'val'); 
         fileNameStringTMP = fileNameStringListArray{sessionNum};
-        if sessionNum <=12 || sessionNum == 23 || sessionNum == 25
-            monkeyName = fileNameStringTMP{1}(1:5);
-            expDate = fileNameStringTMP{1}(6:11);
-            protocolName = fileNameStringTMP{1}(12:end);
-        elseif sessionNum >12 && sessionNum <= 22 || sessionNum == 24
-            monkeyName = fileNameStringTMP{1}(1:7);
-            expDate = fileNameStringTMP{1}(8:13);
-            protocolName = fileNameStringTMP{1}(14:end);
-
-            if sessionNum>=12 && sessionNum<=22
-                sessionNum = sessionNum-12; % SessionNums for monkey: kesariH
-            end
-            
-        end
-        gridType = 'Microelectrode';
         
+        gridType = 'Microelectrode';
         oriSelectiveFlag = get(hOriTunedCheckbox,'val');
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%
+        [ElectrodeStringListAll,ElectrodeArrayListAll]= getElectrodesList(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
+%         if sessionNum <=12 || sessionNum == 23 || sessionNum == 25
+%             monkeyName = fileNameStringTMP{1}(1:5);
+%             expDate = fileNameStringTMP{1}(6:11);
+%             protocolName = fileNameStringTMP{1}(12:end);
+%         elseif sessionNum >12 && sessionNum <= 22 || sessionNum == 24
+%             monkeyName = fileNameStringTMP{1}(1:7);
+%             expDate = fileNameStringTMP{1}(8:13);
+%             protocolName = fileNameStringTMP{1}(14:end);
+% 
+%             if sessionNum>=12 && sessionNum<=22
+%                 sessionNum = sessionNum-12; % SessionNums for monkey: kesariH
+%             end
+%             
+%         end
+        
+        
+        
 
         % Show electrodes on Grid
         electrodeGridPos = [0.05 panelStartHeight 0.2 panelHeight];
         hElectrodesonGrid = showElectrodeLocations(electrodeGridPos,[], ...
-        [],[],1,0,gridType,monkeyName); %#ok<NASGU>
+        [],[],1,0,gridType,'alpaH'); %#ok<NASGU> % Electrode grid Layout are similar for both alpaH and kesariH hybrid grid
         
         if sessionNum == 25
             monkeyName = 'all';
         end
             
 
-        %%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%
-        [ElectrodeStringListAll,ElectrodeArrayListAll]= ...
-            getElectrodesList(monkeyName,sessionNum,oriSelectiveFlag,folderSourceString);
-        if sessionNum <=22 % Single Session for either monkey
-            ElectrodeListSession = ElectrodeArrayListAll{1};
-            ElectrodeStringSession = ElectrodeStringListAll{1};
-        elseif sessionNum == 23 % all Sessions for alpaH
-            ElectrodeListSession = ElectrodeArrayListAll{13};
-            ElectrodeStringSession = ElectrodeStringListAll{13};
-        elseif sessionNum == 24 % all Sessions for kesariH
-            ElectrodeListSession = ElectrodeArrayListAll{11};
-            ElectrodeStringSession = ElectrodeStringListAll{11};
-        elseif sessionNum == 25 % all Sessions for both monkeys combined
-            ElectrodeListSession = ElectrodeArrayListAll{25};
-            ElectrodeStringSession = ElectrodeStringListAll{25};
-        end
 
+%         if sessionNum <=22 % Single Session for either monkey
+%             ElectrodeListSession = ElectrodeArrayListAll{1};
+%             ElectrodeStringSession = ElectrodeStringListAll{1};
+%         elseif sessionNum == 23 % all Sessions for alpaH
+%             ElectrodeListSession = ElectrodeArrayListAll{13};
+%             ElectrodeStringSession = ElectrodeStringListAll{13};
+%         elseif sessionNum == 24 % all Sessions for kesariH
+%             ElectrodeListSession = ElectrodeArrayListAll{11};
+%             ElectrodeStringSession = ElectrodeStringListAll{11};
+%         elseif sessionNum == 25 % all Sessions for both monkeys combined
+%             ElectrodeListSession = ElectrodeArrayListAll{25};
+%             ElectrodeStringSession = ElectrodeStringListAll{25};
+%         end
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        freqRanges{1} = [8 12]; % alpha
+        freqRanges{2} = [30 80]; % gamma
+        freqRanges{3} = [16 16];  % SSVEP
+        
+        
+       % get Data for Selected Session & Parameters
+        [erpData,firingRateData,fftData,energyData,oriTuningData,~] = getData(folderSourceString,...
+         fileNameStringTMP,ElectrodeListTMP,erpRange,blRange,...
+         stRange,freqRanges); 
+%         freqRangeStr = {'alpha','gamma','SSVEP'};
+%         numFreqRanges = length(freqRanges);       
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%% Parameters panel %%%%%%%%%%%%%%%%%%%%%
@@ -348,13 +367,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         % Defining Text  in new axes for Figure 2
         textH3 = getPlotHandles(1,1,[0.2 0.9 0.01 0.01]); set(textH3,'Visible','Off');
 
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        freqRanges{1} = [8 12]; % alpha
-        freqRanges{2} = [30 80]; % gamma
-        freqRanges{3} = [16 16];  % SSVEP
-        
-%         freqRangeStr = {'alpha','gamma','SSVEP'};
-%         numFreqRanges = length(freqRanges);        
+ 
         
         % Plotting Functions
         function plotData_Callback(~,~)
@@ -392,10 +405,6 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             
             ColorNeuralMeasures = jet(5);
 
-            % get Data for Selected Session & Parameters
-            [erpData,firingRateData,fftData,energyData,oriTuningData,~] = getData(folderSourceString,...
-             fileNameStringTMP,ElectrodeListTMP,erpRange,blRange,...
-             stRange,freqRanges); 
              
             if analysisMeasure == 1 % computing ERP
                 plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,erpData.timeVals,erpData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
@@ -845,7 +854,7 @@ colorNames = 'brkgcmy';
 colorString = 'blue|red|black|green|cyan|magenta|yellow';
 
 end
-function [fileNameStringAll,fileNameStringListArray] = getFileNameStringList
+function [fileNameStringAll,fileNameStringListAll,fileNameStringListArray] = getFileNameStringList
 
 [tmpFileNameStringList,monkeyNameList] = getNormalizationExperimentDetails;
 
@@ -855,6 +864,7 @@ clear fileNameStringListArray
 for i=1:length(monkeyNameList)
     for j=1:length(tmpFileNameStringList{i})
         fileNameStringAll = [cat(2,fileNameStringAll,tmpFileNameStringList{i}{j}) '|'];
+        fileNameStringListAll{pos} = tmpFileNameStringList{i}(j);
         fileNameStringListArray{pos} = tmpFileNameStringList{i}(j); %#ok<*AGROW>
         pos=pos+1;
     end
@@ -862,49 +872,50 @@ end
 
 allNames = [];
 for i=1:length(monkeyNameList)
-    fileNameStringAll = [cat(2,fileNameStringAll,monkeyNameList{i}) ...
-        ' (N=' num2str(length(tmpFileNameStringList{i})) ')|'];
+    fileNameStringAll = [cat(2,fileNameStringAll,monkeyNameList{i}) ' (N=' num2str(length(tmpFileNameStringList{i})) ')|'];
+    fileNameStringListAll{pos} = {[monkeyNameList{i} ' (N=' num2str(length(tmpFileNameStringList{i})) ')']};
     fileNameStringListArray{pos} = tmpFileNameStringList{i};
     allNames = cat(2,allNames,tmpFileNameStringList{i});
     pos=pos+1;
 end
 
 fileNameStringAll = cat(2,fileNameStringAll,['all (N=' num2str(length(allNames)) ')']);
+fileNameStringListAll{pos} = {['all (N=' num2str(length(allNames)) ')']};
 fileNameStringListArray{pos} = allNames;
 end
 
-function [ElectrodeStringListAll,ElectrodeArrayListAll] = getElectrodesList(monkeyName,sessionNum,oriSelectiveFlag,folderSourceString)
+function [ElectrodeStringListAll,ElectrodeArrayListAll] = getElectrodesList(fileNameStringTMP,oriSelectiveFlag,folderSourceString)
 
-[tmpElectrodeStringList,tmpElectrodeArrayList,allElecs,monkeyNameList] = getGoodElectrodesDetails(monkeyName,sessionNum,oriSelectiveFlag,folderSourceString);
+[tmpElectrodeStringList,tmpElectrodeArrayList,allElecs] = getGoodElectrodesDetails(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
 
-    ElectrodeStringListAll = ''; 
-    ElectrodeArrayListAll = [];
-    
-    for i=1:length(monkeyNameList)
-            ElectrodeStringListAll = cat(2,ElectrodeStringListAll,tmpElectrodeStringList{i});
-            ElectrodeArrayListAll = cat(2,ElectrodeArrayListAll,tmpElectrodeArrayList{i});
-
-    end
-    if sessionNum >=23
-        Sessions = length(ElectrodeArrayListAll);
-        pos = Sessions+1;
-        for i=1:length(monkeyNameList)
-            clear j
-            for j = 1:length(tmpElectrodeArrayList{i})
-                ElectrodeArrayListAll{1,pos}{1,j} = tmpElectrodeArrayList{1,i}{1,j}{1,end};
-            end
-            ElectrodeStringListAll{1,pos} = ['all (N=' num2str(allElecs(i)) ')'];
-            pos=pos+1;
-        end
-    end
-    AllSessions = length(ElectrodeArrayListAll)+1;
-    
-    if sessionNum == 25
-        for k=1:length(tmpElectrodeArrayList{1})+length(tmpElectrodeArrayList{2})
-            ElectrodeArrayListAll{1,AllSessions}{1,k} = ElectrodeArrayListAll{1,k}{1,end};
-            ElectrodeStringListAll{1,AllSessions} = ['all (N=' num2str(sum(allElecs)) ')'];
-        end
-    end
+%     ElectrodeStringListAll = ''; 
+%     ElectrodeArrayListAll = [];
+%     
+%     for i=1:length(monkeyNameList)
+%             ElectrodeStringListAll = cat(2,ElectrodeStringListAll,tmpElectrodeStringList{i});
+%             ElectrodeArrayListAll = cat(2,ElectrodeArrayListAll,tmpElectrodeArrayList{i});
+% 
+%     end
+%     if sessionNum >=23
+%         Sessions = length(ElectrodeArrayListAll);
+%         pos = Sessions+1;
+%         for i=1:length(monkeyNameList)
+%             clear j
+%             for j = 1:length(tmpElectrodeArrayList{i})
+%                 ElectrodeArrayListAll{1,pos}{1,j} = tmpElectrodeArrayList{1,i}{1,j}{1,end};
+%             end
+%             ElectrodeStringListAll{1,pos} = ['all (N=' num2str(allElecs(i)) ')'];
+%             pos=pos+1;
+%         end
+%     end
+%     AllSessions = length(ElectrodeArrayListAll)+1;
+%     
+%     if sessionNum == 25
+%         for k=1:length(tmpElectrodeArrayList{1})+length(tmpElectrodeArrayList{2})
+%             ElectrodeArrayListAll{1,AllSessions}{1,k} = ElectrodeArrayListAll{1,k}{1,end};
+%             ElectrodeStringListAll{1,AllSessions} = ['all (N=' num2str(sum(allElecs)) ')'];
+%         end
+%     end
     
 end
 
