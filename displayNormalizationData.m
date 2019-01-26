@@ -33,7 +33,7 @@ hOriTunedCheckbox = uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
     'Position',[0.65 0.1 0.1 0.6],'Style','checkbox','String','Ori-tuned Elecs',...
     'FontSize',fontSizeMedium);
 uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
-    'Position',[0.75 0.1 0.1 0.8],'Style','pushbutton','String','Select Session',...
+    'Position',[0.75 0.1 0.1 0.8],'Style','pushbutton','String','Load DATA',...
     'FontSize',fontSizeMedium,'Callback',{@selectSession_Callback});
 
     function selectSession_Callback(~,~)
@@ -46,59 +46,26 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         
         %%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%
         [ElectrodeStringListAll,ElectrodeArrayListAll]= getElectrodesList(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
-%         if sessionNum <=12 || sessionNum == 23 || sessionNum == 25
-%             monkeyName = fileNameStringTMP{1}(1:5);
-%             expDate = fileNameStringTMP{1}(6:11);
-%             protocolName = fileNameStringTMP{1}(12:end);
-%         elseif sessionNum >12 && sessionNum <= 22 || sessionNum == 24
-%             monkeyName = fileNameStringTMP{1}(1:7);
-%             expDate = fileNameStringTMP{1}(8:13);
-%             protocolName = fileNameStringTMP{1}(14:end);
-% 
-%             if sessionNum>=12 && sessionNum<=22
-%                 sessionNum = sessionNum-12; % SessionNums for monkey: kesariH
-%             end
-%             
-%         end
-        
-        
-        
 
         % Show electrodes on Grid
         electrodeGridPos = [0.05 panelStartHeight 0.2 panelHeight];
         hElectrodesonGrid = showElectrodeLocations(electrodeGridPos,[], ...
         [],[],1,0,gridType,'alpaH'); %#ok<NASGU> % Electrode grid Layout are similar for both alpaH and kesariH hybrid grid
         
-        if sessionNum == 25
-            monkeyName = 'all';
-        end
-            
-
-
-%         if sessionNum <=22 % Single Session for either monkey
-%             ElectrodeListSession = ElectrodeArrayListAll{1};
-%             ElectrodeStringSession = ElectrodeStringListAll{1};
-%         elseif sessionNum == 23 % all Sessions for alpaH
-%             ElectrodeListSession = ElectrodeArrayListAll{13};
-%             ElectrodeStringSession = ElectrodeStringListAll{13};
-%         elseif sessionNum == 24 % all Sessions for kesariH
-%             ElectrodeListSession = ElectrodeArrayListAll{11};
-%             ElectrodeStringSession = ElectrodeStringListAll{11};
-%         elseif sessionNum == 25 % all Sessions for both monkeys combined
-%             ElectrodeListSession = ElectrodeArrayListAll{25};
-%             ElectrodeStringSession = ElectrodeStringListAll{25};
-%         end
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         freqRanges{1} = [8 12]; % alpha
         freqRanges{2} = [30 80]; % gamma
         freqRanges{3} = [16 16];  % SSVEP
         
+        dataParameters.blRange = [-0.25 0];
+        dataParameters.stRange = [0.15 0.4];
+        dataParameters.erpRange = [0.05 0.2];
+        
         
        % get Data for Selected Session & Parameters
         [erpData,firingRateData,fftData,energyData,oriTuningData,~] = getData(folderSourceString,...
-         fileNameStringTMP,ElectrodeListTMP,erpRange,blRange,...
-         stRange,freqRanges); 
+         fileNameStringTMP,ElectrodeArrayListAll,dataParameters,freqRanges,oriSelectiveFlag); 
 %         freqRangeStr = {'alpha','gamma','SSVEP'};
 %         numFreqRanges = length(freqRanges);       
 
@@ -117,7 +84,7 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         hElectrode = uicontrol('Parent',hParameterPanel,...
             'Unit','Normalized','BackgroundColor', backgroundColor, ...
             'Position',[0.5 1-paramsHeight 0.5 paramsHeight],...
-            'Style','popup','String',ElectrodeStringSession,...
+            'Style','popup','String',ElectrodeStringListAll{1},...
             'FontSize',fontSizeMedium);
         
         % Analysis Method
@@ -374,6 +341,16 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             
             %%%%%%%%%%%%%%%%%%%%%%%% Read values %%%%%%%%%%%%%%%%%%%%%%%%%%
             electrodeString = get(hElectrode,'val'); 
+            
+            if length(ElectrodeArrayListAll)==1
+                if length(ElectrodeArrayListAll{1}{electrodeString})==1
+                    electrodeNum = electrodeString;
+                    disp('performing analysis on the selected single electrode'); 
+
+                end
+            else
+               disp('performing analysis on all electrodes');  
+            end
             if length(fileNameStringTMP) ==1
                 ElectrodeListTMP = ElectrodeListSession(electrodeString);
                 if isempty(ElectrodeListTMP{1})
@@ -571,23 +548,22 @@ end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray] = ...
-    getData(folderSourceString,fileNameStringTMP,ElectrodeListTMP,...
-    erpRange,blRange,stRange,freqRanges)
+    getData(folderSourceString,fileNameStringTMP,ElectrodeListTMP,dataParameters,freqRanges,oriSelectiveFlag)
 
 numDatasets = length(fileNameStringTMP);
 disp(['Working on dataset 1 of ' num2str(numDatasets)]);
 [erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray]...
 = getDataSingleSession(folderSourceString,fileNameStringTMP{1},...
-ElectrodeListTMP{1},erpRange,blRange,stRange,freqRanges); 
+ElectrodeListTMP{1},dataParameters,freqRanges,oriSelectiveFlag); 
 
 if length(fileNameStringTMP)>1
     for i=2:numDatasets
-        if isempty(ElectrodeListTMP{i})
+        if isempty(ElectrodeListTMP{i}{end})
            continue
         end
         disp(['Working on dataset ' num2str(i) ' of ' num2str(length(fileNameStringTMP))]);
         [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~,~] = getDataSingleSession(folderSourceString,fileNameStringTMP{i},...
-            ElectrodeListTMP{i},erpRange,blRange,stRange,freqRanges);
+            ElectrodeListTMP{i},dataParameters,freqRanges,oriSelectiveFlag);
         
         erpData.data = cat(1,erpData.data,erpDataTMP.data);
         erpData.analysisDataBL = cat(1,erpData.analysisDataBL,erpDataTMP.analysisDataBL);
@@ -625,8 +601,9 @@ end
 
 function [erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray] = ...
     getDataSingleSession(folderSourceString,fileNameStringTMP,...
-    ElectrodeListTMP,erpRange,blRange,stRange,freqRanges)
+    ElectrodeListTMP,dataParameters,freqRanges,oriSelectiveFlag)
 
+gridType = 'microelectrode';
 if strcmp(fileNameStringTMP(1:5),'alpaH')       
     monkeyName = 'alpaH'; 
     expDate = fileNameStringTMP(6:11); 
@@ -638,7 +615,6 @@ elseif strcmp(fileNameStringTMP(1:7),'kesariH')
     protocolName = fileNameStringTMP(14:end);
     oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
 end
-gridType = 'microelectrode';
 
 
 folderName = fullfile(folderSourceString,'data',...
@@ -651,30 +627,45 @@ folderExtract = fullfile(folderName,'extractedData');
 folderSegment = fullfile(folderName,'segmentedData');
 folderLFP = fullfile(folderSegment,'LFP');
 folderSpikes = fullfile(folderSegment,'Spikes');
+folderSave = fullfile(folderName,'savedData');
+folderSave_oriTuning = fullfile(tuningProtocol_folderName,'savedData');
 
-folderSave = fullfile(tuningProtocol_folderName,'savedData');
 if ~exist(folderSave,'dir')
     mkdir(folderSave);
 end
-fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*stRange(1)) 'ms_' num2str(1000*stRange(2)) 'ms.mat']);
+if ~exist(folderSave_oriTuning,'dir')
+    mkdir(folderSave_oriTuning);
+end
 
-if exist(fileToSave,'file')
-    disp(['Loading file ' fileToSave]);
-    load(fileToSave);
+% Load Orientation Tuning dataFile for ori Tuning protocol for all elecs
+oriTuningDataFile = fullfile(folderSave,['oriTuningData_' num2str(1000*dataParameters.stRange(1)) 'ms_' num2str(1000*dataParameters.stRange(2)) 'ms.mat']);
+if exist(oriTuningDataFile,'file')
+    disp(['Loading file ' oriTuningDataFile]);
+    load(oriTuningDataFile);
 else
     % Get OrientationTuning Data
     [computationVals,PO,OS] = savePrefOriAndOriSelectivitySpikes(monkeyName,expDate,oriTuning_protocolName,folderSourceString,gridType);
 end
 
-    oriTuningData.PO = PO(ElectrodeListTMP);
-    oriTuningData.OS = OS(ElectrodeListTMP);
-    oriTuningData.FR = computationVals(ElectrodeListTMP,:);
+oriTuningData.PO = PO(ElectrodeListTMP{end});
+oriTuningData.OS = OS(ElectrodeListTMP{end});
+oriTuningData.FR = computationVals(ElectrodeListTMP{end},:);
 
+if oriSelectiveFlag 
+    fileToSave = fullfile(folderSave,['OriTunedElecData_StimPeriod' num2str(1000*dataParameters.stRange(1)) '_' num2str(1000*dataParameters.stRange(2)) 'ms.mat']);
+else
+    fileToSave = fullfile(folderSave,['allElecData_StimPeriod' num2str(1000*dataParameters.stRange(1)) '_' num2str(1000*dataParameters.stRange(2)) 'ms.mat']);
+end
+
+if exist(fileToSave,'file')
+    disp(['Loading file ' fileToSave]);
+    load(fileToSave)
+else
     % Get Combinations
     [parameterCombinations,parameterCombinations2,...
-        aValsUnique,eValsUnique,~,~,oValsUnique,cValsUnique,tValsUnique, ...
-        aValsUnique2,eValsUnique2,~,~,oValsUnique2,cValsUnique2,tValsUnique2] = ...
-        loadParameterCombinations(folderExtract);
+    aValsUnique,eValsUnique,~,~,oValsUnique,cValsUnique,tValsUnique, ...
+    aValsUnique2,eValsUnique2,~,~,oValsUnique2,cValsUnique2,tValsUnique2] = ...
+    loadParameterCombinations(folderExtract);
 
     if aValsUnique ~= aValsUnique2 || eValsUnique ~= eValsUnique2
         error('Azimuths and/or elevations do not match!');
@@ -686,29 +677,38 @@ end
         tList = 1:length(tValsUnique);
     end
 
-    c1List = length(cValsUnique):-1:1; %  Flipping data Row-wise so that positive x-axis and positive y-axis denotes increase in Contrast
-    c2List = 1:length(cValsUnique2);
-
+    % electrode info
+    ElectrodeList = ElectrodeListTMP{end};
+    electrodeArray = ElectrodeList;
 
     % TimeVals info
     [~,timeVals,~,~] = loadlfpInfo(folderLFP);
-    if iscell(ElectrodeListTMP)
-    ElectrodeList = cell2mat(ElectrodeListTMP);
-    else
-        ElectrodeList = ElectrodeListTMP;
-    end
 
-    electrodeArray = ElectrodeList;
+    % Set up fft
     Fs = round(1/(timeVals(2)-timeVals(1)));
-    range = blRange;
+    range = dataParameters.blRange;
     rangePos = round(diff(range)*Fs);
-    erpRangePos = round(diff(erpRange)*Fs);
-    blPos = find(timeVals>=blRange(1),1)+ (1:rangePos);
-    stPos = find(timeVals>=stRange(1),1)+ (1:rangePos);
-    erpPos = find(timeVals>=erpRange(1),1)+ (1:erpRangePos);
+    erpRangePos = round(diff(dataParameters.erpRange)*Fs);
+    blPos = find(timeVals>=dataParameters.blRange(1),1)+ (1:rangePos);
+    stPos = find(timeVals>=dataParameters.stRange(1),1)+ (1:rangePos);
+    erpPos = find(timeVals>=dataParameters.erpRange(1),1)+ (1:erpRangePos);
     freqVals = 0:1/diff(range):Fs-1/diff(range);
     numFreqs = length(freqRanges);
     unitID = 0;
+
+    % Set up params for MT
+    params.tapers   = [1 1];
+    params.pad      = -1;
+    params.Fs       = Fs;
+    params.fpass    = [0 100];
+    params.trialave = 1;
+
+    c1List = length(cValsUnique):-1:1; %  Flipping data Row-wise so that positive x-axis and positive y-axis denotes increase in Contrast
+    c2List = 1:length(cValsUnique2);
+
+    % Main Loop (Stores data in elec x tempFreq x Contrast of Ori 1 x
+    % Contrast of Ori 2 x dataPoints)
+
     for iElec = 1:length(ElectrodeList)
         % Get LFP data
         clear analogData
@@ -717,7 +717,7 @@ end
         clear spikeData
         load(fullfile(folderSpikes,['elec' num2str(ElectrodeList(iElec)) '_SID' num2str(unitID) '.mat']));
 
-    %     Get bad trials
+        % Get bad trials
         badTrialFile = fullfile(folderSegment,'badTrials.mat');
         if ~exist(badTrialFile,'file')
             disp('Bad trial file does not exist...');
@@ -726,13 +726,8 @@ end
             badTrials = loadBadTrials(badTrialFile);
             disp([num2str(length(badTrials)) ' bad trials']);
         end
-        % Set up MT
-    %     Fs              = round(1/(timeVals(2)-timeVals(1)));
-        params.tapers   = [1 1];
-        params.pad      = -1;
-        params.Fs       = Fs;
-        params.fpass    = [0 100];
-        params.trialave = 1;
+
+
         for t = 1:length(tList)
             for c1=1:length(c1List)
                 for c2=1:length(c2List)
@@ -748,39 +743,39 @@ end
                     else
                         disp(['pos=(' num2str(c1List(c1)) ',' num2str(c2List(c2)) ') ,n=' num2str(length(goodPos))]);
                         N(iElec,t,c1List(c1),c2List(c2)) = length(goodPos);
-
-                        if round(diff(blRange)*Fs) ~= round(diff(stRange)*Fs)
+                        if round(diff(dataParameters.blRange)*Fs) ~= round(diff(dataParameters.stRange)*Fs)
                             disp('baseline and stimulus ranges are not the same');
                         else
-                           
+                           % Event-related potential
                            erp = mean(analogData(goodPos,:),1); %#ok<NODEF>
                            erpDataTMP(iElec,t,c1,c2,:) = erp;
                            RMSvalsBL(iElec,t,c1,c2) = rms(erp(blPos));
                            RMSvalsERP(iElec,t,c1,c2) = rms(erp(erpPos));
-                            
-                           [psthData(iElec,t,c1,c2,:),xsFR] = getPSTH(spikeData(goodPos),10,[timeVals(1) timeVals(end)]);
-                           firingRatesST(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),stRange))/diff(stRange);
-                           firingRatesBL(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),blRange))/diff(blRange);
 
+                           % PSTH & firing rate 
+                           [psthData(iElec,t,c1,c2,:),xsFR] = getPSTH(spikeData(goodPos),10,[timeVals(1) timeVals(end)]);
+                           firingRatesST(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.stRange))/diff(dataParameters.stRange);
+                           firingRatesBL(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.blRange))/diff(dataParameters.blRange);
+
+                           % fft data
                            fftBL = log10(squeeze(mean(abs(fft(analogData(goodPos,blPos),[],2)))));
                            fftST = log10(squeeze(mean(abs(fft(analogData(goodPos,stPos),[],2)))));
-
                            fftDataBL(iElec,t,c1,c2,:) = fftBL;
                            fftDataST(iElec,t,c1,c2,:) = fftST;
 
-                           %Power by MT method
+                           % Power Estimation by MT method
                            dataBL = analogData(goodPos,blPos)';
                            [tmpEBL,freqValsBL] = mtspectrumc(dataBL,params);
                            dataST = analogData(goodPos,stPos)';
                            [tmpEST,freqValsST] = mtspectrumc(dataST,params);
-
                            if isequal(freqValsBL,freqValsST)
                                freqValsMT = freqValsST;
                            end
-
                            mEnergyVsFreqBL(iElec,t,c1,c2,:) = conv2Log(tmpEBL);
                            mEnergyVsFreqST(iElec,t,c1,c2,:) = conv2Log(tmpEST);
 
+                           % computing analysis Data for particular
+                           % frequency band
                            for i=1:numFreqs
                                fftAmpST{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{i}));
                                fftAmpBL{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{i}));
@@ -819,17 +814,21 @@ end
     energyData.analysisDataST = energyValsST;
     energyData.freqVals = freqValsMT;
     energyData.N = N;
-    
-    elecs_neededtoFlipped = find(abs(oriTuningData.PO-oValsUnique)<abs(oriTuningData.PO-oValsUnique2));
-    erpData = segregate_Pref_Null_data(erpData,elecs_neededtoFlipped);
-    firingRateData = segregate_Pref_Null_data(firingRateData,elecs_neededtoFlipped);
-    fftData = segregate_Pref_Null_data(fftData,elecs_neededtoFlipped);
-    energyData = segregate_Pref_Null_data(energyData,elecs_neededtoFlipped);
-    
 
-%     % Save Data for particular session
-%     save(fileToSave,'oriTuningData');
-% end
+    % Segregation into Preferred-null axis is done when analysis is being
+    % done for orientation selective electrodes
+    if oriSelectiveFlag
+        elecs_neededtoFlipped = find(abs(oriTuningData.PO-oValsUnique)<abs(oriTuningData.PO-oValsUnique2));
+        erpData = segregate_Pref_Null_data(erpData,elecs_neededtoFlipped);
+        firingRateData = segregate_Pref_Null_data(firingRateData,elecs_neededtoFlipped);
+        fftData = segregate_Pref_Null_data(fftData,elecs_neededtoFlipped);
+        energyData = segregate_Pref_Null_data(energyData,elecs_neededtoFlipped);
+    end
+
+
+    % Save Data for particular session
+    save(fileToSave,'erpData','firingRateData','fftData','energyData','oriTuningData','electrodeArray');
+end
 end
 
 % Accessory Functions
@@ -888,34 +887,14 @@ function [ElectrodeStringListAll,ElectrodeArrayListAll] = getElectrodesList(file
 
 [tmpElectrodeStringList,tmpElectrodeArrayList,allElecs] = getGoodElectrodesDetails(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
 
-%     ElectrodeStringListAll = ''; 
-%     ElectrodeArrayListAll = [];
-%     
-%     for i=1:length(monkeyNameList)
-%             ElectrodeStringListAll = cat(2,ElectrodeStringListAll,tmpElectrodeStringList{i});
-%             ElectrodeArrayListAll = cat(2,ElectrodeArrayListAll,tmpElectrodeArrayList{i});
-% 
-%     end
-%     if sessionNum >=23
-%         Sessions = length(ElectrodeArrayListAll);
-%         pos = Sessions+1;
-%         for i=1:length(monkeyNameList)
-%             clear j
-%             for j = 1:length(tmpElectrodeArrayList{i})
-%                 ElectrodeArrayListAll{1,pos}{1,j} = tmpElectrodeArrayList{1,i}{1,j}{1,end};
-%             end
-%             ElectrodeStringListAll{1,pos} = ['all (N=' num2str(allElecs(i)) ')'];
-%             pos=pos+1;
-%         end
-%     end
-%     AllSessions = length(ElectrodeArrayListAll)+1;
-%     
-%     if sessionNum == 25
-%         for k=1:length(tmpElectrodeArrayList{1})+length(tmpElectrodeArrayList{2})
-%             ElectrodeArrayListAll{1,AllSessions}{1,k} = ElectrodeArrayListAll{1,k}{1,end};
-%             ElectrodeStringListAll{1,AllSessions} = ['all (N=' num2str(sum(allElecs)) ')'];
-%         end
-%     end
+if length(tmpElectrodeStringList)> 1
+   clear tmpElectrodeStringList
+   tmpElectrodeStringList = {['all (N=' num2str(allElecs) ')']};
+end
+
+ElectrodeStringListAll = tmpElectrodeStringList;
+ElectrodeArrayListAll = tmpElectrodeArrayList;
+
     
 end
 
