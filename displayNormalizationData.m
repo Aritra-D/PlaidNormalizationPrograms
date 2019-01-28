@@ -135,6 +135,11 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
 
 
     function processData_Callback(~,~)
+        
+        % We turn the interface off for processing.
+        InterfaceObj = findobj(hFigure,'Enable','on');
+        set(InterfaceObj,'Enable','off');
+        
         % get Session Information
         sessionNum = get(hSession,'val'); 
         fileNameStringTMP = fileNameStringListArray{sessionNum};
@@ -397,11 +402,14 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
         % Defining Text  in new axes for Figure 2
         textH3 = getPlotHandles(1,1,[0.2 0.9 0.01 0.01]); set(textH3,'Visible','Off');
 
- 
+        % We turn back on the interface
+        set(InterfaceObj,'Enable','on');
         
         % Plotting Functions
         function plotData_Callback(~,~)
-            
+            % We turn the interface off for processing.
+            InterfaceObj = findobj(hFigure,'Enable','on');
+            set(InterfaceObj,'Enable','off');
             %%%%%%%%%%%%%%%%%%%%%%%% Read values %%%%%%%%%%%%%%%%%%%%%%%%%%
             electrodeString = get(hElectrode,'val'); 
             
@@ -527,7 +535,8 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
             rescaleData(hPlotPreferred,xMin,xMax,getYLims(hPlotPreferred));
             rescaleData(hOtherMeaures(1),0,50,getYLims(hOtherMeaures(1)));
             
-
+            % We turn back on the interface
+            set(InterfaceObj,'Enable','on');
         end 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
