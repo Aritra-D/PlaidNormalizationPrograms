@@ -5,7 +5,7 @@ close all;
 
 % Display Options
 fontSizeSmall = 10; fontSizeMedium = 12; fontSizeLarge = 16; % Fonts
-panelHeight = 0.2; panelStartHeight = 0.72; backgroundColor = 'w'; % Panels
+panelHeight = 0.2; panelStartHeight = 0.68; backgroundColor = 'w'; % Panels
 
 hFigure = figure(1);
 set(hFigure,'units','normalized','outerposition',[0 0 1 1])
@@ -17,38 +17,149 @@ set(hFigure2,'units','normalized','outerposition',[0 0 1 1])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 % FileNameString
-[fileNameStringAll,fileNameStringListAll,fileNameStringListArray] = getFileNameStringList;
+[fileNameStringAll,~,fileNameStringListArray] = getFileNameStringList;
 
 figure(1);
-hSessionPanel= uipanel('Title','Session(s)','titleposition','centertop',...
+hSessionPanel= uipanel('Title','Session Panel','titleposition','centertop',...
                 'fontSize',fontSizeLarge,'Unit','Normalized','Position',...
-                [0.05 0.925 0.9 0.08]);
+                [0.05 0.89 0.225 0.11]);
             
 hSession = uicontrol('Parent',hSessionPanel,'Unit','Normalized', ...
-                    'BackgroundColor', backgroundColor, 'Position', ...
-                    [0.4 0.83 0.2 0.16], 'Style','popup','String',...
-                    fileNameStringAll,'FontSize',fontSizeLarge);
-                
-hOriTunedCheckbox = uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
-    'Position',[0.65 0.1 0.1 0.6],'Style','checkbox','String','Ori-tuned Elecs',...
-    'FontSize',fontSizeMedium);
-uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
-    'Position',[0.75 0.1 0.1 0.8],'Style','pushbutton','String','Load DATA',...
-    'FontSize',fontSizeMedium,'Callback',{@selectSession_Callback});
+        'BackgroundColor', backgroundColor, 'Position', ...
+        [0 0.9 1 0.12], 'Style','popup','String',...
+        fileNameStringAll,'FontSize',fontSizeLarge);
+                           
+hTimingPanel = uipanel('Title','Timing Panel','titleposition','centertop',...
+                'fontSize',fontSizeLarge,'Unit','Normalized','Position',...
+                [0.275 0.89 0.225 0.11]);
+            
+timingTextWidth = 0.5; timingBoxWidth = 0.2;
+timingHeight = 1/3; 
 
-    function selectSession_Callback(~,~)
+uicontrol('Parent',hTimingPanel,'Unit','Normalized', ...
+    'Position',[0 1-timingHeight 0.5 timingHeight],...
+    'Style','text','String','Parameter','FontSize',fontSizeSmall);
+
+uicontrol('Parent',hTimingPanel,'Unit','Normalized', ...
+    'Position',[timingTextWidth 1-timingHeight timingBoxWidth...
+    timingHeight], 'Style','text','String','Min',...
+    'FontSize',fontSizeSmall);
+
+uicontrol('Parent',hTimingPanel,'Unit','Normalized', ...
+    'Position',[timingTextWidth+timingBoxWidth 1-timingHeight ...
+    timingBoxWidth timingHeight], ...
+    'Style','text','String','Max','FontSize',fontSizeSmall);
+                
+% Baseline Range
+baseline = [-0.25 0];
+uicontrol('Parent',hTimingPanel,'Unit','Normalized',...
+    'Position',[0 1-2*timingHeight 0.5 timingHeight]...
+    ,'Style','text','String','Baseline (s)',...
+    'FontSize',fontSizeSmall);
+hBaselineMin = uicontrol('Parent',hTimingPanel,...
+    'Unit','Normalized','BackgroundColor', backgroundColor,...
+    'Position',[timingTextWidth 1-2*timingHeight...
+    timingBoxWidth timingHeight],'Style','edit',...
+    'String',num2str(baseline(1)),'FontSize',fontSizeSmall);
+hBaselineMax = uicontrol('Parent',hTimingPanel,...
+    'Unit','Normalized','BackgroundColor', backgroundColor,...
+    'Position',[timingTextWidth+timingBoxWidth 1-2*timingHeight...
+    timingBoxWidth timingHeight], ...
+    'Style','edit','String',num2str(baseline(2)),...
+    'FontSize',fontSizeSmall);
+
+% Stimulus Range
+stimPeriod = [0.15 0.4];
+uicontrol('Parent',hTimingPanel,'Unit','Normalized',...
+    'Position',[0 1-3*timingHeight 0.5 timingHeight]...
+    ,'Style','text','String','Stim Period (s)',...
+    'FontSize',fontSizeSmall);
+hStimPeriodMin = uicontrol('Parent',hTimingPanel,...
+    'Unit','Normalized','BackgroundColor', backgroundColor,...
+    'Position',[timingTextWidth 1-3*timingHeight...
+    timingBoxWidth timingHeight],'Style','edit',...
+    'String',num2str(stimPeriod(1)),'FontSize',fontSizeSmall);
+hStimPeriodMax = uicontrol('Parent',hTimingPanel,...
+    'Unit','Normalized','BackgroundColor', backgroundColor,...
+    'Position',[timingTextWidth+timingBoxWidth 1-3*timingHeight...
+    timingBoxWidth timingHeight], ...
+    'Style','edit','String',num2str(stimPeriod(2)),...
+    'FontSize',fontSizeSmall);  
+            
+            
+hMTPanel = uipanel('Title','Multi-taper Panel','titleposition','centertop',...
+                'fontSize',fontSizeLarge,'Unit','Normalized','Position',...
+                [0.5 0.89 0.225 0.11]);
+            
+mtTextWidth = 0.5; mtBoxWidth = 0.2;
+mtHeight = 1/3; 
+
+            
+% Time Bandwidth and Tapers
+uicontrol('Parent',hMTPanel,'Unit','Normalized', ...
+    'Position',[0 1-mtHeight mtTextWidth mtHeight], ...
+    'Style','text','String','MT Parameter','FontSize',fontSizeSmall);
+
+uicontrol('Parent',hMTPanel,'Unit','Normalized', ...
+    'Position',[mtTextWidth 1-mtHeight mtBoxWidth mtHeight], ...
+    'Style','text','String','TW','FontSize',fontSizeSmall);
+
+uicontrol('Parent',hMTPanel,'Unit','Normalized', ...
+    'Position',[mtTextWidth+mtBoxWidth 1-mtHeight mtBoxWidth mtHeight], ...
+    'Style','text','String','K','FontSize',fontSizeSmall);
+
+taperParameters = [1 1];
+uicontrol('Parent',hMTPanel,'Unit','Normalized', ...
+    'Position',[0 1-2*mtHeight mtTextWidth mtHeight], ...
+    'Style','text','String','tapers','FontSize',fontSizeSmall);
+hTimeBandWidthProduct = uicontrol('Parent',hMTPanel,'Unit','Normalized', ...
+    'BackgroundColor', backgroundColor, ...
+    'Position',[mtTextWidth 1-2*mtHeight mtBoxWidth mtHeight], ...
+    'Style','edit','String',num2str(taperParameters(1)),'FontSize',fontSizeSmall);
+hTapers = uicontrol('Parent',hMTPanel,'Unit','Normalized', ...
+    'BackgroundColor', backgroundColor, ...
+    'Position',[mtTextWidth+mtBoxWidth 1-2*mtHeight mtBoxWidth mtHeight], ...
+    'Style','edit','String',num2str(taperParameters(2)),'FontSize',fontSizeSmall);
+            
+hLoadDataPanel = uipanel('Title','Data Processing Panel','titleposition','centertop',...
+                'fontSize',fontSizeLarge,'Unit','Normalized','Position',...
+                [0.725 0.89 0.225 0.11]); 
+
+hOriTunedCheckbox = uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
+'Position',[0.18 0.6 0.8 0.3],'Style','checkbox','String','Orientation tuned Electrodes',...
+'FontSize',fontSizeMedium);
+            
+uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
+'Position',[0.25 0 0.5 0.5],'Style','pushbutton','String','Load DATA',...
+'FontSize',fontSizeMedium,'Callback',{@processData_Callback});
+
+
+    function processData_Callback(~,~)
         % get Session Information
         sessionNum = get(hSession,'val'); 
         fileNameStringTMP = fileNameStringListArray{sessionNum};
+        blRange = [str2double(get(hBaselineMin,'String'))...
+           str2double(get(hBaselineMax,'String'))];
+        stRange = [str2double(get(hStimPeriodMin,'String'))...
+           str2double(get(hStimPeriodMax,'String'))];
         
         gridType = 'Microelectrode';
         oriSelectiveFlag = get(hOriTunedCheckbox,'val');
         
+        % parameters for MT analysis
+        TW = str2double(get(hTimeBandWidthProduct,'String'));
+        K = str2double(get(hTapers,'String'));
+        if K~=2*TW-1
+            error('Set TW and K as K = 2TW-1')
+        elseif K == 2*TW-1
+            tapers_MT = [TW K];
+        end
+ 
         %%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%
         [ElectrodeStringListAll,ElectrodeArrayListAll]= getElectrodesList(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
 
         % Show electrodes on Grid
-        electrodeGridPos = [0.05 panelStartHeight 0.2 panelHeight];
+        electrodeGridPos = [0.05 panelStartHeight 0.22 panelHeight];
         hElectrodesonGrid = showElectrodeLocations(electrodeGridPos,[], ...
         [],[],1,0,gridType,'alpaH'); %#ok<NASGU> % Electrode grid Layout are similar for both alpaH and kesariH hybrid grid
         
@@ -58,23 +169,25 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         freqRanges{2} = [30 80]; % gamma
         freqRanges{3} = [16 16];  % SSVEP
         
-        dataParameters.blRange = [-0.25 0];
-        dataParameters.stRange = [0.15 0.4];
+        dataParameters.blRange = blRange;
+        dataParameters.stRange = stRange;
         dataParameters.erpRange = [0.05 0.2];
         
         
        % get Data for Selected Session & Parameters
         [erpData,firingRateData,fftData,energyData,oriTuningData,~] = getData(folderSourceString,...
-         fileNameStringTMP,ElectrodeArrayListAll,dataParameters,freqRanges,oriSelectiveFlag); 
+         fileNameStringTMP,ElectrodeArrayListAll,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag); 
 %         freqRangeStr = {'alpha','gamma','SSVEP'};
 %         numFreqRanges = length(freqRanges);       
 
+        figure(1);
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%% Parameters panel %%%%%%%%%%%%%%%%%%%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-        hParameterPanel = uipanel('Title','Parameters','fontSize', ...
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+        
+        hParameterPanel = uipanel('Title','Parameters','titleposition','centertop','fontSize', ...
             fontSizeLarge,'Unit','Normalized','Position',...
-            [0.25 panelStartHeight 0.25 panelHeight]);
+            [0.275 panelStartHeight 0.225 panelHeight]);
         paramsHeight=1/6;
         
         % ElectrodeString
@@ -132,124 +245,74 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%% Timing panel %%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        timingTextWidth = 0.5; timingBoxWidth = 0.25;
-        hTimingPanel = uipanel('Title','X and Y Limits',...
+        axesLimitsTextWidth = 0.5; axesLimitsBoxWidth = 0.25;
+        hAxesLimitsPanel = uipanel('Title','X and Y Limits','titleposition','centertop',...
             'fontSize', fontSizeLarge,'Unit','Normalized',...
-            'Position',[0.5 panelStartHeight 0.25 panelHeight]);
-        timingHeight = 1/6; 
+            'Position',[0.5 panelStartHeight 0.225 panelHeight]);
+        axesLimitsHeight = 1/6; 
 
         signalRange = [-0.1 0.5]; 
-        erpPeriod = [0.05 0.2]; 
+%         erpPeriod = [0.05 0.2]; 
         fftRange = [0 100];
 
         % Signal Range
-        uicontrol('Parent',hTimingPanel,'Unit','Normalized', ...
-            'Position',[0 1-timingHeight timingTextWidth timingHeight],...
+        uicontrol('Parent',hAxesLimitsPanel,'Unit','Normalized', ...
+            'Position',[0 1-axesLimitsHeight axesLimitsTextWidth axesLimitsHeight],...
             'Style','text','String','Parameter','FontSize',fontSizeMedium);
 
-        uicontrol('Parent',hTimingPanel,'Unit','Normalized', ...
-            'Position',[timingTextWidth 1-timingHeight timingBoxWidth...
-            timingHeight], 'Style','text','String','Min',...
+        uicontrol('Parent',hAxesLimitsPanel,'Unit','Normalized', ...
+            'Position',[axesLimitsTextWidth 1-axesLimitsHeight axesLimitsBoxWidth...
+            axesLimitsHeight], 'Style','text','String','Min',...
             'FontSize',fontSizeMedium);
 
-        uicontrol('Parent',hTimingPanel,'Unit','Normalized', ...
-            'Position',[timingTextWidth+timingBoxWidth 1-timingHeight ...
-            timingBoxWidth timingHeight], ...
+        uicontrol('Parent',hAxesLimitsPanel,'Unit','Normalized', ...
+            'Position',[axesLimitsTextWidth+axesLimitsBoxWidth 1-axesLimitsHeight ...
+            axesLimitsBoxWidth axesLimitsHeight], ...
             'Style','text','String','Max','FontSize',fontSizeMedium);
 
         % Stim Range
-        uicontrol('Parent',hTimingPanel,'Unit','Normalized', ...
-            'Position',[0 1-2*timingHeight timingTextWidth timingHeight]...
+        uicontrol('Parent',hAxesLimitsPanel,'Unit','Normalized', ...
+            'Position',[0 1-2*axesLimitsHeight axesLimitsTextWidth axesLimitsHeight]...
             ,'Style','text','String','Stim Range (s)',...
             'FontSize',fontSizeSmall);
-        hStimMin = uicontrol('Parent',hTimingPanel,'Unit','Normalized', ...
+        hStimMin = uicontrol('Parent',hAxesLimitsPanel,'Unit','Normalized', ...
             'BackgroundColor', backgroundColor, ...
-            'Position',[timingTextWidth 1-2*timingHeight timingBoxWidth...
-            timingHeight], ...
+            'Position',[axesLimitsTextWidth 1-2*axesLimitsHeight axesLimitsBoxWidth...
+            axesLimitsHeight], ...
             'Style','edit','String',num2str(signalRange(1)),...
             'FontSize',fontSizeSmall);
-        hStimMax = uicontrol('Parent',hTimingPanel,'Unit','Normalized',...
+        hStimMax = uicontrol('Parent',hAxesLimitsPanel,'Unit','Normalized',...
             'BackgroundColor', backgroundColor, ...
-            'Position',[timingTextWidth+timingBoxWidth 1-2*timingHeight...
-            timingBoxWidth timingHeight],'Style','edit',...
+            'Position',[axesLimitsTextWidth+axesLimitsBoxWidth 1-2*axesLimitsHeight...
+            axesLimitsBoxWidth axesLimitsHeight],'Style','edit',...
             'String',num2str(signalRange(2)),'FontSize',fontSizeSmall);
         
-        % ERP Range
-        uicontrol('Parent',hTimingPanel,'Unit','Normalized', ...
-            'Position',[0 1-3*timingHeight timingTextWidth timingHeight]...
-            ,'Style','text','String','ERP Range (s)',...
-            'FontSize',fontSizeSmall);
-        hERPMin = uicontrol('Parent',hTimingPanel,'Unit','Normalized', ...
-            'BackgroundColor', backgroundColor, ...
-            'Position',[timingTextWidth 1-3*timingHeight ...
-            timingBoxWidth timingHeight], ...
-            'Style','edit','String',num2str(erpPeriod(1)),...
-            'FontSize',fontSizeSmall);
-        hERPMax = uicontrol('Parent',hTimingPanel,'Unit','Normalized', ...
-            'BackgroundColor', backgroundColor, ...
-            'Position',[timingTextWidth+timingBoxWidth 1-3*timingHeight...
-            timingBoxWidth timingHeight], ...
-            'Style','edit','String',num2str(erpPeriod(2)),...
-            'FontSize',fontSizeSmall);
 
-        % FFT Range
-        uicontrol('Parent',hTimingPanel,'Unit','Normalized',...
-            'Position',[0 1-4*timingHeight timingTextWidth timingHeight]...
-            ,'Style','text','String','FFT Range (Hz)',...
+        % Frequency Range
+        uicontrol('Parent',hAxesLimitsPanel,'Unit','Normalized',...
+            'Position',[0 1-3*axesLimitsHeight axesLimitsTextWidth axesLimitsHeight]...
+            ,'Style','text','String','Frequency Range (Hz)',...
             'FontSize',fontSizeSmall);
-        hFFTMin = uicontrol('Parent',hTimingPanel,'Unit','Normalized', ...
+        hFFTMin = uicontrol('Parent',hAxesLimitsPanel,'Unit','Normalized', ...
             'BackgroundColor', backgroundColor, ...
-            'Position',[timingTextWidth 1-4*timingHeight...
-            timingBoxWidth timingHeight], ...
+            'Position',[axesLimitsTextWidth 1-3*axesLimitsHeight...
+            axesLimitsBoxWidth axesLimitsHeight], ...
             'Style','edit','String',num2str(fftRange(1)),...
             'FontSize',fontSizeSmall);
-        hFFTMax = uicontrol('Parent',hTimingPanel,'Unit','Normalized',...
+        hFFTMax = uicontrol('Parent',hAxesLimitsPanel,'Unit','Normalized',...
             'BackgroundColor', backgroundColor, ...
-            'Position',[timingTextWidth+timingBoxWidth 1-4*timingHeight...
-            timingBoxWidth timingHeight],'Style','edit',...
+            'Position',[axesLimitsTextWidth+axesLimitsBoxWidth 1-3*axesLimitsHeight...
+            axesLimitsBoxWidth axesLimitsHeight],'Style','edit',...
             'String',num2str(fftRange(2)),'FontSize',fontSizeSmall);
 
-        % Baseline Range
-        baseline = [-0.25 0];
-        uicontrol('Parent',hTimingPanel,'Unit','Normalized',...
-            'Position',[0 1-5*timingHeight timingTextWidth timingHeight]...
-            ,'Style','text','String','Baseline (s)',...
-            'FontSize',fontSizeSmall);
-        hBaselineMin = uicontrol('Parent',hTimingPanel,...
-            'Unit','Normalized','BackgroundColor', backgroundColor,...
-            'Position',[timingTextWidth 1-5*timingHeight...
-            timingBoxWidth timingHeight],'Style','edit',...
-            'String',num2str(baseline(1)),'FontSize',fontSizeSmall);
-        hBaselineMax = uicontrol('Parent',hTimingPanel,...
-            'Unit','Normalized','BackgroundColor', backgroundColor,...
-            'Position',[timingTextWidth+timingBoxWidth 1-5*timingHeight...
-            timingBoxWidth timingHeight], ...
-            'Style','edit','String',num2str(baseline(2)),...
-            'FontSize',fontSizeSmall);
 
-        % Stimulus Range
-        stimPeriod = [0.15 0.4];
-        uicontrol('Parent',hTimingPanel,'Unit','Normalized',...
-            'Position',[0 1-6*timingHeight timingTextWidth timingHeight]...
-            ,'Style','text','String','Stim Period (s)',...
-            'FontSize',fontSizeSmall);
-        hStimPeriodMin = uicontrol('Parent',hTimingPanel,...
-            'Unit','Normalized','BackgroundColor', backgroundColor,...
-            'Position',[timingTextWidth 1-6*timingHeight...
-            timingBoxWidth timingHeight],'Style','edit',...
-            'String',num2str(stimPeriod(1)),'FontSize',fontSizeSmall);
-        hStimPeriodMax = uicontrol('Parent',hTimingPanel,...
-            'Unit','Normalized','BackgroundColor', backgroundColor,...
-            'Position',[timingTextWidth+timingBoxWidth 1-6*timingHeight...
-            timingBoxWidth timingHeight],'Style','edit',...
-            'String',num2str(stimPeriod(2)),'FontSize',fontSizeSmall);
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%% Plot Options %%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        hPlotOptionsPanel = uipanel('Title','Plotting Options',...
+        hPlotOptionsPanel = uipanel('Title','Plotting Options','titleposition','centertop',...
             'fontSize', fontSizeLarge, 'Unit','Normalized',...
-            'Position',[0.75 panelStartHeight 0.2 panelHeight]);
+            'Position',[0.725 panelStartHeight 0.225 panelHeight]);
         plotOptionsHeight = 1/6;
 
         % Button for Plotting
@@ -343,39 +406,42 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             electrodeString = get(hElectrode,'val'); 
             
             if length(ElectrodeArrayListAll)==1
-                if length(ElectrodeArrayListAll{1}{electrodeString})==1
+                if isempty(ElectrodeArrayListAll{1}{electrodeString})
+                    error('No electrode found for analysis! Pease try another session!')
+                elseif length(ElectrodeArrayListAll{1}{electrodeString})==1
                     electrodeNum = electrodeString;
-                    disp('performing analysis on the selected single electrode'); 
-
+                    disp('performing analysis on the selected single electrode');
+                elseif length(ElectrodeArrayListAll{1}{electrodeString})>1
+                    disp('performing analysis on all electrodes for the selected single session')
+                    electrodeNum = 'all';
                 end
             else
-               disp('performing analysis on all electrodes');  
+               disp('performing analysis on all electrodes across sessions');
+               electrodeNum = 'all';
             end
-            if length(fileNameStringTMP) ==1
-                ElectrodeListTMP = ElectrodeListSession(electrodeString);
-                if isempty(ElectrodeListTMP{1})
-                    error(['No electrode found for analysis!'...
-                            'Please try another session!'])
-                end
-                folderName = fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName);
-                folderExtract = fullfile(folderName,'extractedData');
-                [~,~,~,~,~,~,oValsUnique,~,~,~,~,~,~,oValsUnique2,~,~] = loadParameterCombinations(folderExtract);
-
-            elseif length(fileNameStringTMP)>1
-                ElectrodeListTMP = ElectrodeListSession;
-            end
+            
+%             if length(fileNameStringTMP) ==1
+%                 ElectrodeListTMP = ElectrodeListSession(electrodeString);
+%                 if isempty(ElectrodeListTMP{1})
+%                     error(['No electrode found for analysis!'...
+%                             'Please try another session!'])
+%                 end
+%                 folderName = fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName);
+%                 folderExtract = fullfile(folderName,'extractedData');
+%                 [~,~,~,~,~,~,oValsUnique,~,~,~,~,~,~,oValsUnique2,~,~] = loadParameterCombinations(folderExtract);
+% 
+%             elseif length(fileNameStringTMP)>1
+%                 ElectrodeListTMP = ElectrodeListSession;
+%             end
   
             analysisMethod = get(hAnalysisMethod,'val');
             analysisMeasure = get(hAnalysisType,'val');
             NormalizeDataFlag = get(hNormalizeData,'val');
             relativeMeasuresFlag = get(hRelativeMeasures,'val');
             
-            erpRange = [str2double(get(hERPMin,'String'))...
-                        str2double(get(hERPMax,'String'))];
-            blRange = [str2double(get(hBaselineMin,'String'))...
-                       str2double(get(hBaselineMax,'String'))];
-            stRange = [str2double(get(hStimPeriodMin,'String'))...
-                       str2double(get(hStimPeriodMax,'String'))];
+%             erpRange = [str2double(get(hERPMin,'String'))...
+%                         str2double(get(hERPMax,'String'))];
+
 
             plotColor = colorNames(get(hChooseColor,'val'));
             holdOnState = get(hHoldOn,'val'); %#ok<NASGU>
@@ -384,20 +450,20 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
 
              
             if analysisMeasure == 1 % computing ERP
-                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,erpData.timeVals,erpData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
-                plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,erpData.timeVals,erpData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,erpData.timeVals,erpData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+                plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,erpData.timeVals,erpData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
             elseif analysisMeasure == 2 % computing Firing rate
-                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,firingRateData.timeVals,firingRateData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
-                plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,firingRateData.timeVals,firingRateData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,firingRateData.timeVals,firingRateData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+                plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,firingRateData.timeVals,firingRateData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
             elseif analysisMeasure == 3 % computing Raster Plot from spike data
                 error('Still working on raster data!')
             elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6 % computing alpha
                 if analysisMethod == 1
-                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,fftData.freqVals,fftData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
-                    plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,fftData.freqVals,fftData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,fftData.freqVals,fftData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+                    plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,fftData.freqVals,fftData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
                 elseif analysisMethod ==2 
-                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,energyData.freqVals,energyData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
-                    plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,energyData.freqVals,energyData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,energyData.freqVals,energyData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+                    plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,energyData.freqVals,energyData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
                 end
             elseif analysisType == 7 % need to work on STA!
                 error('STA computation method not found') 
@@ -410,13 +476,13 @@ uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
             textH2 = getPlotHandles(1,1,[0.02 0.25 0.01 0.01]);
             set(textH2,'Visible','Off');
                 
-            if length(fileNameStringTMP) ==1 && length(ElectrodeListTMP{1})==1    
-                text(0.35,1.15,['Null Orientation: ' num2str(oValsUnique)],'unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
-                text(0.35,1.15,['Preferred Orientation: ' num2str(oValsUnique2)],'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
-            else
-                text(0.35,1.15,'Null Orientation','unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
-                text(0.35,1.15,'Preferred Orientation' ,'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
-            end
+%             if length(fileNameStringTMP) ==1 && length(ElectrodeListTMP{1})==1    
+%                 text(0.35,1.15,['Null Orientation: ' num2str(oValsUnique)],'unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
+%                 text(0.35,1.15,['Preferred Orientation: ' num2str(oValsUnique2)],'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
+%             else
+%                 text(0.35,1.15,'Null Orientation','unit','normalized','fontsize',20,'fontweight','bold','rotation',90,'parent',textH2);
+%                 text(0.35,1.15,'Preferred Orientation' ,'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
+%             end
             
             flippedcValsUnique2 = flip(cValsUnique2);
             for c = 1:5
@@ -548,13 +614,13 @@ end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray] = ...
-    getData(folderSourceString,fileNameStringTMP,ElectrodeListTMP,dataParameters,freqRanges,oriSelectiveFlag)
+    getData(folderSourceString,fileNameStringTMP,ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag)
 
 numDatasets = length(fileNameStringTMP);
 disp(['Working on dataset 1 of ' num2str(numDatasets)]);
 [erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray]...
 = getDataSingleSession(folderSourceString,fileNameStringTMP{1},...
-ElectrodeListTMP{1},dataParameters,freqRanges,oriSelectiveFlag); 
+ElectrodeListTMP{1},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag); 
 
 if length(fileNameStringTMP)>1
     for i=2:numDatasets
@@ -563,7 +629,7 @@ if length(fileNameStringTMP)>1
         end
         disp(['Working on dataset ' num2str(i) ' of ' num2str(length(fileNameStringTMP))]);
         [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~,~] = getDataSingleSession(folderSourceString,fileNameStringTMP{i},...
-            ElectrodeListTMP{i},dataParameters,freqRanges,oriSelectiveFlag);
+            ElectrodeListTMP{i},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag);
         
         erpData.data = cat(1,erpData.data,erpDataTMP.data);
         erpData.analysisDataBL = cat(1,erpData.analysisDataBL,erpDataTMP.analysisDataBL);
@@ -587,11 +653,7 @@ if length(fileNameStringTMP)>1
             energyData.analysisDataST{j} = cat(1,energyData.analysisDataST{j},energyDataTMP.analysisDataST{j});
         end
 
-% Combining OriData across sessions need to be done!        
-%         oriTuningDataTMP.PO = 
-%         oriTuningDataTMP.OS
-%         oriTuningDataTMP.FR
-        
+        % Combining OriData across sessions need to be done! Right now, there is no requirement!        
         electrodeArray = [];
     end
 end
@@ -601,7 +663,7 @@ end
 
 function [erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray] = ...
     getDataSingleSession(folderSourceString,fileNameStringTMP,...
-    ElectrodeListTMP,dataParameters,freqRanges,oriSelectiveFlag)
+    ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag)
 
 gridType = 'microelectrode';
 if strcmp(fileNameStringTMP(1:5),'alpaH')       
@@ -627,7 +689,7 @@ folderExtract = fullfile(folderName,'extractedData');
 folderSegment = fullfile(folderName,'segmentedData');
 folderLFP = fullfile(folderSegment,'LFP');
 folderSpikes = fullfile(folderSegment,'Spikes');
-folderSave = fullfile(folderName,'savedData');
+folderSave = fullfile(folderSourceString,'Projects\PlaidNormalizationProject\savedData');
 folderSave_oriTuning = fullfile(tuningProtocol_folderName,'savedData');
 
 if ~exist(folderSave,'dir')
@@ -638,7 +700,7 @@ if ~exist(folderSave_oriTuning,'dir')
 end
 
 % Load Orientation Tuning dataFile for ori Tuning protocol for all elecs
-oriTuningDataFile = fullfile(folderSave,['oriTuningData_' num2str(1000*dataParameters.stRange(1)) 'ms_' num2str(1000*dataParameters.stRange(2)) 'ms.mat']);
+oriTuningDataFile = fullfile(folderSave_oriTuning,['oriTuningData_' num2str(1000*dataParameters.stRange(1)) 'ms_' num2str(1000*dataParameters.stRange(2)) 'ms.mat']);
 if exist(oriTuningDataFile,'file')
     disp(['Loading file ' oriTuningDataFile]);
     load(oriTuningDataFile);
@@ -652,9 +714,9 @@ oriTuningData.OS = OS(ElectrodeListTMP{end});
 oriTuningData.FR = computationVals(ElectrodeListTMP{end},:);
 
 if oriSelectiveFlag 
-    fileToSave = fullfile(folderSave,['OriTunedElecData_StimPeriod' num2str(1000*dataParameters.stRange(1)) '_' num2str(1000*dataParameters.stRange(2)) 'ms.mat']);
+    fileToSave = fullfile(folderSave,[fileNameStringTMP '_OriTunedElecData_StimPeriod_' num2str(1000*dataParameters.stRange(1)) '_' num2str(1000*dataParameters.stRange(2)) 'ms_tapers' num2str(tapers_MT(1)) '_' num2str(tapers_MT(2)) '.mat']);
 else
-    fileToSave = fullfile(folderSave,['allElecData_StimPeriod' num2str(1000*dataParameters.stRange(1)) '_' num2str(1000*dataParameters.stRange(2)) 'ms.mat']);
+    fileToSave = fullfile(folderSave,[fileNameStringTMP '_allElecData_StimPeriod_' num2str(1000*dataParameters.stRange(1)) '_' num2str(1000*dataParameters.stRange(2)) 'ms_tapers' num2str(tapers_MT(1)) '_' num2str(tapers_MT(2)) '.mat']);
 end
 
 if exist(fileToSave,'file')
@@ -697,10 +759,10 @@ else
     unitID = 0;
 
     % Set up params for MT
-    params.tapers   = [1 1];
+    params.tapers   = tapers_MT;
     params.pad      = -1;
     params.Fs       = Fs;
-    params.fpass    = [0 100];
+    params.fpass    = [0 250];
     params.trialave = 1;
 
     c1List = length(cValsUnique):-1:1; %  Flipping data Row-wise so that positive x-axis and positive y-axis denotes increase in Contrast
@@ -758,8 +820,8 @@ else
                            firingRatesBL(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.blRange))/diff(dataParameters.blRange);
 
                            % fft data
-                           fftBL = log10(squeeze(mean(abs(fft(analogData(goodPos,blPos),[],2)))));
-                           fftST = log10(squeeze(mean(abs(fft(analogData(goodPos,stPos),[],2)))));
+                           fftBL = conv2Log(squeeze(mean(abs(fft(analogData(goodPos,blPos),[],2)))));
+                           fftST = conv2Log(squeeze(mean(abs(fft(analogData(goodPos,stPos),[],2)))));
                            fftDataBL(iElec,t,c1,c2,:) = fftBL;
                            fftDataST(iElec,t,c1,c2,:) = fftST;
 
@@ -915,7 +977,12 @@ for iElec = 1:size(x.data,1)
     end
 end
 end
-function plotData(hPlot1,hPlot2,hPlot3,hPlot4,hPlot5,hPlot6,hPlot7,hPlot8,sessionNum,xs,data,oriTuningData,colorName,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+function plotData(hPlot1,hPlot2,hPlot3,hPlot4,hPlot5,hPlot6,hPlot7,hPlot8,sessionNum,xs,data,oriTuningData,colorName,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+
+if isnumeric(electrodeNum)
+    data = getDataSingleElec(data,electrodeNum,analysisMeasure);
+elseif strcmp(electrodeNum,'all')
+end
 
 % Main 5x5 plot for Neural Measure
 if analysisMeasure == 1 || analysisMeasure == 2
@@ -1047,7 +1114,7 @@ NormIndex = (NIAnalysisData(1,1)+ NIAnalysisData(5,5))/NIAnalysisData(1,5);
 title(hPlot2,['NI: ',num2str(NormIndex)],'fontWeight','bold');
 
 if size(data.analysisDataST,1) == 1
-    if sessionNum <=12
+    if sessionNum <=22
         colorNamesOriTuning = hsv(30);
         oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
         for index = 1:size(data.analysisDataST,1)
@@ -1060,7 +1127,7 @@ if size(data.analysisDataST,1) == 1
     end
 end
 
-if sessionNum>12
+if dataSize(1)>1
 % NI population histogram
 histogram(hPlot7,NI_population);
 end
@@ -1086,7 +1153,12 @@ hold(hPlot5(1,1),'off'); hold(hPlot6(1,1),'off')
 end
 
 
-function plotDataFig2(hPlot1,hPlot2,sessionNum,xs,data,colors,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag)
+function plotDataFig2(hPlot1,hPlot2,~,xs,data,colors,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+
+if isnumeric(electrodeNum)
+    data = getDataSingleElec(data,electrodeNum,analysisMeasure);
+elseif strcmp(electrodeNum,'all')
+end
 cValsUnique = [0 12.5 25 50 100]./2;
 % Main 5x5 plot for Neural Measure
 if analysisMeasure == 1 || analysisMeasure == 2
@@ -1242,7 +1314,9 @@ imagesc(analysisData,'parent',hPlot2(3));
 % grid on;
 color_Bar = colorbar(hPlot2(3));% 
 colorYlabelHandle = get(color_Bar,'Ylabel');
-if analysisMeasure==2
+if analysisMeasure==1
+    YlabelString = 'Potential';
+elseif analysisMeasure==2
     YlabelString = 'Spikes/s';
 elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
     if ~relativeMeasuresFlag
@@ -1275,7 +1349,7 @@ title(hPlot2(3),['NI: ',num2str(NormIndex)],'fontWeight','bold');
 %     end
 % end
 % 
-if sessionNum>12
+if dataSize(1)>1
 % NI population histogram
 histogram(hPlot2(2),NI_population);
 end
@@ -1352,6 +1426,22 @@ set(hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','o
 set(hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
 xlabel(hPlot2(3),'Contrast (%)');ylabel(hPlot2(3),'Contrast (%)');
 
+end
+
+function data = getDataSingleElec(data,electrodeNum,analysisMeasure)
+    if analysisMeasure == 1 || analysisMeasure ==2
+    data.data = data.data(electrodeNum,:,:,:,:);
+    data.analysisDataBL = data.analysisDataBL(electrodeNum,:,:,:);
+    data.analysisDataST = data.analysisDataST(electrodeNum,:,:,:);
+    
+    elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6
+        data.dataBL = data.dataBL(electrodeNum,:,:,:,:);
+        data.dataST = data.dataST(electrodeNum,:,:,:,:);
+        for i = 1:length(data.analysisDataST)
+            data.analysisDataBL{i} = data.analysisDataBL{i}(electrodeNum,:,:,:);
+            data.analysisDataST{i} = data.analysisDataST{i}(electrodeNum,:,:,:);
+        end
+    end
 end
 
 function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)

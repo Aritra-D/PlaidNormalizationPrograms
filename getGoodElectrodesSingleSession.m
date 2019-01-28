@@ -52,11 +52,11 @@ usefulElectrodes = setdiff(electrodeList(intersect(find(d>=dRange(1)),find(d<dRa
 if getSpikeElectrodesFlag
     usefulElectrodes = intersect(usefulElectrodes,getRateAndSNRInfo(monkeyName,expDate,protocolName,folderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList));
 end
-if getOriSelectiveFlag
-%    [tuning_expDates,tuning_protocolNames,~] = dataInformationPlaidNorm(monkeyName,gridType,1);
-%    tuning_expDate = tuning_expDates{SessionNum};
-     oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
 
+SessionNum = find(strcmp(expDate,expDates));
+
+if getOriSelectiveFlag
+   oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol 
    folderName = fullfile(folderSourceString,'data',monkeyName,gridType,expDate,oriTuning_protocolName);
    folderSave = fullfile(folderName,'savedData');
    if ~exist(folderSave,'dir')
@@ -69,7 +69,6 @@ if getOriSelectiveFlag
        [~,PO, ~] = savePrefOriAndOriSelectivitySpikes(monkeyName,expDate,oriTuning_protocolName,folderSourceString,gridType);
    end
    oriCutOff = 15;
-   SessionNum = find(strcmp(expDate,expDates));
    if oriList{SessionNum}(1) == 0
        oriSelectiveElectrodes = find((PO<=oriList{SessionNum}(1)+oriCutOff & PO>=oriList{SessionNum}(1)+180-oriCutOff) | ...
                                      (PO<=oriList{SessionNum}(2)+oriCutOff & PO>=oriList{SessionNum}(2)-oriCutOff)); 
