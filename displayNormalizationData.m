@@ -407,12 +407,13 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
         
         % Plotting Functions
         function plotData_Callback(~,~)
+            
             % We turn the interface off for processing.
             InterfaceObj = findobj(hFigure,'Enable','on');
             set(InterfaceObj,'Enable','off');
+            
             %%%%%%%%%%%%%%%%%%%%%%%% Read values %%%%%%%%%%%%%%%%%%%%%%%%%%
             electrodeString = get(hElectrode,'val'); 
-            
             if length(ElectrodeArrayListAll)==1
                 if isempty(ElectrodeArrayListAll{1}{electrodeString})
                     error('No electrode found for analysis! Pease try another session!')
@@ -447,31 +448,39 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
             NormalizeDataFlag = get(hNormalizeData,'val');
             relativeMeasuresFlag = get(hRelativeMeasures,'val');
             
-%             erpRange = [str2double(get(hERPMin,'String'))...
-%                         str2double(get(hERPMax,'String'))];
-
-
             plotColor = colorNames(get(hChooseColor,'val'));
             holdOnState = get(hHoldOn,'val'); %#ok<NASGU>
             
             ColorNeuralMeasures = jet(5);
 
-             
+            hPlots_Fig1.hPlot1 = plotHandles;
+            hPlots_Fig1.hPlot2 = hNeuralMeasureColorMatrix;
+            hPlots_Fig1.hPlot3 = plotHandles2;
+            hPlots_Fig1.hPlot4 = plotHandles3;
+            hPlots_Fig1.hPlot5 = hRowCRF;
+            hPlots_Fig1.hPlot6 = hColumnCRF;
+            hPlots_Fig1.hPlot7 = hNormIndex;
+            hPlots_Fig1.hPlot8 = hOriTuning;
+            
+            hPlots_Fig2.hPlot1 = hPlotPreferred;
+            hPlots_Fig2.hPlot2 = hOtherMeaures;           
+            
+            
             if analysisMeasure == 1 % computing ERP
-                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,erpData.timeVals,erpData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
-                plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,erpData.timeVals,erpData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+                plotData(hPlots_Fig1,sessionNum,erpData.timeVals,erpData,oriTuningData,plotColor,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+                plotDataFig2(hPlots_Fig2,sessionNum,erpData.timeVals,erpData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
             elseif analysisMeasure == 2 % computing Firing rate
-                plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,firingRateData.timeVals,firingRateData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
-                plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,firingRateData.timeVals,firingRateData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+                plotData(hPlots_Fig1,sessionNum,firingRateData.timeVals,firingRateData,oriTuningData,plotColor,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+                plotDataFig2(hPlots_Fig2,sessionNum,firingRateData.timeVals,firingRateData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
             elseif analysisMeasure == 3 % computing Raster Plot from spike data
                 error('Still working on raster data!')
             elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6 % computing alpha
                 if analysisMethod == 1
-                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,fftData.freqVals,fftData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
-                    plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,fftData.freqVals,fftData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+                    plotData(hPlots_Fig1,sessionNum,fftData.freqVals,fftData,oriTuningData,plotColor,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+                    plotDataFig2(hPlots_Fig2,sessionNum,fftData.freqVals,fftData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
                 elseif analysisMethod ==2 
-                    plotData(plotHandles,hNeuralMeasureColorMatrix,plotHandles2,plotHandles3,hRowCRF,hColumnCRF,hNormIndex,hOriTuning,sessionNum,energyData.freqVals,energyData,oriTuningData,plotColor,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
-                    plotDataFig2(hPlotPreferred,hOtherMeaures,sessionNum,energyData.freqVals,energyData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+                    plotData(hPlots_Fig1,sessionNum,energyData.freqVals,energyData,oriTuningData,plotColor,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+                    plotDataFig2(hPlots_Fig2,sessionNum,energyData.freqVals,energyData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
                 end
             elseif analysisType == 7 % need to work on STA!
                 error('STA computation method not found') 
@@ -825,8 +834,8 @@ else
 
                            % PSTH & firing rate 
                            [psthData(iElec,t,c1,c2,:),xsFR] = getPSTH(spikeData(goodPos),10,[timeVals(1) timeVals(end)]);
-                           firingRatesST(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.stRange))/diff(dataParameters.stRange);
                            firingRatesBL(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.blRange))/diff(dataParameters.blRange);
+                           firingRatesST(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.stRange))/diff(dataParameters.stRange);
 
                            % fft data
                            fftBL = conv2Log(squeeze(mean(abs(fft(analogData(goodPos,blPos),[],2)))));
@@ -848,10 +857,10 @@ else
                            % computing analysis Data for particular
                            % frequency band
                            for i=1:numFreqs
-                               fftAmpST{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{i}));
                                fftAmpBL{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{i}));
-                               energyValsST{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{i}));
+                               fftAmpST{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{i}));
                                energyValsBL{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{i}));
+                               energyValsST{i}(iElec,t,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{i}));
                            end
                         end
                     end
@@ -986,7 +995,7 @@ for iElec = 1:size(x.data,1)
     end
 end
 end
-function plotData(hPlot1,hPlot2,hPlot3,hPlot4,hPlot5,hPlot6,hPlot7,hPlot8,sessionNum,xs,data,oriTuningData,colorName,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+function plotData(hPlots_Fig1,sessionNum,xs,data,oriTuningData,colorName,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
 
 if isnumeric(electrodeNum)
     data = getDataSingleElec(data,electrodeNum,analysisMeasure);
@@ -1001,13 +1010,12 @@ if analysisMeasure == 1 || analysisMeasure == 2
     data = normalizeData(data);
     end
     dataSize = size(data.data);
-    if dataSize(1) == 1
+    if dataSize(1)==1
         dataPlot = squeeze(squeeze(data.data(:,1,:,:,:)));
-    elseif dataSize(1) >1
+    elseif dataSize(1)>1
         dataPlot = squeeze(mean(squeeze(data.data(:,1,:,:,:)),1));
     end
-    
-  
+
 elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     if size(data.dataBL) == size(data.dataST) 
         dataSize = size(data.dataST);
@@ -1031,10 +1039,11 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     end
     % When Change in neural measures are to be plotted
     if relativeMeasuresFlag
-        if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
-            dataPlotdiffSTvsBL = 10*(dataPlotST-dataPlotBL); % Change in Power expressed in deciBel
-        else
-            dataPlotdiffSTvsBL = dataPlotST-dataPlotBL; 
+        dataPlotdiffSTvsBL = dataPlotST-dataPlotBL;
+        if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6 
+            if analysisMethod == 2
+                dataPlotdiffSTvsBL = 10*(dataPlotST-dataPlotBL);  % Change in Power expressed in deciBel for MT method
+            end
         end
     end
 end
@@ -1043,23 +1052,21 @@ end
 for c1 = 1:5
     for c2 = 1:5
         if analysisMeasure == 1 || analysisMeasure == 2
-            plot(hPlot1(c1,c2),xs,squeeze(dataPlot(c1,c2,:)),'color',colorName);
+            plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlot(c1,c2,:)),'color',colorName);
         elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
             if ~relativeMeasuresFlag
-            plot(hPlot1(c1,c2),xs,squeeze(dataPlotBL(c1,c2,:)),'g');
-            hold(hPlot1(c1,c2),'on')
-            plot(hPlot1(c1,c2),xs,squeeze(dataPlotST(c1,c2,:)),'k');
-            hold(hPlot1(c1,c2),'off')
+            plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlotBL(c1,c2,:)),'g');
+            hold(hPlots_Fig1.hPlot1(c1,c2),'on')
+            plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlotST(c1,c2,:)),'k');
+            hold(hPlots_Fig1.hPlot1(c1,c2),'off')
             else
-                plot(hPlot1(c1,c2),xs,squeeze(dataPlotdiffSTvsBL(c1,c2,:)),'b');
+                plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlotdiffSTvsBL(c1,c2,:)),'b');
             end
-    
         end
     end
 end
 
 % Color coded 5x5 Matrix of raw Neural Measures
-
 if dataSize(1)==1
     if analysisMeasure == 1 || analysisMeasure == 2
         analysisData = squeeze(data.analysisDataST(:,1,:,:));
@@ -1110,35 +1117,36 @@ elseif dataSize(1)>1
     end
 end
 if relativeMeasuresFlag
+    analysisData = analysisData-analysisDataBL;
     if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
-        analysisData = 10*(analysisData-analysisDataBL); % Change in power expressed in deciBel
-    else
-        analysisData = analysisData-analysisDataBL; % No need to do this for ERP & firing Rate
+        if analysisMethod == 2
+            analysisData = 10*(analysisData-analysisDataBL);% Change in power expressed in deciBel
+        end
     end
 end
 
-imagesc(analysisData,'parent',hPlot2);colorbar(hPlot2);set(hPlot2,'Position',[0.52 0.05 0.12 0.25]);
+imagesc(analysisData,'parent',hPlots_Fig1.hPlot2);colorbar(hPlots_Fig1.hPlot2);set(hPlots_Fig1.hPlot2,'Position',[0.52 0.05 0.12 0.25]);
 NIAnalysisData = analysisData;
 NormIndex = (NIAnalysisData(1,1)+ NIAnalysisData(5,5))/NIAnalysisData(1,5);
-title(hPlot2,['NI: ',num2str(NormIndex)],'fontWeight','bold');
+title(hPlots_Fig1.hPlot2,['NI: ',num2str(NormIndex)],'fontWeight','bold');
 
 if size(data.analysisDataST,1) == 1
     if sessionNum <=22
         colorNamesOriTuning = hsv(30);
         oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
         for index = 1:size(data.analysisDataST,1)
-        plot(hPlot8,oValsUnique_Tuning,oriTuningData.FR(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
-        text(0.05,index*0.1+0.5,['PO: ' num2str(oriTuningData.PO(index)) ',OS: ' num2str(oriTuningData.OS(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hPlot8);
-        hold(hPlot8,'on');
+        plot(hPlots_Fig1.hPlot8,oValsUnique_Tuning,oriTuningData.FR(index,:),'Marker','o','color',colorNamesOriTuning(index,:,:));
+        text(0.05,index*0.1+0.5,['PO: ' num2str(oriTuningData.PO(index)) ',OS: ' num2str(oriTuningData.OS(index))],'color',colorNamesOriTuning(index,:,:),'unit','normalized','parent',hPlots_Fig1.hPlot8);
+        hold(hPlots_Fig1.hPlot8,'on');
         end
-        hold(hPlot8,'off');
+        hold(hPlots_Fig1.hPlot8,'off');
     else
     end
 end
 
 if dataSize(1)>1
 % NI population histogram
-histogram(hPlot7,NI_population);
+histogram(hPlots_Fig1.hPlot7,NI_population);
 end
 
 % Contrast Response curves Row-Wise & Column-wise
@@ -1147,22 +1155,22 @@ cValsUnique2 = [0 12.5 25 50 100]./2;
 conFlipped = 5:-1:1;
 CRFColors = jet(length(cValsUnique));
 for iCon = 1:5
-    plot(hPlot3(1,iCon),cValsUnique,analysisData(conFlipped(iCon),:),...
+    plot(hPlots_Fig1.hPlot3(1,iCon),cValsUnique,analysisData(conFlipped(iCon),:),...
         'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    plot(hPlot4(1,iCon),cValsUnique2,analysisData(:,conFlipped(iCon)),...
+    plot(hPlots_Fig1.hPlot4(1,iCon),cValsUnique2,analysisData(:,conFlipped(iCon)),...
         'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    plot(hPlot5(1,1),cValsUnique,analysisData(conFlipped(iCon),:),...
+    plot(hPlots_Fig1.hPlot5(1,1),cValsUnique,analysisData(conFlipped(iCon),:),...
         'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    hold(hPlot5(1,1),'on')
-    plot(hPlot6(1,1),cValsUnique2,analysisData(:,conFlipped(iCon)),...
+    hold(hPlots_Fig1.hPlot5(1,1),'on')
+    plot(hPlots_Fig1.hPlot6(1,1),cValsUnique2,analysisData(:,conFlipped(iCon)),...
         'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    hold(hPlot6(1,1),'on')
+    hold(hPlots_Fig1.hPlot6(1,1),'on')
 end
-hold(hPlot5(1,1),'off'); hold(hPlot6(1,1),'off')
+hold(hPlots_Fig1.hPlot5(1,1),'off'); hold(hPlots_Fig1.hPlot6(1,1),'off')
 end
 
 
-function plotDataFig2(hPlot1,hPlot2,~,xs,data,colors,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+function plotDataFig2(hPlots_Fig2,~,xs,data,colors,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
 
 if isnumeric(electrodeNum)
     data = getDataSingleElec(data,electrodeNum,analysisMeasure);
@@ -1208,10 +1216,11 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     end
     % When Change in neural measures are to be plotted
     if relativeMeasuresFlag
+        dataPlotdiffSTvsBL = dataPlotST-dataPlotBL; 
         if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
-            dataPlotdiffSTvsBL = dataPlotST-dataPlotBL; % Change in Power expressed in deciBel
-        else
-            dataPlotdiffSTvsBL = dataPlotST-dataPlotBL; 
+            if analysisMethod ==2
+                dataPlotdiffSTvsBL = 10*(dataPlotST-dataPlotBL);
+            end% Change in Power expressed in deciBel
         end
     end
 end
@@ -1221,28 +1230,28 @@ cFlipped = 5:-1:1;
 for c1 = 1:5
     for c2 = 1:5
         if analysisMeasure == 1 || analysisMeasure == 2
-            plot(hPlot1(1,c2),xs,squeeze(dataPlot(cFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
+            plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlot(cFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
             
-            hold(hPlot1(1,c2),'on');
+            hold(hPlots_Fig2.hPlot1(1,c2),'on');
             
         elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
             if ~relativeMeasuresFlag
-            plot(hPlot1(1,c2),xs,squeeze(dataPlotBL(cFlipped(c1),c2,:)),'k');
-            hold(hPlot1(1,c2),'on')
-            plot(hPlot1(1,c2),xs,squeeze(dataPlotST(cFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
+            plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotBL(cFlipped(c1),c2,:)),'k');
+            hold(hPlots_Fig2.hPlot1(1,c2),'on')
+            plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotST(cFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
             
             else
-                plot(hPlot1(1,c2),xs,squeeze(dataPlotBL(cFlipped(c1),c2,:))-squeeze(dataPlotBL(cFlipped(c1),c2,:)),'k');
-                plot(hPlot1(1,c2),xs,squeeze(dataPlotdiffSTvsBL(cFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
+                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotBL(cFlipped(c1),c2,:))-squeeze(dataPlotBL(cFlipped(c1),c2,:)),'k');
+                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotdiffSTvsBL(cFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
             end
             
         end
         
 %         text(0.05,c1*0.12+0.3,['Null: ',num2str(cValsUnique(c1)) ' %'],'color',colors(c1,:,:),'unit','normalized','parent',hPlot1(1))
-        title(hPlot1(1,c2),[num2str(cValsUnique(c2)) ' %'])
+        title(hPlots_Fig2.hPlot1(1,c2),[num2str(cValsUnique(c2)) ' %'])
     end
 end
-hold(hPlot1(1,c2),'off');
+hold(hPlots_Fig2.hPlot1(1,c2),'off');
 % % Color coded 5x5 Matrix of raw Neural Measures
 
 if dataSize(1)==1
@@ -1312,16 +1321,17 @@ elseif dataSize(1)>1
     end
 end
 if relativeMeasuresFlag
+    analysisData = analysisData-analysisDataBL;
     if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
-        analysisData = analysisData-analysisDataBL; % Change in power expressed in deciBel
-    else
-        analysisData = analysisData-analysisDataBL; % No need to do this for ERP & firing Rate
+        if analysisMethod ==2
+        analysisData = 10*(analysisData-analysisDataBL); % Change in power expressed in deciBel
+        end
     end
 end
 
-imagesc(analysisData,'parent',hPlot2(3));
+imagesc(analysisData,'parent',hPlots_Fig2.hPlot2(3));
 % grid on;
-color_Bar = colorbar(hPlot2(3));% 
+color_Bar = colorbar(hPlots_Fig2.hPlot2(3));% 
 colorYlabelHandle = get(color_Bar,'Ylabel');
 if analysisMeasure==1
     YlabelString = 'Potential';
@@ -1332,17 +1342,20 @@ elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
         YlabelString = 'log_1_0(FFT Amplitude)';
     else
         YlabelString = 'log_1_0(\Delta FFT Amplitude)';
+        if analysisMethod == 2
+            YlabelString = 'Change in Power (dB)';
+        end
     end
     
 end
 
 set(colorYlabelHandle,'String',YlabelString,'fontSize',14);
 
-plotPos = get(hPlot2(3),'Position');
-set(hPlot2(3),'Position',[plotPos(1) plotPos(2) 0.12 plotPos(4)]);
+plotPos = get(hPlots_Fig2.hPlot2(3),'Position');
+set(hPlots_Fig2.hPlot2(3),'Position',[plotPos(1) plotPos(2) 0.12 plotPos(4)]);
 NIAnalysisData = analysisData;
 NormIndex = (NIAnalysisData(1,1)+ NIAnalysisData(5,5))/NIAnalysisData(1,5);
-title(hPlot2(3),['NI: ',num2str(NormIndex)],'fontWeight','bold');
+title(hPlots_Fig2.hPlot2(3),['NI: ',num2str(NormIndex)],'fontWeight','bold');
 % 
 % if size(data.analysisDataST,1) == 1
 %     if sessionNum <=12
@@ -1360,7 +1373,7 @@ title(hPlot2(3),['NI: ',num2str(NormIndex)],'fontWeight','bold');
 % 
 if dataSize(1)>1
 % NI population histogram
-histogram(hPlot2(2),NI_population);
+histogram(hPlots_Fig2.hPlot2(2),NI_population);
 end
 
 % Contrast Response curves Row-Wise & Column-wise
@@ -1370,48 +1383,48 @@ end
 conFlipped = 5:-1:1;
 CRFColors = jet(length(cValsUnique));
 for iCon = 1:5
-    plot(hPlot2(1),cValsUnique,analysisData(conFlipped(iCon),:),...
+    plot(hPlots_Fig2.hPlot2(1),cValsUnique,analysisData(conFlipped(iCon),:),...
         'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    hold(hPlot2(1),'on')
+    hold(hPlots_Fig2.hPlot2(1),'on')
 end
-hold(hPlot2(1),'off');
+hold(hPlots_Fig2.hPlot2(1),'off');
 
 if analysisMeasure == 1||analysisMeasure == 2
-    displayRange(hPlot1,[0.2 0.4],getYLims(hPlot1),'k');
+    displayRange(hPlots_Fig2.hPlot1,[0.2 0.4],getYLims(hPlots_Fig2.hPlot1),'k');
 elseif analysisMeasure ==4 
-    displayRange(hPlot1,[8 12],getYLims(hPlot1),'k');
+    displayRange(hPlots_Fig2.hPlot1,[8 12],getYLims(hPlots_Fig2.hPlot1),'k');
 elseif analysisMeasure == 5  
-    displayRange(hPlot1,[30 80],getYLims(hPlot1),'k');
+    displayRange(hPlots_Fig2.hPlot1,[30 80],getYLims(hPlots_Fig2.hPlot1),'k');
 elseif analysisMeasure == 6     
-    displayRange(hPlot1,[16 16],getYLims(hPlot1),'k');
+    displayRange(hPlots_Fig2.hPlot1,[16 16],getYLims(hPlots_Fig2.hPlot1),'k');
 end
 
-tickLengthPlot = 2*get(hPlot2(1),'TickLength');
+tickLengthPlot = 2*get(hPlots_Fig2.hPlot2(1),'TickLength');
 
 for idx =1:5
-set(hPlot1(idx),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+set(hPlots_Fig2.hPlot1(idx),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 end
 if analysisMeasure == 1||analysisMeasure == 2
-    xlabel(hPlot1(1),'Time(ms)');
+    xlabel(hPlots_Fig2.hPlot1(1),'Time(ms)');
 elseif analysisMeasure == 4||analysisMeasure == 5|| analysisMeasure == 6
-    xlabel(hPlot1(1),'Frequency(Hz)');
+    xlabel(hPlots_Fig2.hPlot1(1),'Frequency(Hz)');
 end
 
 if analysisMeasure == 1
-    ylabel(hPlot1(1),'ERP (\mu V)');ylabel(hPlot2(1),'RMS value of ERP');
+    ylabel(hPlots_Fig2.hPlot1(1),'ERP (\mu V)');ylabel(hPlots_Fig2.hPlot2(1),'RMS value of ERP');
 elseif analysisMeasure == 2 
-    ylabel(hPlot1(1),'Spikes/s');ylabel(hPlot2(1),'spikes/s');
+    ylabel(hPlots_Fig2.hPlot1(1),'Spikes/s');ylabel(hPlots_Fig2.hPlot2(1),'spikes/s');
 elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6
     if analysisMethod ==1
-        ylabel(hPlot1(1),'log_1_0 (FFT Amplitude)'); ylabel(hPlot2(1),'log_1_0 (FFT Amplitude)');
+        ylabel(hPlots_Fig2.hPlot1(1),'log_1_0 (FFT Amplitude)'); ylabel(hPlots_Fig2.hPlot2(1),'log_1_0 (FFT Amplitude)');
         if relativeMeasuresFlag
-            ylabel(hPlot1(1),'log_1_0 (\Delta FFT Amplitude)'); ylabel(hPlot2(1),'log_1_0 (\Delta FFT Amplitude)')
+            ylabel(hPlots_Fig2.hPlot1(1),'log_1_0 (\Delta FFT Amplitude)'); ylabel(hPlots_Fig2.hPlot2(1),'log_1_0 (\Delta FFT Amplitude)')
         end
 
     elseif analysisMethod ==2
-        ylabel(hPlot1(1),'log_1_0 (Power)');ylabel(hPlot2(1),'log_1_0 (Power)')
+        ylabel(hPlots_Fig2.hPlot1(1),'log_1_0 (Power)');ylabel(hPlots_Fig2.hPlot2(1),'log_1_0 (Power)')
         if relativeMeasuresFlag
-            ylabel(hPlot1(1),'Change in Power (dB)');  ylabel(hPlot2(1),'Change in Power (dB)');
+            ylabel(hPlots_Fig2.hPlot1(1),'Change in Power (dB)');  ylabel(hPlots_Fig2.hPlot2(1),'Change in Power (dB)');
         end
     end
 
@@ -1420,20 +1433,20 @@ end
 
 
 %             set(hOtherMeaures(1),'XScale','linear')
-text(0.5,0.3,['N = ' num2str(dataSize(1))],'color','k','unit','normalized','fontSize',14,'fontWeight','bold','parent',hPlot2(1))
-set(hPlot2(1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-set(hPlot2(1),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
-xlabel(hPlot2(1),'Contrast (%)');
-title(hPlot2(1),'CRF along Pref Ori')
+text(0.5,0.3,['N = ' num2str(dataSize(1))],'color','k','unit','normalized','fontSize',14,'fontWeight','bold','parent',hPlots_Fig2.hPlot2(1))
+set(hPlots_Fig2.hPlot2(1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+set(hPlots_Fig2.hPlot2(1),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
+xlabel(hPlots_Fig2.hPlot2(1),'Contrast (%)');
+title(hPlots_Fig2.hPlot2(1),'CRF along Pref Ori')
 
 
-set(hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-xlabel(hPlot2(2),'Normalization Index'); ylabel(hPlot2(2),'No. of Electrodes');
-title(hPlot2(2),'Population NI Histogram')
+set(hPlots_Fig2.hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+xlabel(hPlots_Fig2.hPlot2(2),'Normalization Index'); ylabel(hPlots_Fig2.hPlot2(2),'No. of Electrodes');
+title(hPlots_Fig2.hPlot2(2),'Population NI Histogram')
 
-set(hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-set(hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
-xlabel(hPlot2(3),'Contrast (%)');ylabel(hPlot2(3),'Contrast (%)');
+set(hPlots_Fig2.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+set(hPlots_Fig2.hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
+xlabel(hPlots_Fig2.hPlot2(3),'Contrast (%)');ylabel(hPlots_Fig2.hPlot2(3),'Contrast (%)');
 
 end
 
