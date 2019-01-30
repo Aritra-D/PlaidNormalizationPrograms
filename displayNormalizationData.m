@@ -220,7 +220,7 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
         
         % Analysis Type
         analysisTypeString = ...
-        ['ERP|Firing Rate|Raster|Alpha [8-12 Hz]|Gamma Power [30-60 Hz]|'...
+        ['ERP|Firing Rate|Raster|Alpha [8-12 Hz]|Gamma Power [30-80 Hz]|'...
          'SSVEP (16 Hz)|STA'];
 
         uicontrol('Parent',hParameterPanel,'Unit','Normalized', ...
@@ -501,22 +501,6 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
 %                 text(0.35,1.15,'Preferred Orientation' ,'unit','normalized','fontsize',20,'fontweight','bold','parent',textH1);
 %             end
             
-            flippedcValsUnique2 = flip(cValsUnique2);
-            for c = 1:5
-            title(plotHandles(1,c),[num2str(cValsUnique(c)) ' %']);
-            ylabel(plotHandles(c,1),[num2str(flippedcValsUnique2(c)) ' %'],'fontWeight','bold');
-            end
-            
-            % Setting xlabels and ylabels for Color matrix of neural
-            % measures
-            set(hNeuralMeasureColorMatrix,'XTickLabel',cValsUnique);
-            set(hNeuralMeasureColorMatrix,'YTickLabel',flip(cValsUnique2));
-            
-            % Setting title,xlabel and ylabel for OriTuning Plot
-            title(hOriTuning,'Ori Tuning for Single Session (Spike Data)');
-%             set(hOriTuning,'XTickLabel',oValsUnique_Tuning);
-
-
             % Setting Plot Ranges
             if analysisMeasure<=3 %ERP or spikes
                 xMin = str2double(get(hStimMin,'String'));
@@ -540,7 +524,7 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
             rescaleData(plotHandles3,0,50,getYLims(plotHandles3));
             rescaleData(hRowCRF,0,50,getYLims(hRowCRF));
             rescaleData(hColumnCRF,0,50,getYLims(hColumnCRF));
-            rescaleData(hOriTuning,0,160,getYLims(hOriTuning));
+%             rescaleData(hOriTuning,0,160,getYLims(hOriTuning));
             rescaleData(hPlotPreferred,xMin,xMax,getYLims(hPlotPreferred));
             rescaleData(hOtherMeaures(1),0,50,getYLims(hOtherMeaures(1)));
             
@@ -838,10 +822,10 @@ else
                            firingRatesST(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.stRange))/diff(dataParameters.stRange);
 
                            % fft data
-                           fftBL = conv2Log(squeeze(mean(abs(fft(analogData(goodPos,blPos),[],2)))));
-                           fftST = conv2Log(squeeze(mean(abs(fft(analogData(goodPos,stPos),[],2)))));
-                           fftDataBL(iElec,t,c1,c2,:) = fftBL;
-                           fftDataST(iElec,t,c1,c2,:) = fftST;
+                           fftBL = squeeze(mean(abs(fft(analogData(goodPos,blPos),[],2))));
+                           fftST = squeeze(mean(abs(fft(analogData(goodPos,stPos),[],2))));
+                           fftDataBL(iElec,t,c1,c2,:) = conv2Log(fftBL);
+                           fftDataST(iElec,t,c1,c2,:) = conv2Log(fftST);
 
                            % Power Estimation by MT method
                            dataBL = analogData(goodPos,blPos)';
@@ -1066,6 +1050,15 @@ for c1 = 1:5
     end
 end
 
+
+cValsUnique = [0 12.5 25 50 100]./2;
+cValsUnique2 = [0 12.5 25 50 100]./2;
+conFlipped = 5:-1:1;
+for c = 1:5
+title(hPlots_Fig1.hPlot1(1,c),[num2str(cValsUnique(c)) ' %']);
+ylabel(hPlots_Fig1.hPlot1(c,1),[num2str(cValsUnique(conFlipped(c))) ' %'],'fontWeight','bold');
+end
+
 % Color coded 5x5 Matrix of raw Neural Measures
 if dataSize(1)==1
     if analysisMeasure == 1 || analysisMeasure == 2
@@ -1117,10 +1110,13 @@ elseif dataSize(1)>1
     end
 end
 if relativeMeasuresFlag
-    analysisData = analysisData-analysisDataBL;
-    if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
+    if analysisMeasure == 1||analysisMeasure == 2
+            analysisData = analysisData-analysisDataBL;
+    elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
         if analysisMethod == 2
             analysisData = 10*(analysisData-analysisDataBL);% Change in power expressed in deciBel
+        else
+            analysisData = (analysisData-analysisDataBL);
         end
     end
 end
@@ -1128,7 +1124,11 @@ end
 imagesc(analysisData,'parent',hPlots_Fig1.hPlot2);colorbar(hPlots_Fig1.hPlot2);set(hPlots_Fig1.hPlot2,'Position',[0.52 0.05 0.12 0.25]);
 NIAnalysisData = analysisData;
 NormIndex = (NIAnalysisData(1,1)+ NIAnalysisData(5,5))/NIAnalysisData(1,5);
-title(hPlots_Fig1.hPlot2,['NI: ',num2str(NormIndex)],'fontWeight','bold');
+title(hPlots_Fig1.hPlot2,['NI: ',num2str(NormIndex)],'fontWeight','bold','fontSize',10);
+% Setting xlabels and ylabels for Color matrix of neural
+% measures
+set(hPlots_Fig1.hPlot2,'XTickLabel',cValsUnique);
+set(hPlots_Fig1.hPlot2,'YTickLabel',flip(cValsUnique2));
 
 if size(data.analysisDataST,1) == 1
     if sessionNum <=22
@@ -1144,15 +1144,16 @@ if size(data.analysisDataST,1) == 1
     end
 end
 
+% Setting title,xlabel and ylabel for OriTuning Plot
+title(hPlots_Fig1.hPlot8,'Ori Tuning for Single Session (Spike Data)','fontSize',10);
+%             set(hOriTuning,'XTickLabel',oValsUnique_Tuning);
+
 if dataSize(1)>1
 % NI population histogram
 histogram(hPlots_Fig1.hPlot7,NI_population);
 end
 
 % Contrast Response curves Row-Wise & Column-wise
-cValsUnique = [0 12.5 25 50 100]./2;
-cValsUnique2 = [0 12.5 25 50 100]./2;
-conFlipped = 5:-1:1;
 CRFColors = jet(length(cValsUnique));
 for iCon = 1:5
     plot(hPlots_Fig1.hPlot3(1,iCon),cValsUnique,analysisData(conFlipped(iCon),:),...
@@ -1321,10 +1322,13 @@ elseif dataSize(1)>1
     end
 end
 if relativeMeasuresFlag
-    analysisData = analysisData-analysisDataBL;
-    if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
-        if analysisMethod ==2
-        analysisData = 10*(analysisData-analysisDataBL); % Change in power expressed in deciBel
+    if analysisMeasure == 1||analysisMeasure == 2
+            analysisData = analysisData-analysisDataBL;
+    elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
+        if analysisMethod == 2
+            analysisData = 10*(analysisData-analysisDataBL);% Change in power expressed in deciBel
+        else
+            analysisData = (analysisData-analysisDataBL);
         end
     end
 end
