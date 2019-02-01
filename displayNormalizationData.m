@@ -139,8 +139,8 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
     function processData_Callback(~,~)
         
         % We turn the interface off for processing.
-        InterfaceObj = findobj(hFigure,'Enable','on');
-        set(InterfaceObj,'Enable','off');
+%         InterfaceObj = findobj(hFigure,'Enable','on');
+%         set(InterfaceObj,'Enable','off');
         
         % get Session Information
         sessionNum = get(hSession,'val'); 
@@ -409,15 +409,15 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
         hEnergyPlots = getPlotHandles(1,2,[0.1 0.55 0.5 0.35],0.03,0.05,0); linkaxes(hEnergyPlots);
         hOtherPanels = getPlotHandles(1,3,[0.1 0.15 0.5 0.25],0.05,0.05,0);
 
-        % We turn back on the interface
-        set(InterfaceObj,'Enable','on');
+%         % We turn back on the interface
+%         set(InterfaceObj,'Enable','on');
         
         % Plotting Functions
         function plotData_Callback(~,~)
             
             % We turn the interface off for processing.
-            InterfaceObj = findobj(hFigure,'Enable','on');
-            set(InterfaceObj,'Enable','off');
+%             InterfaceObj = findobj(hFigure,'Enable','on');
+%             set(InterfaceObj,'Enable','off');
             
             %%%%%%%%%%%%%%%%%%%%%%%% Read values %%%%%%%%%%%%%%%%%%%%%%%%%%
             electrodeString = get(hElectrode,'val'); 
@@ -545,7 +545,7 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
             rescaleData(hOtherPanels(1),0,50,getYLims(hOtherPanels(1)));
             
             % We turn back on the interface
-            set(InterfaceObj,'Enable','on');
+%             set(InterfaceObj,'Enable','on');
         end 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1515,6 +1515,8 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     end
 end
 
+Norm_colorNames(1,:) = colors(5,:);
+Norm_colorNames(2:5,:) = flip(parula(4),1);
 % Plotting 5x5 plots for raw Neural Measures
 cFlipped = 5:-1:1;
 for c = 1:5
@@ -1539,13 +1541,19 @@ for c = 1:5
             
             plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotBL(cFlipped(c),cFlipped(1),:))-squeeze(dataPlotBL(cFlipped(c),cFlipped(1),:)),'k');
             hold(hPlots_Fig3.hPlot1(2),'on')
-            plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotdiffSTvsBL(cFlipped(c),cFlipped(1),:)),'color',colors(c,:,:),'LineWidth',2);
+            if analysisMeasure == 5
+                plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotdiffSTvsBL(cFlipped(c),cFlipped(1),:)),'color',Norm_colorNames(c,:,:),'LineWidth',2);
+            elseif analysisMeasure == 6
+                plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotdiffSTvsBL(c,cFlipped(1),:)),'color',Norm_colorNames(cFlipped(c),:,:),'LineWidth',2);
+            end
         end
     end
         
-%         text(0.05,c1*0.12+0.3,['Null: ',num2str(cValsUnique(c1)) ' %'],'color',colors(c1,:,:),'unit','normalized','parent',hPlot1(1))
+    text(0.3,c*0.05+0.01,['Ori 1: ' num2str(cValsUnique(c)) ' % + Ori 2: ' num2str(cValsUnique(1)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
+    text(0.3,c*0.05+0.01,['Ori 1: ' num2str(cValsUnique(5)) ' % + Ori 2: ' num2str(cValsUnique(cFlipped(c))) ' %'],'color',Norm_colorNames(cFlipped(c),:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
+
     title(hPlots_Fig3.hPlot1(1),'Response for Orientation 1')
-    title(hPlots_Fig3.hPlot1(2),'Normalization Effect when Ori 2 added')
+    title(hPlots_Fig3.hPlot1(2),'Normalization Effect at 50% contrast when Ori 2 is added')
 end
 hold(hPlots_Fig3.hPlot1(1),'off');
 hold(hPlots_Fig3.hPlot1(2),'off');
@@ -1567,6 +1575,8 @@ if dataSize(1)==1
         analysisDataBL = squeeze(data.analysisDataBL{3}(:,2,:,:));
     end
 elseif dataSize(1)>1
+    
+    
     if analysisMeasure == 1 || analysisMeasure == 2
         analysisData = squeeze(mean(squeeze(data.analysisDataST(:,1,:,:)),1));
         analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL(:,1,:,:)),1));
@@ -1581,6 +1591,14 @@ elseif dataSize(1)>1
         end
     elseif analysisMeasure == 4
         analysisData = squeeze(mean(squeeze(data.analysisDataST{1}(:,1,:,:)),1));
+        sem_analysisData = squeeze(std(squeeze(data.analysisDataST{1}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{1},1)));
+        % defining common Baseline
+        for j = 1:size(data.analysisDataBL{1},1)
+            for k = 1:2
+                meanValsBL = repmat(mean(mean(squeeze(data.analysisDataBL{1}(j,k,:,:)),2),1),[5 5]);
+                data.analysisDataBL{1}(j,k,:,:) = meanValsBL;
+            end
+        end
         analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{1}(:,1,:,:)),1));
         for iElec= 1:size(data.analysisDataST{1},1)
             clear electrodeVals
@@ -1593,6 +1611,14 @@ elseif dataSize(1)>1
         end        
     elseif analysisMeasure == 5
         analysisData = squeeze(mean(squeeze(data.analysisDataST{2}(:,1,:,:)),1));
+        sem_analysisData = squeeze(std(squeeze(data.analysisDataST{2}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{2},1)));
+        % defining common Baseline
+        for j = 1:size(data.analysisDataBL{2},1)
+            for k = 1:2
+            meanValsBL = repmat(mean(mean(squeeze(data.analysisDataBL{2}(j,k,:,:)),2),1),[5 5]);
+            data.analysisDataBL{2}(j,k,:,:) = meanValsBL;
+            end
+        end
         analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{2}(:,1,:,:)),1));
         for iElec= 1:size(data.analysisDataST{2},1)
             clear electrodeVals
@@ -1606,6 +1632,15 @@ elseif dataSize(1)>1
         end        
     elseif analysisMeasure == 6
         analysisData = squeeze(mean(squeeze(data.analysisDataST{3}(:,2,:,:)),1));
+        sem_analysisData = squeeze(std(squeeze(data.analysisDataST{3}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{3},1)));
+        
+        % defining common Baseline
+        for j = 1:size(data.analysisDataBL{3},1)
+            for k = 1:2
+            meanValsBL = repmat(mean(mean(squeeze(data.analysisDataBL{3}(j,k,:,:)),2),1),[5 5]);
+            data.analysisDataBL{3}(j,k,:,:) = meanValsBL;
+            end
+        end        
         analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{3}(:,2,:,:)),1));
         for iElec= 1:size(data.analysisDataST{3},1)
             clear electrodeVals
@@ -1621,11 +1656,21 @@ end
 if relativeMeasuresFlag
     if analysisMeasure == 1||analysisMeasure == 2
             analysisData = analysisData-analysisDataBL;
+            
     elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
         if analysisMethod == 2
             analysisData = 10*(analysisData-analysisDataBL);% Change in power expressed in deciBel
         else
             analysisData = (analysisData-analysisDataBL);
+        end
+        
+        if analysisMeasure == 4
+            sem_analysisData = squeeze(std(squeeze(data.analysisDataST{1}(:,1,:,:))-squeeze(data.analysisDataBL{1}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{1},1)));
+        elseif analysisMeasure == 5
+            sem_analysisData = squeeze(std(squeeze(data.analysisDataST{2}(:,1,:,:))-squeeze(data.analysisDataBL{2}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{2},1)));
+        elseif analysisMeasure == 6
+            sem_analysisData = squeeze(std(squeeze(data.analysisDataST{3}(:,2,:,:))-squeeze(data.analysisDataBL{3}(:,2,:,:)),[],1)./sqrt(size(data.analysisDataST{3},1)));
+            
         end
     end
 end
@@ -1660,16 +1705,19 @@ title(hPlots_Fig3.hPlot2(3),['NI: ',num2str(NormIndex)],'fontWeight','bold');
 
 if dataSize(1)>1
 % NI population histogram
-histogram(hPlots_Fig3.hPlot2(2),NI_population);
+histogram(hPlots_Fig3.hPlot2(2),NI_population);xlim([-1 1])
 end
 
 % Contrast Response curves Row-Wise & Column-wise
 conFlipped = 5:-1:1;
-CRFColors = jet(length(cValsUnique));
+% CRFColors = jet(length(cValsUnique));
 for iCon = 1:5
-    plot(hPlots_Fig3.hPlot2(1),cValsUnique,analysisData(conFlipped(iCon),:),...
-        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
+    errorbar(cValsUnique,analysisData(conFlipped(iCon),:),sem_analysisData(conFlipped(iCon),:),...
+        'Marker','o','LineWidth',2,'color',Norm_colorNames(iCon,:,:),'parent',hPlots_Fig3.hPlot2(1))
     hold(hPlots_Fig3.hPlot2(1),'on')
+    
+    text(0.5,iCon*0.07+0.05,['Ori 2: ' num2str(cValsUnique(iCon)) ' %'],'color',Norm_colorNames(iCon,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot2(1))
+
 end
 hold(hPlots_Fig3.hPlot2(1),'off');
 
@@ -1717,12 +1765,11 @@ end
 
 
 %             set(hOtherMeaures(1),'XScale','linear')
-text(0.5,0.3,['N = ' num2str(dataSize(1))],'color','k','unit','normalized','fontSize',14,'fontWeight','bold','parent',hPlots_Fig3.hPlot2(1))
+% text(0.5,0.3,['N = ' num2str(dataSize(1))],'color','k','unit','normalized','fontSize',14,'fontWeight','bold','parent',hPlots_Fig3.hPlot2(1))
 set(hPlots_Fig3.hPlot2(1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlots_Fig3.hPlot2(1),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
-xlabel(hPlots_Fig3.hPlot2(1),'Contrast (%)');
+xlabel(hPlots_Fig3.hPlot2(1),'Ori 1 Contrast (%)');
 title(hPlots_Fig3.hPlot2(1),'CRF along Pref Ori')
-
 
 set(hPlots_Fig3.hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 xlabel(hPlots_Fig3.hPlot2(2),'Normalization Index'); ylabel(hPlots_Fig3.hPlot2(2),'No. of Electrodes');
@@ -1730,7 +1777,7 @@ title(hPlots_Fig3.hPlot2(2),'Population NI Histogram')
 
 set(hPlots_Fig3.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlots_Fig3.hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
-xlabel(hPlots_Fig3.hPlot2(3),'Contrast (%)');ylabel(hPlots_Fig3.hPlot2(3),'Contrast (%)');
+xlabel(hPlots_Fig3.hPlot2(3),'Ori 1 Contrast (%)');ylabel(hPlots_Fig3.hPlot2(3),'Ori 2 Contrast (%)');
 
 end
 
