@@ -1556,22 +1556,31 @@ for c = 1:5
         text(0.55,0.45+6*0.08,'Ori:1','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
         text(0.55,0.45+6*0.08,'Ori:2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
 
-    elseif analysisMeasure == 5||analysisMeasure == 4
+    elseif analysisMeasure == 5
         text(0.05,0.45+c*0.08,[num2str(cValsUnique(c)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
         text(0.05,0.45+6*0.08,'Ori:1','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
 
         text(0.05,0.45+c*0.08,[num2str(cValsUnique(cFlipped(c))) ' %'],'color',Norm_colorNames(cFlipped(c),:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
         text(0.05,0.45+6*0.08,'Ori:2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-    elseif analysisMeasure == 6
-        text(0.05,0.45+c*0.08,[num2str(cValsUnique(c)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-        text(0.05,0.45+6*0.08,'Ori:1','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
+    elseif analysisMeasure == 6||analysisMeasure == 4
+        text(0.1+c*0.15,0.15,[num2str(cValsUnique(c)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
+        if c==1
+            text(0.1,0.15,'Ori 1:','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
+        end
 
-        text(0.05,0.45+c*0.08,[num2str(cValsUnique(cFlipped(c))) ' %'],'color',Norm_colorNames(cFlipped(c),:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-        text(0.05,0.45+6*0.08,'Ori:2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
+        text(0.1+c*0.15,0.15,[num2str(cValsUnique(c)) ' %'],'color',Norm_colorNames(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
+        if c==1
+            text(0.1,0.15,'Ori 2:','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
+        end
     end
 
-    title(hPlots_Fig3.hPlot1(1),'Response for Orientation 1')
-    title(hPlots_Fig3.hPlot1(2),'Normalization Effect at 50% contrast of Ori 1 when Ori 2 is added')
+end
+if analysisMeasure == 2
+    title(hPlots_Fig3.hPlot1(1),'Spike Response for Orientation 1')
+    title(hPlots_Fig3.hPlot1(2),'Spike Response at 50% contrast of Ori 1 when Ori 2 is added')
+else
+    title(hPlots_Fig3.hPlot1(1),'Change in PSD for Orientation 1')
+    title(hPlots_Fig3.hPlot1(2),'Change in PSD at 50% contrast of Ori 1 when Ori 2 is added')
 end
 hold(hPlots_Fig3.hPlot1(1),'off');
 hold(hPlots_Fig3.hPlot1(2),'off');
@@ -1723,7 +1732,7 @@ plotPos = get(hPlots_Fig3.hPlot2(3),'Position');
 set(hPlots_Fig3.hPlot2(3),'Position',[plotPos(1) plotPos(2) 0.12 plotPos(4)]);
 % NIAnalysisData = analysisData;
 % NormIndex = NIAnalysisData(1,5)/((NIAnalysisData(1,1)+ NIAnalysisData(5,5))/2)-1;
-title(hPlots_Fig3.hPlot2(3),['Median NI: ',num2str(round(median(NI_population),2))],'fontWeight','bold');
+title(hPlots_Fig3.hPlot2(3),['Mean NI: ',num2str(round(mean(NI_population),2))],'fontWeight','bold');
 
 if dataSize(1)>1
 % NI population histogram
@@ -1751,6 +1760,9 @@ errorbar(cValsUnique,diag(flipud(analysisData)),diag(flipud(sem_analysisData)),'
 % 
 % end
 hold(hPlots_Fig3.hPlot2(1),'off');
+text(0.5,0.2,'Ori 2: 0%','color',colors(5,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot2(1))
+text(0.5,0.1,'Ori 1 = Ori 2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot2(1))
+
 
 if analysisMeasure == 1||analysisMeasure == 2
     displayRange(hPlots_Fig3.hPlot1,[0.2 0.4],getYLims(hPlots_Fig3.hPlot1),'k');
@@ -1804,7 +1816,8 @@ title(hPlots_Fig3.hPlot2(1),'CRF along Pref Ori')
 
 set(hPlots_Fig3.hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 xlabel(hPlots_Fig3.hPlot2(2),'Normalization Index'); ylabel(hPlots_Fig3.hPlot2(2),'No. of Electrodes');
-title(hPlots_Fig3.hPlot2(2),'Population NI Histogram')
+title(hPlots_Fig3.hPlot2(2),['Population NI Histogram, Median NI: ',num2str(round(median(NI_population),2))])
+line([round(median(NI_population),2) round(median(NI_population),2)],getYLims(hPlots_Fig3.hPlot2(2)),'color','k','lineWidth',2,'parent',hPlots_Fig3.hPlot2(2))
 
 set(hPlots_Fig3.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlots_Fig3.hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
