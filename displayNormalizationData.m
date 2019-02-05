@@ -435,21 +435,8 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
                disp('performing analysis on all electrodes across sessions');
                electrodeNum = 'all';
             end
-            
-%             if length(fileNameStringTMP) ==1
-%                 ElectrodeListTMP = ElectrodeListSession(electrodeString);
-%                 if isempty(ElectrodeListTMP{1})
-%                     error(['No electrode found for analysis!'...
-%                             'Please try another session!'])
-%                 end
-%                 folderName = fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName);
-%                 folderExtract = fullfile(folderName,'extractedData');
-%                 [~,~,~,~,~,~,oValsUnique,~,~,~,~,~,~,oValsUnique2,~,~] = loadParameterCombinations(folderExtract);
-% 
-%             elseif length(fileNameStringTMP)>1
-%                 ElectrodeListTMP = ElectrodeListSession;
-%             end
-  
+           
+
             analysisMethod = get(hAnalysisMethod,'val');
             analysisMeasure = get(hAnalysisType,'val');
             NormalizeDataFlag = get(hNormalizeData,'val');
@@ -876,27 +863,27 @@ else
     end
 
     erpData.data = erpDataTMP;
-    erpData.analysisDataBL = RMSvalsBL;
+    erpData.analysisDataBL = getCommonBaseline(RMSvalsBL);
     erpData.analysisDataST = RMSvalsERP;
     erpData.timeVals = timeVals;
     erpData.N = N;
 
     firingRateData.data = psthData;
-    firingRateData.analysisDataBL = firingRatesBL;
+    firingRateData.analysisDataBL = getCommonBaseline(firingRatesBL); % gets common (mean baseline) for all 5 x 5 contrast conditions 
     firingRateData.analysisDataST = firingRatesST;
     firingRateData.timeVals = xsFR;
     firingRateData.N = N;
 
-    fftData.dataBL = fftDataBL;
+    fftData.dataBL = getCommonBaseline(fftDataBL);
     fftData.dataST = fftDataST;
-    fftData.analysisDataBL = fftAmpBL;
+    fftData.analysisDataBL = getCommonBaseline(fftAmpBL);
     fftData.analysisDataST = fftAmpST;
     fftData.freqVals = freqVals;
     fftData.N = N;
 
-    energyData.dataBL=mEnergyVsFreqBL;
+    energyData.dataBL = getCommonBaseline(mEnergyVsFreqBL);
     energyData.dataST=mEnergyVsFreqST;
-    energyData.analysisDataBL = energyValsBL;
+    energyData.analysisDataBL = getCommonBaseline(energyValsBL);
     energyData.analysisDataST = energyValsST;
     energyData.freqVals = freqValsMT;
     energyData.N = N;
@@ -911,6 +898,11 @@ else
         energyData = segregate_Pref_Null_data(energyData,elecs_neededtoFlipped);
     end
 
+    % Get Normalization Indices
+    NI_Data.erp = getNI(erpData);
+    NI_Data.firingRate = getNI(fftData);
+    NI_Data.fft = getNI(fftData);
+    NI_Data.energy = getNI(energyData);
 
     % Save Data for particular session
     save(fileToSave,'erpData','firingRateData','fftData','energyData','oriTuningData','electrodeArray');
@@ -1865,6 +1857,27 @@ function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
     end
   
 end
+function data_BL = getCommonBaseline(data_BL)
+size_data_BL = numel(size(data_BL));
+if size_data_BL ==4 % baseline for analysis data
+    for iElec = 1:size(data_BL,1)
+        for iTF = 1:size(data_BL,2)
+           data_BL(iElec,iTF,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:)),2),1),[5 5]);
+        end
+    end
+elseif size_data_BL == 5 % baseline for PSD data
+    for iElec = 1:size(data_BL,1)
+        for iTF = 1:size(data_BL,2)
+           data_BL(iElec,iTF,:,:,:) = repmat(mean(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:)),3),2),1),[5 5]);
+        end
+    end    
+end
+
+end
+function NI_data = getNI(data)
+
+end
+
 function [analogChannelsStored,timeVals,goodStimPos,analogInputNums] = loadlfpInfo(folderLFP) %#ok<*STOUT>
 load(fullfile(folderLFP,'lfpInfo.mat'));
 analogChannelsStored=sort(analogChannelsStored); %#ok<NODEF>
