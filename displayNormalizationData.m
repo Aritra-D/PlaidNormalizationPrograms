@@ -624,12 +624,12 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function[erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray] = ...
+function[erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray] = ...
     getData(folderSourceString,fileNameStringTMP,ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag)
 
 numDatasets = length(fileNameStringTMP);
 disp(['Working on dataset 1 of ' num2str(numDatasets)]);
-[erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray]...
+[erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray]...
 = getDataSingleSession(folderSourceString,fileNameStringTMP{1},...
 ElectrodeListTMP{1},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag); 
 
@@ -639,29 +639,47 @@ if length(fileNameStringTMP)>1
            continue
         end
         disp(['Working on dataset ' num2str(i) ' of ' num2str(length(fileNameStringTMP))]);
-        [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~,~] = getDataSingleSession(folderSourceString,fileNameStringTMP{i},...
+        [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~,NI_DataTMP,~] = getDataSingleSession(folderSourceString,fileNameStringTMP{i},...
             ElectrodeListTMP{i},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag);
         
         erpData.data = cat(1,erpData.data,erpDataTMP.data);
         erpData.analysisDataBL = cat(1,erpData.analysisDataBL,erpDataTMP.analysisDataBL);
+        erpData.analysisData_cBL = cat(1,erpData.analysisData_cBL,erpDataTMP.analysisData_cBL);
         erpData.analysisDataST = cat(1,erpData.analysisDataST,erpDataTMP.analysisDataST);
         
         firingRateData.data = cat(1,firingRateData.data,firingRateDataTMP.data);
         firingRateData.analysisDataBL = cat(1,firingRateData.analysisDataBL,firingRateDataTMP.analysisDataBL);
+        firingRateData.analysisData_cBL = cat(1,firingRateData.analysisData_cBL,firingRateDataTMP.analysisData_cBL);
         firingRateData.analysisDataST = cat(1,firingRateData.analysisDataST,firingRateDataTMP.analysisDataST);
         
         fftData.dataBL = cat(1,fftData.dataBL,fftDataTMP.dataBL);
+        fftData.data_cBL = cat(1,fftData.data_cBL,fftDataTMP.data_cBL);
         fftData.dataST = cat(1,fftData.dataST,fftDataTMP.dataST);
         for j = 1:3
             fftData.analysisDataBL{j} = cat(1,fftData.analysisDataBL{j},fftDataTMP.analysisDataBL{j});
+            fftData.analysisData_cBL{j} = cat(1,fftData.analysisData_cBL{j},fftDataTMP.analysisData_cBL{j});
             fftData.analysisDataST{j} = cat(1,fftData.analysisDataST{j},fftDataTMP.analysisDataST{j});
         end
         
         energyData.dataBL = cat(1,energyData.dataBL,energyDataTMP.dataBL);
+        energyData.data_cBL = cat(1,energyData.data_cBL,energyDataTMP.data_cBL);
         energyData.dataST = cat(1,energyData.dataST,energyDataTMP.dataST);
         for j =1:3
             energyData.analysisDataBL{j} = cat(1,energyData.analysisDataBL{j},energyDataTMP.analysisDataBL{j});
+            energyData.analysisData_cBL{j} = cat(1,energyData.analysisData_cBL{j},energyDataTMP.analysisData_cBL{j});
             energyData.analysisDataST{j} = cat(1,energyData.analysisDataST{j},energyDataTMP.analysisDataST{j});
+        end
+        
+        NI_Data.erp = cat(1, NI_Data.erp, NI_DataTMP.erp);
+%         NI_Data.erp = cat(1, NI_Data.erp, NI_DataTMP.erp);
+        NI_Data.firingRate = cat(1, NI_Data.firingRate, NI_DataTMP.firingRate);
+%         NI_Data.firingRate = cat(1, NI_Data.firingRate, NI_DataTMP.firingRate);
+        for j =1:3
+            NI_Data.fft{j} = cat(1, NI_Data.fft{j}, NI_DataTMP.fft{j});
+%             NI_Data.fft{j} = cat(1, NI_Data.fft{j}, NI_DataTMP.fft{j});
+
+            NI_Data.energy{j} = cat(1, NI_Data.energy{j}, NI_DataTMP.energy{j});
+%             NI_Data.energy{j} = cat(1, NI_Data.energy{j}, NI_DataTMP.energy{j});
         end
 
         % Combining OriData across sessions need to be done! Right now, there is no requirement!        
@@ -672,7 +690,7 @@ end
 
 
 
-function [erpData,firingRateData,fftData,energyData,oriTuningData,electrodeArray] = ...
+function [erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray] = ...
     getDataSingleSession(folderSourceString,fileNameStringTMP,...
     ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag)
 
@@ -861,29 +879,37 @@ else
             end
         end
     end
-
+    
+    % Time-Domain data
     erpData.data = erpDataTMP;
-    erpData.analysisDataBL = getCommonBaseline(RMSvalsBL);
+    erpData.analysisDataBL = RMSvalsBL;
+    erpData.analysisData_cBL = getCommonBaseline(RMSvalsBL); % gets common (mean baseline) for all 5 x 5 contrast conditions 
     erpData.analysisDataST = RMSvalsERP;
     erpData.timeVals = timeVals;
     erpData.N = N;
 
     firingRateData.data = psthData;
-    firingRateData.analysisDataBL = getCommonBaseline(firingRatesBL); % gets common (mean baseline) for all 5 x 5 contrast conditions 
+    firingRateData.analysisDataBL = firingRatesBL;
+    firingRateData.analysisData_cBL = getCommonBaseline(firingRatesBL); % gets common (mean baseline) for all 5 x 5 contrast conditions 
     firingRateData.analysisDataST = firingRatesST;
     firingRateData.timeVals = xsFR;
     firingRateData.N = N;
 
-    fftData.dataBL = getCommonBaseline(fftDataBL);
+    % Freq-Domain data
+    fftData.dataBL = fftDataBL;
+    fftData.data_cBL = getCommonBaseline(fftDataBL);% gets common (mean baseline) for all 5 x 5 contrast conditions 
     fftData.dataST = fftDataST;
-    fftData.analysisDataBL = getCommonBaseline(fftAmpBL);
+    fftData.analysisDataBL = fftAmpBL;
+    fftData.analysisData_cBL = getCommonBaseline(fftAmpBL);% gets fft amplitude of common (mean baseline) for all 5 x 5 contrast conditions for selected freqRanges
     fftData.analysisDataST = fftAmpST;
     fftData.freqVals = freqVals;
     fftData.N = N;
 
-    energyData.dataBL = getCommonBaseline(mEnergyVsFreqBL);
-    energyData.dataST=mEnergyVsFreqST;
-    energyData.analysisDataBL = getCommonBaseline(energyValsBL);
+    energyData.dataBL = mEnergyVsFreqBL;
+    energyData.data_cBL = getCommonBaseline(mEnergyVsFreqBL);% gets common (mean baseline) for all 5 x 5 contrast conditions 
+    energyData.dataST = mEnergyVsFreqST;
+    energyData.analysisDataBL = energyValsBL;
+    energyData.analysisData_cBL = getCommonBaseline(energyValsBL);% gets energyData of  common (mean baseline) for all 5 x 5 contrast conditions for selected freqRanges
     energyData.analysisDataST = energyValsST;
     energyData.freqVals = freqValsMT;
     energyData.N = N;
@@ -898,6 +924,7 @@ else
         energyData = segregate_Pref_Null_data(energyData,elecs_neededtoFlipped);
     end
 
+    
     % Get Normalization Indices
     NI_Data.erp = getNI(erpData);
     NI_Data.firingRate = getNI(fftData);
@@ -905,7 +932,7 @@ else
     NI_Data.energy = getNI(energyData);
 
     % Save Data for particular session
-    save(fileToSave,'erpData','firingRateData','fftData','energyData','oriTuningData','electrodeArray');
+    save(fileToSave,'erpData','firingRateData','fftData','energyData','oriTuningData','NI_Data','electrodeArray');
 end
 end
 
@@ -1837,19 +1864,22 @@ function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
     for iElec = 1:length(elecs_neededtoFlipped)
         for iTF = 1:2
             disp ([num2str(iElec), ' ' num2str(iTF)])
-            if numel(fieldnames(data)) == 5
+            if numel(fieldnames(data)) == 6
                 data.data(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.data(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
-            elseif numel(fieldnames(data)) == 6
+            elseif numel(fieldnames(data)) == 8
                 data.dataBL(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.dataBL(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
+                data.data_cBL(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.data_cBL(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
                 data.dataST(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.dataST(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
             end
             
             if ~iscell(data.analysisDataBL) && ~iscell(data.analysisDataST)
                 data.analysisDataBL(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataBL(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+                data.analysisData_cBL(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
                 data.analysisDataST(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataST(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
             elseif iscell(data.analysisDataBL) && iscell(data.analysisDataST)
                 for iCell = 1:length(data.analysisDataBL)
                     data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+                    data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
                     data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
                 end
             end
@@ -1858,24 +1888,66 @@ function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
   
 end
 function data_BL = getCommonBaseline(data_BL)
-size_data_BL = numel(size(data_BL));
-if size_data_BL ==4 % baseline for analysis data
-    for iElec = 1:size(data_BL,1)
-        for iTF = 1:size(data_BL,2)
-           data_BL(iElec,iTF,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:)),2),1),[5 5]);
+
+if iscell(data_BL)
+    size_data_BL = numel(size(data_BL{1}));
+    num_con_Ori1 = size(data_BL{1},3);
+    num_con_Ori2 = size(data_BL{1},4);
+else
+    size_data_BL = numel(size(data_BL));
+    num_con_Ori1 = size(data_BL,3);
+    num_con_Ori2 = size(data_BL,4);
+end
+
+if size_data_BL == 4 % baseline for analysis data (elec x TF x Num_Contrast_Ori1 x Num_Contrast_Ori2 x (analysisDataBL))
+    if iscell(data_BL)
+        for iElec = 1:size(data_BL{1},1)
+            for iTF = 1:size(data_BL{1},2)
+                for k = 1:length(data_BL)
+                    data_BL{k}(iElec,iTF,:,:) = repmat(mean(mean(squeeze(data_BL{k}(iElec,iTF,:,:)),2),1),[num_con_Ori1 num_con_Ori2]);
+                end
+            end
+        end
+    else
+        for iElec = 1:size(data_BL,1)
+            for iTF = 1:size(data_BL,2)
+               data_BL(iElec,iTF,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:)),2),1),[num_con_Ori1 num_con_Ori2]);
+            end
         end
     end
-elseif size_data_BL == 5 % baseline for PSD data
+elseif size_data_BL == 5 % baseline for timeSeries/PSD data (elec x TF x Num_Contrast_Ori1 x Num_Contrast_Ori2 x time/FreqVals x (dataBL))
     for iElec = 1:size(data_BL,1)
         for iTF = 1:size(data_BL,2)
-           data_BL(iElec,iTF,:,:,:) = repmat(mean(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:)),3),2),1),[5 5]);
+           data_BL(iElec,iTF,:,:,:) = reshape(repmat(squeeze(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:)),2),1))',[num_con_Ori1*num_con_Ori2 1]),[num_con_Ori1 num_con_Ori2 size(data_BL,5)]);
         end
     end    
 end
 
 end
-function NI_data = getNI(data)
-
+function [NI_absolute,NI_relative] = getNI(data)
+if iscell(data.analysisDataST)
+    for iElec = 1:size(data.analysisDataST{1},1)
+        for iTF = 1:size(data.analysisDataST{1},2)
+            for k = 1:length(data.analysisDataST) 
+                clear responseMatrix_elec
+                responseMatrix_elec = squeeze(data.analysisDataST{k}(iElec,iTF,:,:));
+                diff_responseMatrix_elec = squeeze(data.analysisDataST{k}(iElec,iTF,:,:))-squeeze(data.analysisDataBL{k}(iElec,1,:,:));
+                NI_absolute{k}(iElec,iTF) = 2*responseMatrix_elec(1,5)/(responseMatrix_elec(1,1)+responseMatrix_elec(5,5))-1;
+                NI_relative{k}(iElec,iTF) = 2*diff_responseMatrix_elec(1,5)/(diff_responseMatrix_elec(1,1)+diff_responseMatrix_elec(5,5))-1;
+            end
+        end
+    end
+else
+    for iElec = 1:size(data.analysisDataST,1)
+        for iTF = 1:size(data.analysisDataST,2)
+            clear responseMatrix_elec
+            responseMatrix_elec = squeeze(data.analysisDataST(iElec,iTF,:,:));
+            diff_responseMatrix_elec = squeeze(data.analysisDataST(iElec,iTF,:,:))-squeeze(data.analysisDataBL(iElec,1,:,:));
+            NI_absolute(iElec,iTF) = 2*responseMatrix_elec(1,5)/(responseMatrix_elec(1,1)+responseMatrix_elec(5,5))-1;
+            NI_relative(iElec,iTF) = 2*diff_responseMatrix_elec(1,5)/(diff_responseMatrix_elec(1,1)+diff_responseMatrix_elec(5,5))-1;
+        end
+    end
+end
 end
 
 function [analogChannelsStored,timeVals,goodStimPos,analogInputNums] = loadlfpInfo(folderLFP) %#ok<*STOUT>
