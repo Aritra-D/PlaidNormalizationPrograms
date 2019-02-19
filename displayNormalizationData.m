@@ -469,8 +469,8 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
                 plotDataFig3(hPlots_Fig3,sessionNum,erpData.timeVals,erpData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
             elseif analysisMeasure == 2 % computing Firing rate
                 plotData(hPlots_Fig1,sessionNum,firingRateData.timeVals,firingRateData,oriTuningData,plotColor,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
-                plotDataFig2(hPlots_Fig2,sessionNum,firingRateData.timeVals,firingRateData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
-                plotDataFig3(hPlots_Fig3,sessionNum,firingRateData.timeVals,firingRateData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+%                 plotDataFig2(hPlots_Fig2,sessionNum,firingRateData.timeVals,firingRateData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+%                 plotDataFig3(hPlots_Fig3,sessionNum,firingRateData.timeVals,firingRateData,ColorNeuralMeasures,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
             elseif analysisMeasure == 3 % computing Raster Plot from spike data
                 error('Still working on raster data!')
             elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6 % computing alpha
@@ -936,91 +936,10 @@ else
 end
 end
 
-% Accessory Functions
-function [parameterCombinations,parameterCombinations2,...
-    aValsUnique,eValsUnique,sValsUnique,fValsUnique,oValsUnique,...
-    cValsUnique,tValsUnique,aValsUnique2,eValsUnique2,sValsUnique2,...
-    fValsUnique2,oValsUnique2,cValsUnique2,tValsUnique2] = ...
-    loadParameterCombinations(folderExtract)
-
-load(fullfile(folderExtract,'parameterCombinations.mat'));
-
-if ~exist('sValsUnique','var');    sValsUnique=rValsUnique;            end
-
-end
-function badTrials = loadBadTrials(badTrialFile)
-load(badTrialFile);
-end
-
-function [colorString, colorNames] = getColorString
-
-colorNames = 'brkgcmy';
-colorString = 'blue|red|black|green|cyan|magenta|yellow';
-
-end
-function [fileNameStringAll,fileNameStringListAll,fileNameStringListArray] = getFileNameStringList
-
-[tmpFileNameStringList,monkeyNameList] = getNormalizationExperimentDetails;
-
-fileNameStringAll = ''; pos=1;
-clear fileNameStringListArray
-
-for i=1:length(monkeyNameList)
-    for j=1:length(tmpFileNameStringList{i})
-        fileNameStringAll = [cat(2,fileNameStringAll,tmpFileNameStringList{i}{j}) '|'];
-        fileNameStringListAll{pos} = tmpFileNameStringList{i}(j);
-        fileNameStringListArray{pos} = tmpFileNameStringList{i}(j); %#ok<*AGROW>
-        pos=pos+1;
-    end
-end
-
-allNames = [];
-for i=1:length(monkeyNameList)
-    fileNameStringAll = [cat(2,fileNameStringAll,monkeyNameList{i}) ' (N=' num2str(length(tmpFileNameStringList{i})) ')|'];
-    fileNameStringListAll{pos} = {[monkeyNameList{i} ' (N=' num2str(length(tmpFileNameStringList{i})) ')']};
-    fileNameStringListArray{pos} = tmpFileNameStringList{i};
-    allNames = cat(2,allNames,tmpFileNameStringList{i});
-    pos=pos+1;
-end
-
-fileNameStringAll = cat(2,fileNameStringAll,['all (N=' num2str(length(allNames)) ')']);
-fileNameStringListAll{pos} = {['all (N=' num2str(length(allNames)) ')']};
-fileNameStringListArray{pos} = allNames;
-end
-
-function [ElectrodeStringListAll,ElectrodeArrayListAll] = getElectrodesList(fileNameStringTMP,oriSelectiveFlag,folderSourceString)
-
-[tmpElectrodeStringList,tmpElectrodeArrayList,allElecs] = getGoodElectrodesDetails(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
-
-if length(tmpElectrodeStringList)> 1
-   clear tmpElectrodeStringList
-   tmpElectrodeStringList = {['all (N=' num2str(allElecs) ')']};
-end
-
-ElectrodeStringListAll = tmpElectrodeStringList;
-ElectrodeArrayListAll = tmpElectrodeArrayList;
-
-    
-end
-
-
-function eValue = getMeanEnergyForAnalysis(mEnergy,freq,freqRange)
-
-posToAverage = intersect(find(freq>=freqRange(1)),find(freq<=freqRange(2)));
-eValue   = mean(mEnergy(posToAverage));
-end
-function normData = normalizeData(x)
-for iElec = 1:size(x.data,1)
-    for t = 1:size(x.data,2)
-        normData.data(iElec,t,:,:,:) = x.data(iElec,t,:,:,:)./max(max(max(abs(x.data(iElec,t,:,:,:)))));
-        normData.analysisDataBL(iElec,t,:,:) = x.analysisDataBL(iElec,t,:,:)./max(max(abs(x.analysisDataBL(iElec,t,:,:))));
-        normData.analysisDataST(iElec,t,:,:) = x.analysisDataST(iElec,t,:,:)./max(max(abs(x.analysisDataST(iElec,t,:,:))));
-        normData.timeVals = x.timeVals;
-        normData.N = x.N;
-    end
-end
-end
 function plotData(hPlots_Fig1,sessionNum,xs,data,oriTuningData,colorName,analysisMethod,analysisMeasure,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
+
+cValsUnique = [0 12.5 25 50 100]./2;
+cValsUnique2 = [0 12.5 25 50 100]./2;
 
 if isnumeric(electrodeNum)
     data = getDataSingleElec(data,electrodeNum,analysisMeasure);
@@ -1035,33 +954,23 @@ if analysisMeasure == 1 || analysisMeasure == 2
     data = normalizeData(data);
     end
     dataSize = size(data.data);
-    if dataSize(1)==1
-        dataPlot = squeeze(squeeze(data.data(:,1,:,:,:)));
-    elseif dataSize(1)>1
-        dataPlot = squeeze(mean(squeeze(data.data(:,1,:,:,:)),1));
-    end
-
+    dataPlot = squeeze(mean(data.data(:,1,:,:,:),1)); % Handles single electrode or multi-electrode data similarly
+    
 elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     if size(data.dataBL) == size(data.dataST) 
         dataSize = size(data.dataST);
     else
         error('Size of fftDataBL and fftDataST do not match!')
     end
-    if dataSize(1) == 1
-        dataPlotBL = squeeze(data.dataBL(:,1,:,:,:));
-        dataPlotST = squeeze(data.dataST(:,1,:,:,:));
-        if analysisMeasure == 6
-            dataPlotBL = squeeze(data.dataBL(:,2,:,:,:));
-            dataPlotST = squeeze(data.dataST(:,2,:,:,:));    
-        end
-    elseif dataSize(1) >1
-        dataPlotBL = squeeze(mean(squeeze(data.dataBL(:,1,:,:,:)),1));
-        dataPlotST = squeeze(mean(squeeze(data.dataST(:,1,:,:,:)),1));
-        if analysisMeasure == 6
-            dataPlotBL = squeeze(mean(squeeze(data.dataBL(:,2,:,:,:)),1));
-            dataPlotST = squeeze(mean(squeeze(data.dataST(:,2,:,:,:)),1));
-        end
+    
+    % Absolute BL & ST neural measure
+    dataPlotBL = squeeze(mean(data.data_cBL(:,1,:,:,:),1));
+    dataPlotST = squeeze(mean(data.dataST(:,1,:,:,:),1));
+    if analysisMeasure == 6
+        dataPlotBL = squeeze(mean(data.data_cBL(:,2,:,:,:),1));
+        dataPlotST = squeeze(mean(data.dataST(:,2,:,:,:),1));
     end
+
     % When Change in neural measures are to be plotted
     if relativeMeasuresFlag
         dataPlotdiffSTvsBL = dataPlotST-dataPlotBL;
@@ -1091,9 +1000,6 @@ for c1 = 1:5
     end
 end
 
-
-cValsUnique = [0 12.5 25 50 100]./2;
-cValsUnique2 = [0 12.5 25 50 100]./2;
 conFlipped = 5:-1:1;
 for c = 1:5
 title(hPlots_Fig1.hPlot1(1,c),[num2str(cValsUnique(c)) ' %']);
@@ -1101,55 +1007,56 @@ ylabel(hPlots_Fig1.hPlot1(c,1),[num2str(cValsUnique(conFlipped(c))) ' %'],'fontW
 end
 
 % Color coded 5x5 Matrix of raw Neural Measures
-if dataSize(1)==1
-    if analysisMeasure == 1 || analysisMeasure == 2
-        analysisData = squeeze(data.analysisDataST(:,1,:,:));
-        analysisDataBL = squeeze(data.analysisDataBL(:,1,:,:));
-    elseif analysisMeasure == 4 
-        analysisData = squeeze(data.analysisDataST{1}(:,1,:,:));
-        analysisDataBL = squeeze(data.analysisDataBL{1}(:,1,:,:));
-    elseif analysisMeasure == 5
-        analysisData = squeeze(data.analysisDataST{2}(:,1,:,:));
-        analysisDataBL = squeeze(data.analysisDataBL{2}(:,1,:,:));
-    elseif analysisMeasure == 6
-        analysisData = squeeze(data.analysisDataST{3}(:,2,:,:));
-        analysisDataBL = squeeze(data.analysisDataBL{3}(:,2,:,:));
-    end
-elseif dataSize(1)>1
-    if analysisMeasure == 1 || analysisMeasure == 2
-        analysisData = squeeze(mean(squeeze(data.analysisDataST(:,1,:,:)),1));
-        analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL(:,1,:,:)),1));
-        for iElec= 1:size(data.analysisDataST,1)
-            clear electrodeVals
+if analysisMeasure == 1 || analysisMeasure == 2
+    analysisData = squeeze(mean(data.analysisDataST(:,1,:,:),1));
+    analysisDataBL = squeeze(mean(data.analysisData_cBL(:,1,:,:),1));
+    for iElec= 1:size(data.analysisDataST,1)
+        clear electrodeVals
+        if ~relativeMeasuresFlag
             electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:));
-            NI_population(iElec) = abs((electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5));
+        else
+            electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:))-squeeze(data.analysisDataBL(iElec,1,:,:));
         end
-    elseif analysisMeasure == 4
-        analysisData = squeeze(mean(squeeze(data.analysisDataST{1}(:,1,:,:)),1));
-        analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{1}(:,1,:,:)),1));
-        for iElec= 1:size(data.analysisDataST{1},1)
-            clear electrodeVals
-            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:));
-            NI_population(iElec) = abs((electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5));
-        end        
-    elseif analysisMeasure == 5
-        analysisData = squeeze(mean(squeeze(data.analysisDataST{2}(:,1,:,:)),1));
-        analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{2}(:,1,:,:)),1));
-        for iElec= 1:size(data.analysisDataST{2},1)
-            clear electrodeVals
-            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:));
-            NI_population(iElec) = abs((electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5));
-        end        
-    elseif analysisMeasure == 6
-        analysisData = squeeze(mean(squeeze(data.analysisDataST{3}(:,2,:,:)),1));
-        analysisDataBL = squeeze(mean(squeeze(data.analysisDataBL{3}(:,2,:,:)),1));
-        for iElec= 1:size(data.analysisDataST{3},1)
-            clear electrodeVals
-            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,2,:,:));
-            NI_population(iElec) = abs((electrodeVals(1,1)+electrodeVals(5,5))/electrodeVals(1,5));
-        end        
+        NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
     end
+elseif analysisMeasure == 4 
+    analysisData = squeeze(mean(data.analysisDataST{1}(:,1,:,:),1));
+    analysisDataBL = squeeze(mean(data.analysisData_cBL{1}(:,1,:,:),1));
+    for iElec= 1:size(data.analysisDataST{1},1)
+        clear electrodeVals
+        if ~relativeMeasuresFlag
+            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:));
+        else
+            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:))-squeeze(data.analysisDataBL{1}(iElec,1,:,:));
+        end
+        NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
+    end        
+elseif analysisMeasure == 5
+    analysisData = squeeze(mean(data.analysisDataST{2}(:,1,:,:),1));
+    analysisDataBL = squeeze(mean(data.analysisData_cBL{2}(:,1,:,:),1));
+    for iElec= 1:size(data.analysisDataST{2},1)
+        clear electrodeVals
+        if ~relativeMeasuresFlag
+            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:));
+        else
+            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:))-squeeze(data.analysisDataBL{2}(iElec,1,:,:));
+        end
+        NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
+    end        
+elseif analysisMeasure == 6
+    analysisData = squeeze(mean(data.analysisDataST{3}(:,2,:,:),1));
+    analysisDataBL = squeeze(mean(data.analysisData_cBL{3}(:,2,:,:),1));
+    for iElec= 1:size(data.analysisDataST{3},1)
+        clear electrodeVals
+        if ~relativeMeasuresFlag
+            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,2,:,:));
+        else
+            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,2,:,:))-squeeze(data.analysisDataBL{3}(iElec,2,:,:));
+        end
+        NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
+    end        
 end
+
 if relativeMeasuresFlag
     if analysisMeasure == 1||analysisMeasure == 2
             analysisData = analysisData-analysisDataBL;
@@ -1163,11 +1070,12 @@ if relativeMeasuresFlag
 end
 
 imagesc(analysisData,'parent',hPlots_Fig1.hPlot2);colorbar(hPlots_Fig1.hPlot2);set(hPlots_Fig1.hPlot2,'Position',[0.52 0.05 0.12 0.25]);
-NIAnalysisData = analysisData;
-NormIndex = (NIAnalysisData(1,1)+ NIAnalysisData(5,5))/NIAnalysisData(1,5);
-title(hPlots_Fig1.hPlot2,['NI: ',num2str(NormIndex)],'fontWeight','bold','fontSize',10);
-% Setting xlabels and ylabels for Color matrix of neural
-% measures
+% NIAnalysisData = analysisData;
+% NormIndex = (NIAnalysisData(1,1)+ NIAnalysisData(5,5))/NIAnalysisData(1,5);
+% title(hPlots_Fig1.hPlot2,['NI: ',num2str(NormIndex)],'fontWeight','bold','fontSize',10);
+title(hPlots_Fig1.hPlot2,['Mean NI: ',num2str(round(mean(NI_population),2))],'fontWeight','bold');
+
+% Setting xlabels and ylabels for Color matrix of neural measures
 set(hPlots_Fig1.hPlot2,'XTickLabel',cValsUnique);
 set(hPlots_Fig1.hPlot2,'YTickLabel',flip(cValsUnique2));
 
@@ -1844,6 +1752,109 @@ xlabel(hPlots_Fig3.hPlot2(3),'Ori 1 Contrast (%)');ylabel(hPlots_Fig3.hPlot2(3),
 
 end
 
+% Accessory Functions
+
+% Load LFP Info
+function [analogChannelsStored,timeVals,goodStimPos,analogInputNums] = loadlfpInfo(folderLFP) %#ok<*STOUT>
+load(fullfile(folderLFP,'lfpInfo.mat'));
+analogChannelsStored=sort(analogChannelsStored); %#ok<NODEF>
+if ~exist('analogInputNums','var')
+    analogInputNums=[];
+end
+end
+
+% Get parameter combinations
+function [parameterCombinations,parameterCombinations2,...
+    aValsUnique,eValsUnique,sValsUnique,fValsUnique,oValsUnique,...
+    cValsUnique,tValsUnique,aValsUnique2,eValsUnique2,sValsUnique2,...
+    fValsUnique2,oValsUnique2,cValsUnique2,tValsUnique2] = ...
+    loadParameterCombinations(folderExtract)
+
+load(fullfile(folderExtract,'parameterCombinations.mat'));
+
+if ~exist('sValsUnique','var');    sValsUnique=rValsUnique;            end
+
+end
+
+% Get Bad Trials
+function badTrials = loadBadTrials(badTrialFile)
+load(badTrialFile);
+end
+
+% Get Color String
+function [colorString, colorNames] = getColorString
+
+colorNames = 'brkgcmy';
+colorString = 'blue|red|black|green|cyan|magenta|yellow';
+
+end
+
+% Get FileNamesList
+function [fileNameStringAll,fileNameStringListAll,fileNameStringListArray] = getFileNameStringList
+
+[tmpFileNameStringList,monkeyNameList] = getNormalizationExperimentDetails;
+
+fileNameStringAll = ''; pos=1;
+clear fileNameStringListArray
+
+for i=1:length(monkeyNameList)
+    for j=1:length(tmpFileNameStringList{i})
+        fileNameStringAll = [cat(2,fileNameStringAll,tmpFileNameStringList{i}{j}) '|'];
+        fileNameStringListAll{pos} = tmpFileNameStringList{i}(j);
+        fileNameStringListArray{pos} = tmpFileNameStringList{i}(j); %#ok<*AGROW>
+        pos=pos+1;
+    end
+end
+
+allNames = [];
+for i=1:length(monkeyNameList)
+    fileNameStringAll = [cat(2,fileNameStringAll,monkeyNameList{i}) ' (N=' num2str(length(tmpFileNameStringList{i})) ')|'];
+    fileNameStringListAll{pos} = {[monkeyNameList{i} ' (N=' num2str(length(tmpFileNameStringList{i})) ')']};
+    fileNameStringListArray{pos} = tmpFileNameStringList{i};
+    allNames = cat(2,allNames,tmpFileNameStringList{i});
+    pos=pos+1;
+end
+
+fileNameStringAll = cat(2,fileNameStringAll,['all (N=' num2str(length(allNames)) ')']);
+fileNameStringListAll{pos} = {['all (N=' num2str(length(allNames)) ')']};
+fileNameStringListArray{pos} = allNames;
+end
+
+% Get ElectrodesList
+function [ElectrodeStringListAll,ElectrodeArrayListAll] = getElectrodesList(fileNameStringTMP,oriSelectiveFlag,folderSourceString)
+
+[tmpElectrodeStringList,tmpElectrodeArrayList,allElecs] = getGoodElectrodesDetails(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
+
+if length(tmpElectrodeStringList)> 1
+   clear tmpElectrodeStringList
+   tmpElectrodeStringList = {['all (N=' num2str(allElecs) ')']};
+end
+
+ElectrodeStringListAll = tmpElectrodeStringList;
+ElectrodeArrayListAll = tmpElectrodeArrayList;
+end
+
+% Get MeanEnergy for different frequency bands
+function eValue = getMeanEnergyForAnalysis(mEnergy,freq,freqRange)
+
+posToAverage = intersect(find(freq>=freqRange(1)),find(freq<=freqRange(2)));
+eValue   = mean(mEnergy(posToAverage));
+end
+
+% Normalize data for ERP and Spike data
+function normData = normalizeData(x)
+for iElec = 1:size(x.data,1)
+    for t = 1:size(x.data,2)
+        normData.data(iElec,t,:,:,:) = x.data(iElec,t,:,:,:)./max(max(max(abs(x.data(iElec,t,:,:,:)))));
+        normData.analysisDataBL(iElec,t,:,:) = x.analysisDataBL(iElec,t,:,:)./max(max(abs(x.analysisDataBL(iElec,t,:,:))));
+        normData.analysisDataST(iElec,t,:,:) = x.analysisDataST(iElec,t,:,:)./max(max(abs(x.analysisDataST(iElec,t,:,:))));
+        normData.timeVals = x.timeVals;
+        normData.N = x.N;
+    end
+end
+end
+
+% Get data for a single electrode in a selected session
 function data = getDataSingleElec(data,electrodeNum,analysisMeasure)
     if analysisMeasure == 1 || analysisMeasure ==2
     data.data = data.data(electrodeNum,:,:,:,:);
@@ -1860,33 +1871,7 @@ function data = getDataSingleElec(data,electrodeNum,analysisMeasure)
     end
 end
 
-function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
-    for iElec = 1:length(elecs_neededtoFlipped)
-        for iTF = 1:2
-            disp ([num2str(iElec), ' ' num2str(iTF)])
-            if numel(fieldnames(data)) == 6
-                data.data(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.data(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
-            elseif numel(fieldnames(data)) == 8
-                data.dataBL(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.dataBL(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
-                data.data_cBL(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.data_cBL(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
-                data.dataST(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.dataST(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
-            end
-            
-            if ~iscell(data.analysisDataBL) && ~iscell(data.analysisDataST)
-                data.analysisDataBL(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataBL(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
-                data.analysisData_cBL(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
-                data.analysisDataST(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataST(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
-            elseif iscell(data.analysisDataBL) && iscell(data.analysisDataST)
-                for iCell = 1:length(data.analysisDataBL)
-                    data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
-                    data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
-                    data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
-                end
-            end
-        end
-    end
-  
-end
+% get Common Baseline across all 5 (Ori 1) x 5 (Ori 2) contrast conditions
 function data_BL = getCommonBaseline(data_BL)
 
 if iscell(data_BL)
@@ -1922,8 +1907,37 @@ elseif size_data_BL == 5 % baseline for timeSeries/PSD data (elec x TF x Num_Con
         end
     end    
 end
-
 end
+
+% Segregate data into Preferred (positive x-axis -- increasing contrast) and Null (positive y axis -- increasing contrast)
+function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
+    for iElec = 1:length(elecs_neededtoFlipped)
+        for iTF = 1:2
+            disp ([num2str(iElec), ' ' num2str(iTF)])
+            if numel(fieldnames(data)) == 6
+                data.data(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.data(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
+            elseif numel(fieldnames(data)) == 8
+                data.dataBL(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.dataBL(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
+                data.data_cBL(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.data_cBL(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
+                data.dataST(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.dataST(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
+            end
+            
+            if ~iscell(data.analysisDataBL) && ~iscell(data.analysisDataST)
+                data.analysisDataBL(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataBL(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+                data.analysisData_cBL(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+                data.analysisDataST(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataST(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+            elseif iscell(data.analysisDataBL) && iscell(data.analysisDataST)
+                for iCell = 1:length(data.analysisDataBL)
+                    data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+                    data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+                    data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+                end
+            end
+        end
+    end
+end
+
+% computing NI for different neural measures
 function [NI_absolute,NI_relative] = getNI(data)
 if iscell(data.analysisDataST)
     for iElec = 1:size(data.analysisDataST{1},1)
@@ -1950,14 +1964,7 @@ else
 end
 end
 
-function [analogChannelsStored,timeVals,goodStimPos,analogInputNums] = loadlfpInfo(folderLFP) %#ok<*STOUT>
-load(fullfile(folderLFP,'lfpInfo.mat'));
-analogChannelsStored=sort(analogChannelsStored); %#ok<NODEF>
-if ~exist('analogInputNums','var')
-    analogInputNums=[];
-end
-end
-
+% Draw lines for timeTange or FreqRange
 function displayRange(plotHandles,range,yLims,colorName)
 [nX,nY] = size(plotHandles);
 %yLims = getYLims(plotHandles);
@@ -1975,6 +1982,8 @@ for i=1:nX
 end
 
 end
+
+% get Y limits for an axis
 function yLims = getYLims(plotHandles)
 
 [numRows,numCols] = size(plotHandles);
@@ -1998,6 +2007,8 @@ end
 
 yLims=[yMin yMax];
 end
+
+% Rescale data
 function rescaleData(plotHandles,xMin,xMax,yLims)
 
 [numRows,numCols] = size(plotHandles);
