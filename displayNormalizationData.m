@@ -28,8 +28,12 @@ hSessionPanel= uipanel('Title','Session Panel','titleposition','centertop',...
             
 hSession = uicontrol('Parent',hSessionPanel,'Unit','Normalized', ...
         'BackgroundColor', backgroundColor, 'Position', ...
-        [0 0.9 1 0.12], 'Style','popup','String',...
+        [0 0.9 1 0.12], 'HorizontalAlignment','Center','Style','popup','String',...
         fileNameStringAll,'FontSize',fontSizeLarge);
+    
+hOriTunedCheckbox = uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
+'Position',[0.18 0.1 0.8 0.3],'Style','checkbox','String','Orientation tuned Electrodes',...
+'FontSize',fontSizeMedium);
                            
 hTimingPanel = uipanel('Title','Timing Panel','titleposition','centertop',...
                 'fontSize',fontSizeLarge,'Unit','Normalized','Position',...
@@ -126,11 +130,16 @@ hTapers = uicontrol('Parent',hMTPanel,'Unit','Normalized', ...
 hLoadDataPanel = uipanel('Title','Data Processing Panel','titleposition','centertop',...
                 'fontSize',fontSizeLarge,'Unit','Normalized','Position',...
                 [0.725 0.89 0.225 0.11]); 
-
-hOriTunedCheckbox = uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
-'Position',[0.18 0.6 0.8 0.3],'Style','checkbox','String','Orientation tuned Electrodes',...
-'FontSize',fontSizeMedium);
             
+hLFPResponsePanel = uibuttongroup('Parent',hLoadDataPanel,'Unit','Normalized','Position',[0 0.5 1 0.5]) ;
+uicontrol('parent',hLFPResponsePanel,'Style','radiobutton', 'String','Evoked Response',...
+                'Unit','Normalized','Position',[0.1 0 0.5 1],...
+                'FontSize',fontSizeSmall);
+              
+uicontrol('parent',hLFPResponsePanel,'Style','radiobutton',...
+  'String','Induced Response','Unit','Normalized',...
+  'Position',[0.5 0 0.5 1],'FontSize',fontSizeSmall);
+
 uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
 'Position',[0.25 0 0.5 0.5],'Style','pushbutton','String','Load DATA',...
 'FontSize',fontSizeMedium,'Callback',{@processData_Callback});
@@ -152,6 +161,7 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
         
         gridType = 'Microelectrode';
         oriSelectiveFlag = get(hOriTunedCheckbox,'val');
+        LFPdataProcessingMethod = get(get(hLFPResponsePanel,'SelectedObject'),'String');
         
         % parameters for MT analysis
         TW = str2double(get(hTimeBandWidthProduct,'String'));
@@ -183,7 +193,7 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
         
        % get Data for Selected Session & Parameters
         [erpData,firingRateData,fftData,energyData,oriTuningData,~] = getData(folderSourceString,...
-         fileNameStringTMP,ElectrodeArrayListAll,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag); 
+         fileNameStringTMP,ElectrodeArrayListAll,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); 
 %         freqRangeStr = {'alpha','gamma','SSVEP'};
 %         numFreqRanges = length(freqRanges);       
 
@@ -625,13 +635,13 @@ end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray] = ...
-    getData(folderSourceString,fileNameStringTMP,ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag)
+    getData(folderSourceString,fileNameStringTMP,ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod)
 
 numDatasets = length(fileNameStringTMP);
 disp(['Working on dataset 1 of ' num2str(numDatasets)]);
 [erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray]...
 = getDataSingleSession(folderSourceString,fileNameStringTMP{1},...
-ElectrodeListTMP{1},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag); 
+ElectrodeListTMP{1},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); 
 
 if length(fileNameStringTMP)>1
     for i=2:numDatasets
@@ -640,7 +650,7 @@ if length(fileNameStringTMP)>1
         end
         disp(['Working on dataset ' num2str(i) ' of ' num2str(length(fileNameStringTMP))]);
         [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~,NI_DataTMP,~] = getDataSingleSession(folderSourceString,fileNameStringTMP{i},...
-            ElectrodeListTMP{i},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag);
+            ElectrodeListTMP{i},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod);
         
         erpData.data = cat(1,erpData.data,erpDataTMP.data);
         erpData.analysisDataBL = cat(1,erpData.analysisDataBL,erpDataTMP.analysisDataBL);
@@ -692,7 +702,7 @@ end
 
 function [erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray] = ...
     getDataSingleSession(folderSourceString,fileNameStringTMP,...
-    ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag)
+    ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod)
 
 gridType = 'microelectrode';
 if strcmp(fileNameStringTMP(1:5),'alpaH')       
@@ -743,9 +753,9 @@ oriTuningData.OS = OS(ElectrodeListTMP{end});
 oriTuningData.FR = computationVals(ElectrodeListTMP{end},:);
 
 if oriSelectiveFlag 
-    fileToSave = fullfile(folderSave,[fileNameStringTMP '_OriTunedElecData_StimPeriod_' num2str(1000*dataParameters.stRange(1)) '_' num2str(1000*dataParameters.stRange(2)) 'ms_tapers' num2str(tapers_MT(1)) '_' num2str(tapers_MT(2)) '.mat']);
+    fileToSave = fullfile(folderSave,[fileNameStringTMP '_OriTunedElecData_StimPeriod_' num2str(1000*dataParameters.stRange(1)) '_' num2str(1000*dataParameters.stRange(2)) 'ms_tapers' num2str(tapers_MT(1)) '_' num2str(tapers_MT(2)) strtok(LFPdataProcessingMethod) '.mat']);
 else
-    fileToSave = fullfile(folderSave,[fileNameStringTMP '_allElecData_StimPeriod_' num2str(1000*dataParameters.stRange(1)) '_' num2str(1000*dataParameters.stRange(2)) 'ms_tapers' num2str(tapers_MT(1)) '_' num2str(tapers_MT(2)) '.mat']);
+    fileToSave = fullfile(folderSave,[fileNameStringTMP '_allElecData_StimPeriod_' num2str(1000*dataParameters.stRange(1)) '_' num2str(1000*dataParameters.stRange(2)) 'ms_tapers' num2str(tapers_MT(1)) '_' num2str(tapers_MT(2)) strtok(LFPdataProcessingMethod) '.mat']);
 end
 
 if exist(fileToSave,'file')
@@ -837,6 +847,7 @@ else
                         if round(diff(dataParameters.blRange)*Fs) ~= round(diff(dataParameters.stRange)*Fs)
                             disp('baseline and stimulus ranges are not the same');
                         else
+                            
                            % Event-related potential
                            erp = mean(analogData(goodPos,:),1); %#ok<NODEF>
                            erpDataTMP(iElec,t,c1,c2,:) = erp;
@@ -849,16 +860,27 @@ else
                            firingRatesST(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.stRange))/diff(dataParameters.stRange);
 
                            % fft data
-                           fftBL = squeeze(mean(abs(fft(analogData(goodPos,blPos),[],2))));
-                           fftST = squeeze(mean(abs(fft(analogData(goodPos,stPos),[],2))));
+                           if strcmp(strtok(LFPdataProcessingMethod),'Evoked')
+                               fftBL = squeeze(mean(abs(fft(analogData(goodPos,blPos),[],2))));
+                               fftST = squeeze(mean(abs(fft(analogData(goodPos,stPos),[],2))));
+                           elseif strcmp(strtok(LFPdataProcessingMethod),'Induced')
+                               fftBL = squeeze(mean(abs(fft(removeERP(analogData(goodPos,blPos)),[],2))));
+                               fftST = squeeze(mean(abs(fft(removeERP(analogData(goodPos,stPos)),[],2))));
+                           end
                            fftDataBL(iElec,t,c1,c2,:) = conv2Log(fftBL);
                            fftDataST(iElec,t,c1,c2,:) = conv2Log(fftST);
-
+                           
                            % Power Estimation by MT method
-                           dataBL = analogData(goodPos,blPos)';
+                           if strcmp(strtok(LFPdataProcessingMethod),'Evoked')
+                               dataBL = analogData(goodPos,blPos)';
+                               dataST = analogData(goodPos,stPos)';
+                           elseif strcmp(strtok(LFPdataProcessingMethod),'Induced')
+                               dataBL = removeERP(analogData(goodPos,blPos))';
+                               dataST = removeERP(analogData(goodPos,stPos))';                           
+                           end
                            [tmpEBL,freqValsBL] = mtspectrumc(dataBL,params);
-                           dataST = analogData(goodPos,stPos)';
                            [tmpEST,freqValsST] = mtspectrumc(dataST,params);
+                           
                            if isequal(freqValsBL,freqValsST)
                                freqValsMT = freqValsST;
                            end
@@ -1143,7 +1165,6 @@ if analysisMeasure == 1 || analysisMeasure == 2
 elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6
     if size(data.dataBL) == size(data.dataST) 
         dataSize = size(data.dataST);
-%         data.dataBL = 
     else
         error('Size of fftDataBL and fftDataST do not match!')
     end
@@ -1832,6 +1853,11 @@ end
 
 ElectrodeStringListAll = tmpElectrodeStringList;
 ElectrodeArrayListAll = tmpElectrodeArrayList;
+end
+
+% Get Induced LFP data by subtracting trialaveraged ERP data from trialwise LFP Data
+function Y = removeERP(X)
+Y = X-repmat(mean(X,1),size(X,1),1);
 end
 
 % Get MeanEnergy for different frequency bands
