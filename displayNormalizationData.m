@@ -26,6 +26,9 @@ hSession = uicontrol('Parent',hSessionPanel,'Unit','Normalized', ...
         'BackgroundColor', backgroundColor, 'Position', ...
         [0 0.9 1 0.12], 'HorizontalAlignment','Center','Style','popup','String',...
         fileNameStringAll,'FontSize',fontSizeLarge);
+% jobj = findjobj(hSession);
+% renderer = jobj.getRenderer();
+% renderer.setHorizontalAlignment(renderer.CENTER);
     
 hOriTunedCheckbox = uicontrol('Parent',hSessionPanel,'Unit','Normalized',...
 'Position',[0.18 0.1 0.8 0.3],'Style','checkbox','String','Orientation tuned Electrodes',...
@@ -1170,7 +1173,7 @@ if sessionNum <=22 % Single Session
         hold(hPlots_Fig1.hPlot8,'off');
     end
 else
-    text(0.05,0.5,'No Orientation Tuning data not shown for multiple sessions','unit','normalized','fontSize',10,'parent',hPlots_Fig1.hPlot8);
+    text(0.5,0.5,{'Orientation Tuning data' 'not shown for' 'multiple sessions'},'unit','normalized','HorizontalAlignment','center','fontSize',10,'parent',hPlots_Fig1.hPlot8);
 end
 
 % Setting title,xlabel and ylabel for OriTuning Plot
