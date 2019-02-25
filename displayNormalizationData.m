@@ -1018,16 +1018,20 @@ if isnumeric(electrodeNum)
 elseif strcmp(electrodeNum,'all')
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%    Processing data accoring to selected neural measure    %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Main 5x5 plot for Neural Measure
 if analysisMeasure == 1 || analysisMeasure == 2
     if NormalizeDataFlag
-    % Normalize ERP and spike Data (fft or energy data need not be normalized
-    % as they are expressed in log units)
+    % Normalize ERP and spike Data 
+    %(fft or energy data need not be normalized because of log conversion
     data = normalizeData(data);
     end
-    dataPlot = squeeze(mean(data.data(:,1,:,:,:),1)); % Handles single electrode or multi-electrode data similarly
+dataPlot = squeeze(mean(data.data(:,1,:,:,:),1)); % Handles single electrode or multi-electrode data similarly
     
-elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
+elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6 || analysisMeasure == 7
     if size(data.dataBL) ~= size(data.dataST) 
        error('Size of fftDataBL and fftDataST do not match!')
     end
@@ -1043,128 +1047,14 @@ elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6||analy
     % When Change in neural measures are to be plotted
     if relativeMeasuresFlag
         dataPlotdiffSTvsBL = dataPlotST-dataPlotBL;
-        if analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
+        if analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6 || analysisMeasure == 7
             if analysisMethod == 2
                 dataPlotdiffSTvsBL = 10*(dataPlotST-dataPlotBL);  % Change in Power expressed in deciBel for MT method
             end
         end
     end
 end
-    
-% Plotting 5x5 plots for raw Neural Measures (Figure 1)
-for c1 = 1:5
-    for c2 = 1:5
-        if analysisMeasure == 1 || analysisMeasure == 2
-            plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlot(c1,c2,:)),'color',colorName);
-        elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
-            if ~relativeMeasuresFlag
-            plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlotBL(c1,c2,:)),'g');
-            hold(hPlots_Fig1.hPlot1(c1,c2),'on')
-            plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlotST(c1,c2,:)),'k');
-            hold(hPlots_Fig1.hPlot1(c1,c2),'off')
-            else
-                plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlotdiffSTvsBL(c1,c2,:)),'b');
-            end
-        end
-    end
-end
 
-conFlipped = 5:-1:1;
-for c = 1:5
-title(hPlots_Fig1.hPlot1(1,c),[num2str(cValsUnique(c)) ' %']);
-ylabel(hPlots_Fig1.hPlot1(c,1),[num2str(cValsUnique(conFlipped(c))) ' %'],'fontWeight','bold');
-end
-
-colors = jet(5);
-% Plot Figure 2 neural response plots
-for c1 = 1:5
-    for c2 = 1:5
-        if analysisMeasure == 1 || analysisMeasure == 2
-            plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlot(conFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
-            hold(hPlots_Fig2.hPlot1(1,c2),'on');
-        elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
-            if ~relativeMeasuresFlag
-                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotBL(conFlipped(c1),c2,:)),'k');
-                hold(hPlots_Fig2.hPlot1(1,c2),'on')
-                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotST(conFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
-            else
-                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotBL(conFlipped(c1),c2,:))-squeeze(dataPlotBL(conFlipped(c1),c2,:)),'k');
-                hold(hPlots_Fig2.hPlot1(1,c2),'on')
-                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotdiffSTvsBL(conFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
-            end
-        end
-        title(hPlots_Fig2.hPlot1(1,c2),[num2str(cValsUnique(c2)) ' %'])
-    end
-end
-
-Norm_colorNames(1,:) = colors(5,:);
-Norm_colorNames(2:5,:) = flip(parula(4),1);
-% Plot Figure 3 neural response plots
-for c = 1:5
-    if analysisMeasure == 1 || analysisMeasure == 2
-        plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlot(conFlipped(1),c,:)),'color',colors(c,:,:),'LineWidth',2);
-        hold(hPlots_Fig3.hPlot1(1),'on');
-        plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlot(c,conFlipped(1),:)),'color',Norm_colorNames(conFlipped(c),:,:),'LineWidth',2);
-        hold(hPlots_Fig3.hPlot1(2),'on');
-    elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
-        if ~relativeMeasuresFlag
-        plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlotBL(conFlipped(1),c,:)),'k');
-        hold(hPlots_Fig3.hPlot1(1),'on')
-        plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlotST(conFlipped(1),c,:)),'color',colors(c,:,:),'LineWidth',2);
-        
-        plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotBL(conFlipped(c),conFlipped(1),:)),'k');
-        hold(hPlots_Fig3.hPlot1(2),'on')
-        plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotST(conFlipped(c),conFlipped(1),:)),'color',Norm_colorNames(c,:,:),'LineWidth',2);      
-        else
-            plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlotBL(conFlipped(1),c,:))-squeeze(dataPlotBL(conFlipped(1),c,:)),'k');
-            hold(hPlots_Fig3.hPlot1(1),'on')
-            plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlotdiffSTvsBL(conFlipped(1),c,:)),'color',colors(c,:,:),'LineWidth',2);
-            
-            plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotBL(conFlipped(c),conFlipped(1),:))-squeeze(dataPlotBL(conFlipped(c),conFlipped(1),:)),'k');
-            hold(hPlots_Fig3.hPlot1(2),'on')
-            if analysisMeasure == 4||analysisMeasure ==5||analysisMeasure ==6
-                plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotdiffSTvsBL(conFlipped(c),conFlipped(1),:)),'color',Norm_colorNames(c,:,:),'LineWidth',2);
-            elseif analysisMeasure == 7
-                plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotdiffSTvsBL(c,conFlipped(1),:)),'color',Norm_colorNames(conFlipped(c),:,:),'LineWidth',2);
-            end
-        end
-    end
-    
-    if analysisMeasure == 2
-        text(0.55,0.45+c*0.08,[num2str(cValsUnique(c)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-        text(0.55,0.45+c*0.08,[num2str(cValsUnique(c)) ' %'],'color',Norm_colorNames(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-        text(0.55,0.45+6*0.08,'Ori:1','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-        text(0.55,0.45+6*0.08,'Ori:2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-
-    elseif analysisMeasure == 5
-        text(0.05,0.45+c*0.08,[num2str(cValsUnique(c)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-        text(0.05,0.45+6*0.08,'Ori:1','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-
-        text(0.05,0.45+c*0.08,[num2str(cValsUnique(conFlipped(c))) ' %'],'color',Norm_colorNames(conFlipped(c),:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-        text(0.05,0.45+6*0.08,'Ori:2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-    elseif analysisMeasure == 6||analysisMeasure == 7
-        text(0.1+c*0.15,0.15,[num2str(cValsUnique(c)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-        if c==1
-            text(0.1,0.15,'Ori 1:','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-        end
-
-        text(0.1+c*0.15,0.15,[num2str(cValsUnique(c)) ' %'],'color',Norm_colorNames(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-        if c==1
-            text(0.1,0.15,'Ori 2:','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-        end
-    end
-
-end
-if analysisMeasure == 2
-    title(hPlots_Fig3.hPlot1(1),'Spike Response for Orientation 1')
-    title(hPlots_Fig3.hPlot1(2),{'Spike Response at 50% contrast of Ori 1','when Ori 2 is added'},'HorizontalAlignment','Center')
-else
-    title(hPlots_Fig3.hPlot1(1),'Change in PSD for Orientation 1')
-    title(hPlots_Fig3.hPlot1(2),{'Change in PSD at 50% contrast of Ori 1','when Ori 2 is added'},'HorizontalAlignment','Center')
-end
-hold(hPlots_Fig3.hPlot1(1),'off');
-hold(hPlots_Fig3.hPlot1(2),'off');
-% Figure 1
 % Color coded 5x5 Matrix of raw Neural Measures
 if analysisMeasure == 1 || analysisMeasure == 2
     analysisData = squeeze(mean(data.analysisDataST(:,1,:,:),1));
@@ -1257,13 +1147,9 @@ if relativeMeasuresFlag
     end
 end
 
-% Figure 1
-imagesc(analysisData,'parent',hPlots_Fig1.hPlot2);colorbar(hPlots_Fig1.hPlot2);set(hPlots_Fig1.hPlot2,'Position',[0.52 0.05 0.12 0.25]);
-title(hPlots_Fig1.hPlot2,['Mean NI: ',num2str(round(mean(NI_population),2))],'fontWeight','bold');
-
-% Setting xlabels and ylabels for Color matrix of neural measures
-set(hPlots_Fig1.hPlot2,'XTickLabel',cValsUnique);
-set(hPlots_Fig1.hPlot2,'YTickLabel',flip(cValsUnique2));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%   Figure 1   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Ori Tuning data shown only for single session (single or all electrodes)
 if analysisMeasure == 1||analysisMeasure == 2
@@ -1289,18 +1175,88 @@ if sessionNum <=22 % Single Session
 else
     text(0.5,0.5,{'Orientation Tuning data' 'not shown for' 'multiple sessions'},'unit','normalized','HorizontalAlignment','center','fontSize',10,'parent',hPlots_Fig1.hPlot8);
 end
-
-% Setting title,xlabel and ylabel for OriTuning Plot
 title(hPlots_Fig1.hPlot8,'Ori Tuning for Single Session (Spike Data)','fontSize',10);
 xlim(hPlots_Fig1.hPlot8,[0 250]);
 set(hPlots_Fig1.hPlot8,'XTick',oValsUnique_Tuning); set(hPlots_Fig1.hPlot8,'XTickLabelRotation',90);
+
+% Plotting 5x5 plots for raw Neural Measures
+conFlipped = 5:-1:1;
+for c1 = 1:5
+    for c2 = 1:5
+        if analysisMeasure == 1 || analysisMeasure == 2
+            plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlot(c1,c2,:)),'color',colorName);
+        elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
+            if ~relativeMeasuresFlag
+            plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlotBL(c1,c2,:)),'g');
+            hold(hPlots_Fig1.hPlot1(c1,c2),'on')
+            plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlotST(c1,c2,:)),'k');
+            hold(hPlots_Fig1.hPlot1(c1,c2),'off')
+            else
+                plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlotdiffSTvsBL(c1,c2,:)),'b');
+            end
+        end
+    end
+end
+
+for c = 1:5
+title(hPlots_Fig1.hPlot1(1,c),[num2str(cValsUnique(c)) ' %']);
+ylabel(hPlots_Fig1.hPlot1(c,1),[num2str(cValsUnique(conFlipped(c))) ' %'],'fontWeight','bold');
+end
+
+% Plotting of analysisData as 5x5 color matrix
+imagesc(analysisData,'parent',hPlots_Fig1.hPlot2);colorbar(hPlots_Fig1.hPlot2);set(hPlots_Fig1.hPlot2,'Position',[0.52 0.05 0.12 0.25]);
+title(hPlots_Fig1.hPlot2,['Mean NI: ',num2str(round(mean(NI_population),2))],'fontWeight','bold');
+set(hPlots_Fig1.hPlot2,'XTickLabel',cValsUnique);
+set(hPlots_Fig1.hPlot2,'YTickLabel',flip(cValsUnique2));
 
 % NI population histogram
 if num_Electrodes>1
 histogram(hPlots_Fig1.hPlot7,NI_population,-2:0.2:2);
 end
 
-% Figure 2
+% Contrast Response curves Row-Wise & Column-wise
+CRFColors = jet(length(cValsUnique));
+for iCon = 1:5
+    plot(hPlots_Fig1.hPlot3(1,iCon),cValsUnique,analysisData(conFlipped(iCon),:),...
+        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
+    plot(hPlots_Fig1.hPlot4(1,iCon),cValsUnique2,flip(analysisData(:,iCon),1),...
+        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
+    plot(hPlots_Fig1.hPlot5(1,1),cValsUnique,analysisData(conFlipped(iCon),:),...
+        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
+    hold(hPlots_Fig1.hPlot5(1,1),'on')
+    plot(hPlots_Fig1.hPlot6(1,1),cValsUnique2,flip(analysisData(:,iCon),1),...
+        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
+    hold(hPlots_Fig1.hPlot6(1,1),'on')
+end
+hold(hPlots_Fig1.hPlot5(1,1),'off'); hold(hPlots_Fig1.hPlot6(1,1),'off')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%   Figure 2   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+colors = jet(5);
+% Plot Figure 2 neural response plots
+for c1 = 1:5
+    for c2 = 1:5
+        if analysisMeasure == 1 || analysisMeasure == 2
+            plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlot(conFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
+            hold(hPlots_Fig2.hPlot1(1,c2),'on');
+        elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
+            if ~relativeMeasuresFlag
+                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotBL(conFlipped(c1),c2,:)),'k');
+                hold(hPlots_Fig2.hPlot1(1,c2),'on')
+                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotST(conFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
+            else
+                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotBL(conFlipped(c1),c2,:))-squeeze(dataPlotBL(conFlipped(c1),c2,:)),'k');
+                hold(hPlots_Fig2.hPlot1(1,c2),'on')
+                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotdiffSTvsBL(conFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
+            end
+        end
+        title(hPlots_Fig2.hPlot1(1,c2),[num2str(cValsUnique(c2)) ' %'])
+    end
+end
+
+% Figure 2 5x5 color-coded analysisData matrix
 imagesc(analysisData,'parent',hPlots_Fig2.hPlot2(3));
 color_Bar = colorbar(hPlots_Fig2.hPlot2(3)); 
 colorYlabelHandle = get(color_Bar,'Ylabel');
@@ -1337,63 +1293,7 @@ set(hPlots_Fig2.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthP
 set(hPlots_Fig2.hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
 xlabel(hPlots_Fig2.hPlot2(3),'Contrast (%)');ylabel(hPlots_Fig2.hPlot2(3),'Contrast (%)');
 
-% Figure 3
-imagesc(analysisData,'parent',hPlots_Fig3.hPlot2(3));
-% grid on;
-color_Bar = colorbar(hPlots_Fig3.hPlot2(3));% 
-colorYlabelHandle = get(color_Bar,'Ylabel');
-if analysisMeasure==1
-    YlabelString = 'Potential';
-elseif analysisMeasure==2
-    YlabelString = 'Spikes/s';
-elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
-    if ~relativeMeasuresFlag
-        YlabelString = 'log_1_0(FFT Amplitude)';
-    else
-        YlabelString = 'log_1_0(\Delta FFT Amplitude)';
-        if analysisMethod == 2
-            YlabelString = 'Change in Power (dB)';
-        end
-    end
-end
-
-set(colorYlabelHandle,'String',YlabelString,'fontSize',14);
-plotPos = get(hPlots_Fig3.hPlot2(3),'Position');
-set(hPlots_Fig3.hPlot2(3),'Position',[plotPos(1) plotPos(2) 0.12 plotPos(4)]);
-title(hPlots_Fig3.hPlot2(3),['Mean NI: ',num2str(round(mean(NI_population),2))],'fontWeight','bold');
-
-if num_Electrodes>1
-% NI population histogram
-histogram(hPlots_Fig3.hPlot2(2),NI_population,-2:0.2:2);
-end
-
-set(hPlots_Fig3.hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-xlabel(hPlots_Fig3.hPlot2(2),'Normalization Index'); ylabel(hPlots_Fig3.hPlot2(2),'No. of Electrodes');
-title(hPlots_Fig3.hPlot2(2),{'Population NI Histogram,' ,['Median NI: ' num2str(round(median(NI_population),2))]})
-line([round(median(NI_population),2) round(median(NI_population),2)],getYLims(hPlots_Fig3.hPlot2(2)),'color','k','lineWidth',2,'parent',hPlots_Fig3.hPlot2(2))
-
-set(hPlots_Fig3.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-set(hPlots_Fig3.hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
-xlabel(hPlots_Fig3.hPlot2(3),'Ori 1 Contrast (%)');ylabel(hPlots_Fig3.hPlot2(3),'Ori 2 Contrast (%)');
-
-% Figure 1
-% Contrast Response curves Row-Wise & Column-wise
-CRFColors = jet(length(cValsUnique));
-for iCon = 1:5
-    plot(hPlots_Fig1.hPlot3(1,iCon),cValsUnique,analysisData(conFlipped(iCon),:),...
-        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    plot(hPlots_Fig1.hPlot4(1,iCon),cValsUnique2,flip(analysisData(:,iCon),1),...
-        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    plot(hPlots_Fig1.hPlot5(1,1),cValsUnique,analysisData(conFlipped(iCon),:),...
-        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    hold(hPlots_Fig1.hPlot5(1,1),'on')
-    plot(hPlots_Fig1.hPlot6(1,1),cValsUnique2,flip(analysisData(:,iCon),1),...
-        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    hold(hPlots_Fig1.hPlot6(1,1),'on')
-end
-hold(hPlots_Fig1.hPlot5(1,1),'off'); hold(hPlots_Fig1.hPlot6(1,1),'off')
-
-% Figure 2
+% Figure 2 CRF plot
 CRFColors = jet(length(cValsUnique));
 for iCon = 1:5
     plot(hPlots_Fig2.hPlot2(1),cValsUnique,analysisData(conFlipped(iCon),:),...
@@ -1449,28 +1349,136 @@ set(hPlots_Fig2.hPlot2(1),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabe
 xlabel(hPlots_Fig2.hPlot2(1),'Contrast (%)');
 title(hPlots_Fig2.hPlot2(1),'CRF along Orientation 1')
 
-% Figure 3
-% errorbar(cValsUnique,analysisData(conFlipped(1),:),sem_analysisData(conFlipped(1),:),...
-%     'Marker','o','LineWidth',2,'color',Norm_colorNames(1,:,:),'parent',hPlots_Fig3.hPlot2(1))
-%     hold(hPlots_Fig3.hPlot2(1),'on');
-%     
-% errorbar(cValsUnique,diag(flipud(analysisData)),diag(flipud(sem_analysisData)),'Marker','o','LineWidth',2,'color','k','parent',hPlots_Fig3.hPlot2(1));
-%     
-for iCon = 1:5
-    errorbar(cValsUnique,analysisData(conFlipped(iCon),:),sem_analysisData(conFlipped(iCon),:),...
-        'Marker','o','LineWidth',2,'color',Norm_colorNames(iCon,:,:),'parent',hPlots_Fig3.hPlot2(1))
-    hold(hPlots_Fig3.hPlot2(1),'on')
-    text(0.5,iCon*0.07+0.05,['Ori 2: ' num2str(cValsUnique(iCon)) ' %'],'color',Norm_colorNames(iCon,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot2(1))
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%   Figure 3   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Norm_colorNames(1,:) = colors(5,:);
+Norm_colorNames(2:5,:) = flip(parula(4),1);
+% Plot Figure 3 neural response plots
+for c = 1:5
+    if analysisMeasure == 1 || analysisMeasure == 2
+        plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlot(conFlipped(1),c,:)),'color',colors(c,:,:),'LineWidth',2);
+        hold(hPlots_Fig3.hPlot1(1),'on');
+        plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlot(c,conFlipped(1),:)),'color',Norm_colorNames(conFlipped(c),:,:),'LineWidth',2);
+        hold(hPlots_Fig3.hPlot1(2),'on');
+    elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
+        if ~relativeMeasuresFlag
+        plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlotBL(conFlipped(1),c,:)),'k');
+        hold(hPlots_Fig3.hPlot1(1),'on')
+        plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlotST(conFlipped(1),c,:)),'color',colors(c,:,:),'LineWidth',2);
+        
+        plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotBL(conFlipped(c),conFlipped(1),:)),'k');
+        hold(hPlots_Fig3.hPlot1(2),'on')
+        plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotST(conFlipped(c),conFlipped(1),:)),'color',Norm_colorNames(c,:,:),'LineWidth',2);      
+        else
+            plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlotBL(conFlipped(1),c,:))-squeeze(dataPlotBL(conFlipped(1),c,:)),'k');
+            hold(hPlots_Fig3.hPlot1(1),'on')
+            plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlotdiffSTvsBL(conFlipped(1),c,:)),'color',colors(c,:,:),'LineWidth',2);
+            
+            plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotBL(conFlipped(c),conFlipped(1),:))-squeeze(dataPlotBL(conFlipped(c),conFlipped(1),:)),'k');
+            hold(hPlots_Fig3.hPlot1(2),'on')
+            if analysisMeasure == 4||analysisMeasure ==5||analysisMeasure ==6
+                plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotdiffSTvsBL(conFlipped(c),conFlipped(1),:)),'color',Norm_colorNames(c,:,:),'LineWidth',2);
+            elseif analysisMeasure == 7
+                plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotdiffSTvsBL(c,conFlipped(1),:)),'color',Norm_colorNames(conFlipped(c),:,:),'LineWidth',2);
+            end
+        end
+    end
+    
+    if analysisMeasure == 2
+        text(0.55,0.45+c*0.08,[num2str(cValsUnique(c)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
+        text(0.55,0.45+c*0.08,[num2str(cValsUnique(c)) ' %'],'color',Norm_colorNames(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
+        text(0.55,0.45+6*0.08,'Ori:1','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
+        text(0.55,0.45+6*0.08,'Ori:2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
+
+    elseif analysisMeasure == 5
+        text(0.05,0.45+c*0.08,[num2str(cValsUnique(c)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
+        text(0.05,0.45+6*0.08,'Ori:1','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
+
+        text(0.05,0.45+c*0.08,[num2str(cValsUnique(conFlipped(c))) ' %'],'color',Norm_colorNames(conFlipped(c),:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
+        text(0.05,0.45+6*0.08,'Ori:2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
+    elseif analysisMeasure == 6||analysisMeasure == 7
+        text(0.1+c*0.15,0.15,[num2str(cValsUnique(c)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
+        if c==1
+            text(0.1,0.15,'Ori 1:','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
+        end
+
+        text(0.1+c*0.15,0.15,[num2str(cValsUnique(c)) ' %'],'color',Norm_colorNames(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
+        if c==1
+            text(0.1,0.15,'Ori 2:','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
+        end
+    end
+
 end
+if analysisMeasure == 2
+    title(hPlots_Fig3.hPlot1(1),'Spike Response for Orientation 1')
+    title(hPlots_Fig3.hPlot1(2),{'Spike Response at 50% contrast of Ori 1','when Ori 2 is added'},'HorizontalAlignment','Center')
+else
+    title(hPlots_Fig3.hPlot1(1),'Change in PSD for Orientation 1')
+    title(hPlots_Fig3.hPlot1(2),{'Change in PSD at 50% contrast of Ori 1','when Ori 2 is added'},'HorizontalAlignment','Center')
+end
+hold(hPlots_Fig3.hPlot1(1),'off');
+hold(hPlots_Fig3.hPlot1(2),'off');
+
+imagesc(analysisData,'parent',hPlots_Fig3.hPlot2(3));
+color_Bar = colorbar(hPlots_Fig3.hPlot2(3));% 
+colorYlabelHandle = get(color_Bar,'Ylabel');
+if analysisMeasure==1
+    YlabelString = 'Potential';
+elseif analysisMeasure==2
+    YlabelString = 'Spikes/s';
+elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
+    if ~relativeMeasuresFlag
+        YlabelString = 'log_1_0(FFT Amplitude)';
+    else
+        YlabelString = 'log_1_0(\Delta FFT Amplitude)';
+        if analysisMethod == 2
+            YlabelString = 'Change in Power (dB)';
+        end
+    end
+end
+
+set(colorYlabelHandle,'String',YlabelString,'fontSize',14);
+plotPos = get(hPlots_Fig3.hPlot2(3),'Position');
+set(hPlots_Fig3.hPlot2(3),'Position',[plotPos(1) plotPos(2) 0.12 plotPos(4)]);
+title(hPlots_Fig3.hPlot2(3),['Mean NI: ',num2str(round(mean(NI_population),2))],'fontWeight','bold');
+
+if num_Electrodes>1
+% NI population histogram
+histogram(hPlots_Fig3.hPlot2(2),NI_population,-2:0.2:2);
+end
+
+set(hPlots_Fig3.hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+xlabel(hPlots_Fig3.hPlot2(2),'Normalization Index'); ylabel(hPlots_Fig3.hPlot2(2),'No. of Electrodes');
+title(hPlots_Fig3.hPlot2(2),{'Population NI Histogram,' ,['Median NI: ' num2str(round(median(NI_population),2))]})
+line([round(median(NI_population),2) round(median(NI_population),2)],getYLims(hPlots_Fig3.hPlot2(2)),'color','k','lineWidth',2,'parent',hPlots_Fig3.hPlot2(2))
+
+set(hPlots_Fig3.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+set(hPlots_Fig3.hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
+xlabel(hPlots_Fig3.hPlot2(3),'Ori 1 Contrast (%)');ylabel(hPlots_Fig3.hPlot2(3),'Ori 2 Contrast (%)');
+
+errorbar(cValsUnique,analysisData(conFlipped(1),:),sem_analysisData(conFlipped(1),:),...
+    'Marker','o','LineWidth',2,'color',Norm_colorNames(1,:,:),'parent',hPlots_Fig3.hPlot2(1))
+    hold(hPlots_Fig3.hPlot2(1),'on');
+    
+errorbar(cValsUnique,diag(flipud(analysisData)),diag(flipud(sem_analysisData)),'Marker','o','LineWidth',2,'color','k','parent',hPlots_Fig3.hPlot2(1));
+    
+% for iCon = 1:5
+%     errorbar(cValsUnique,analysisData(conFlipped(iCon),:),sem_analysisData(conFlipped(iCon),:),...
+%         'Marker','o','LineWidth',2,'color',Norm_colorNames(iCon,:,:),'parent',hPlots_Fig3.hPlot2(1))
+%     hold(hPlots_Fig3.hPlot2(1),'on')
+%     text(0.5,iCon*0.07+0.05,['Ori 2: ' num2str(cValsUnique(iCon)) ' %'],'color',Norm_colorNames(iCon,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot2(1))
+% end
 hold(hPlots_Fig3.hPlot2(1),'off');
-% text(0.5,0.2,'Ori 2: 0%','color',colors(5,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot2(1))
-% text(0.5,0.1,'Ori 1 = Ori 2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot2(1))
+text(0.5,0.2,'Ori 2: 0%','color',colors(5,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot2(1))
+text(0.5,0.1,'Ori 1 = Ori 2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot2(1))
 
 
 if analysisMeasure == 1||analysisMeasure == 2
     displayRange(hPlots_Fig3.hPlot1,[0.2 0.4],getYLims(hPlots_Fig3.hPlot1),'k');
 elseif analysisMeasure ==4 
-    displayRange(hPlots_Fig3.hPlot1,[108 248],getYLims(hPlots_Fig3.hPlot1),'k');
+    displayRange(hPlots_Fig3.hPlot1,[8 12],getYLims(hPlots_Fig3.hPlot1),'k');
 elseif analysisMeasure == 5  
     displayRange(hPlots_Fig3.hPlot1,[30 80],getYLims(hPlots_Fig3.hPlot1),'k');
 elseif analysisMeasure == 6     
@@ -1509,7 +1517,8 @@ elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6|| an
     end
 
 end
-%             set(hOtherMeaures(1),'XScale','linear')
+
+% set(hOtherMeaures(1),'XScale','linear')
 % text(0.5,0.3,['N = ' num2str(dataSize(1))],'color','k','unit','normalized','fontSize',14,'fontWeight','bold','parent',hPlots_Fig3.hPlot2(1))
 set(hPlots_Fig3.hPlot2(1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlots_Fig3.hPlot2(1),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
@@ -1517,7 +1526,9 @@ xlabel(hPlots_Fig3.hPlot2(1),'Ori 1 Contrast (%)');
 title(hPlots_Fig3.hPlot2(1),'CRF along Ori 1')
 end
 
-% Accessory Functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%  Accessory Functions  %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Load LFP Info
 function [analogChannelsStored,timeVals,goodStimPos,analogInputNums] = loadlfpInfo(folderLFP) %#ok<*STOUT>
