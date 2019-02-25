@@ -202,7 +202,7 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
 
 
            % get Data for Selected Session & Parameters
-            [erpData,firingRateData,fftData,energyData,oriTuningData,~] = getData(folderSourceString,...
+            [erpData,firingRateData,fftData,energyData,oriTuningData,~,electrodeArray] = getData(folderSourceString,...
              fileNameStringTMP,ElectrodeArrayListAll,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); 
 %             freqRangeStr = {'alpha','gamma','SSVEP'};
 %             numFreqRanges = length(freqRanges);       
@@ -403,7 +403,7 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
             gap = 0.002;
 
             figure(1);
-            plotHandles = getPlotHandles(numRows,numCols,gridPos,gap);
+            plotHandles = getPlotHandles(numRows,numCols,gridPos,gap); linkaxes(plotHandles);
 
             % Orientation Tuning for electrodes of single session
             hOriTuning = ...
@@ -414,10 +414,10 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
                 getPlotHandles(1,1,[0.52 0.05 0.14 0.25],0.001,0.001,1); 
 
             % CRF plots for preferred Orientation (Row-wise)
-            plotHandles2= getPlotHandles(1,5,[0.7 0.5 0.25 0.1],0.001,0.001,1);
+            plotHandles2= getPlotHandles(1,5,[0.7 0.5 0.25 0.1],0.001,0.001,1); linkaxes(plotHandles2);
 
             % CRF plots for null Orientation (column-wise)
-            plotHandles3= getPlotHandles(1,5,[0.7 0.35 0.25 0.1],0.001,0.001,1);
+            plotHandles3= getPlotHandles(1,5,[0.7 0.35 0.25 0.1],0.001,0.001,1); linkaxes(plotHandles3);
 
             % CRF plots for preferred Orientation (Overlaid)
             hRowCRF = getPlotHandles(1,1,[0.85 0.2 0.1 0.1],0.001,0.001,1);
@@ -448,9 +448,10 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
             hEnergyPlots = getPlotHandles(1,2,[0.1 0.55 0.5 0.35],0.03,0.05,0); linkaxes(hEnergyPlots);
             hOtherPanels = getPlotHandles(1,3,[0.1 0.15 0.5 0.25],0.05,0.05,0);
 
-        catch
+        catch e
             % We turn back on the interface
             set(InterfaceObj_DataProcessing,'Enable','on');
+            rethrow(e)
         end
         
         % Plotting Functions
@@ -485,7 +486,7 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
                 relativeMeasuresFlag = get(hRelativeMeasures,'val');
 
                 plotColor = colorNames(get(hChooseColor,'val'));
-                holdOnState = get(hHoldOn,'val'); %#ok<NASGU>
+                holdOnState = get(hHoldOn,'val'); 
 
     %             ColorNeuralMeasures = jet(5);
 
@@ -520,6 +521,9 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
                 elseif analysisMeasure == 8 % need to work on STA!
                     error('STA computation method not found') 
                 end
+
+            showElectrodeLocations(electrodeGridPos,electrodeArray, ...
+            plotColor,hElectrodesonGrid,holdOnState,0,gridType,'alpaH');% Electrode grid Layout are similar for both alpaH and kesariH hybrid grid
 
                 figure(1);
                 % Text for Orientation for main 5x5 Neural measure matrix
@@ -593,8 +597,11 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
         end
 
         rescaleData(plotHandles,xMin,xMax,getYLims(plotHandles));
-        rescaleData(plotHandles2,0,50,getYLims(plotHandles2));
-        rescaleData(plotHandles3,0,50,getYLims(plotHandles3));
+        rescaleData(hPlotPreferred,xMin,xMax,getYLims(hPlotPreferred));
+        rescaleData(hEnergyPlots,xMin,xMax,getYLims(hEnergyPlots));
+        
+%         rescaleData(plotHandles2,0,50,getYLims(plotHandles2));
+%         rescaleData(plotHandles3,0,50,getYLims(plotHandles3));
 
     end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -653,6 +660,10 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
         claGivenPlotHandle(hEnergyPlots);
         claGivenPlotHandle(hOtherPanels);
         
+        claGivenPlotHandle(hElectrodesonGrid)
+        showElectrodeLocations(electrodeGridPos,[], ...
+        [],[],1,0,gridType,'alpaH');% Electrode grid Layout are similar for both alpaH and kesariH hybrid grid
+
         function claGivenPlotHandle(plotHandles)
             [numRows,numCols] = size(plotHandles);
             for i=1:numRows
@@ -700,7 +711,7 @@ if length(fileNameStringTMP)>1
            continue
         end
         disp(['Working on dataset ' num2str(i) ' of ' num2str(length(fileNameStringTMP))]);
-        [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~,NI_DataTMP,~] = getDataSingleSession(folderSourceString,fileNameStringTMP{i},...
+        [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~,NI_DataTMP,electrodeArrayTMP] = getDataSingleSession(folderSourceString,fileNameStringTMP{i},...
             ElectrodeListTMP{i},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod);
         
         erpData.data = cat(1,erpData.data,erpDataTMP.data);
@@ -738,8 +749,8 @@ if length(fileNameStringTMP)>1
             NI_Data.energy{j} = cat(1, NI_Data.energy{j}, NI_DataTMP.energy{j});
         end
 
-        % Combining OriData across sessions need to be done! Right now, there is no requirement!        
-        electrodeArray = [];
+        % Combining OriData across sessions may be required! Right now, there is no requirement!        
+        electrodeArray = cat(2,electrodeArray,electrodeArrayTMP);
     end
 end
 end
