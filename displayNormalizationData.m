@@ -202,7 +202,7 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
 
 
            % get Data for Selected Session & Parameters
-            [erpData,firingRateData,fftData,energyData,oriTuningData,~,electrodeArray] = getData(folderSourceString,...
+            [erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray] = getData(folderSourceString,...
              fileNameStringTMP,ElectrodeArrayListAll,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); 
 %             freqRangeStr = {'alpha','gamma','SSVEP'};
 %             numFreqRanges = length(freqRanges);       
@@ -448,10 +448,10 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
             hEnergyPlots = getPlotHandles(1,2,[0.1 0.55 0.5 0.35],0.03,0.05,0); linkaxes(hEnergyPlots);
             hOtherPanels = getPlotHandles(1,3,[0.1 0.15 0.5 0.25],0.05,0.05,0);
 
-        catch e
+        catch eroorInDataProcessing
             % We turn back on the interface
             set(InterfaceObj_DataProcessing,'Enable','on');
-            rethrow(e)
+            rethrow(eroorInDataProcessing)
         end
         
         % Plotting Functions
@@ -570,13 +570,13 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
                 % We turn back on the Plotting interface
                 set(InterfaceObj_DataPlotting,'Enable','on');
          
-            catch e
+            catch errorInDataPlotting
             	% We turn back on the entire interface (plotting and data
             	% processing)
 %                 fprintf(1,'The identifier was:\n%s',e.identifier);
 %                 fprintf(1,'There was an error! The message was:\n%s',e.message);
                 set(InterfaceObj_DataPlotting,'Enable','on');
-                rethrow(e)
+                rethrow(errorInDataPlotting)
             end
         end 
 
@@ -1006,7 +1006,7 @@ else
     
     % Get Normalization Indices
     NI_Data.erp = getNI(erpData);
-    NI_Data.firingRate = getNI(fftData);
+    NI_Data.firingRate = getNI(firingRateData);
     NI_Data.fft = getNI(fftData);
     NI_Data.energy = getNI(energyData);
 
