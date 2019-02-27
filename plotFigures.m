@@ -1,4 +1,4 @@
-function plotFigures(folderSourceString)
+function plotFigures(monkeyName,folderSourceString)
 if ~exist('folderSourceString','var') 
    folderSourceString = 'M:\data\PlaidNorm\';
 end
@@ -30,25 +30,43 @@ timeRangeParameters.stRange = timeRangeForComputation;
 % by different colors; absolute color map 5x5; relative color map 5x5; 
 % CRF (no Norm, Pref,Pref+Null, Avg, Null) 
 hFigure1 = figure(1);
+set(hFigure1,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig1.hPlot1 = getPlotHandles(1,5,[0.15 0.65 0.7 0.2],0.01,0.01,1); linkaxes(hPlotsFig1.hPlot1);
+hPlotsFig1.hPlot2 = getPlotHandles(1,3,[0.15 0.2 0.7 0.3],0.1,0.05,0);
 
 % Figure 2 (Spike data from all Elecs)
+hFigure2 = figure(2);
+set(hFigure2,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig2.hPlot1 = getPlotHandles(1,5,[0.15 0.65 0.7 0.2],0.01,0.01,1); linkaxes(hPlotsFig2.hPlot1);
+hPlotsFig2.hPlot2 = getPlotHandles(1,3,[0.15 0.2 0.7 0.3],0.1,0.05,0);
 
 % Figure 3 (PSDs (A); deltaPSDs (B) along increasing contrast of Ori 1 
 % with contrasts of Ori 2 presented in different colors;
 % absolute color map 5x5; relative color map 5x5; 
 % CRF (no Norm, Pref,Pref+Null, Avg, Null) 
 % for alpha (C), gamma (D) and high-gamma (E) for ERP-subtracted data
+hFigure3 = figure(3);
+set(hFigure3,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig3.hPlot1 = getPlotHandles(2,5,[0.25 0.65 0.5 0.3],0.01,0.01,1); linkaxes(hPlotsFig3.hPlot1);
+hPlotsFig3.hPlot2 = getPlotHandles(3,3,[0.25 0.05 0.5 0.55],0.1,0.01,0);
 
 % Figure 4 (PSDs (A); deltaPSDs (B) along increasing contrast of Ori 1 
 % with contrasts of Ori 2 presented in different colors;
 % absolute color map 5x5; relative color map 5x5; 
 % CRF (no Norm, Pref,Pref+Null, Avg, Null) 
 % for SSVEP (C) for non-ERP subtracted data
+hFigure4 = figure(4);
+set(hFigure4,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig4.hPlot1 = getPlotHandles(2,5,[0.15 0.5 0.7 0.4],0.01,0.01,1); linkaxes(hPlotsFig4.hPlot1);
+hPlotsFig4.hPlot2 = getPlotHandles(1,3,[0.15 0.1 0.7 0.3],0.1,0.05,0);
+
 
 % Figure 5: Comparison of fitted parameters for FR, alpha, gamma, high
 % gamma, SSVEP--- Three plots for each NI, sigma and alpha fitted
 % parameters
-
+hFigure5 = figure(5);
+set(hFigure5,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig5.hPlot1 = getPlotHandles(5,3,[0.3 0.1 0.4 0.8],0.06,0.01,1); linkaxes(hPlotsFig4.hPlot1);
 
 
 % get Data for Selected Session & Parameters

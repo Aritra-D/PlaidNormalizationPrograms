@@ -1089,55 +1089,55 @@ if analysisMeasure == 1 || analysisMeasure == 2
         NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
     end
 elseif analysisMeasure == 4 
-    analysisData = squeeze(mean(data.analysisDataST{1}(:,1,:,:),1));
-    sem_analysisData = squeeze(std(squeeze(data.analysisDataST{1}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{1},1)));
-    analysisDataBL = squeeze(mean(data.analysisData_cBL{1}(:,1,:,:),1));
+    analysisData = squeeze(mean(data.analysisDataST{1},1));
+    sem_analysisData = squeeze(std(squeeze(data.analysisDataST{1}),[],1)./sqrt(size(data.analysisDataST{1},1)));
+    analysisDataBL = squeeze(mean(data.analysisData_cBL{1},1));
     for iElec= 1:size(data.analysisDataST{1},1)
         clear electrodeVals
         if ~relativeMeasuresFlag
-            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:));
+            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,:,:));
         else
-            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:))-squeeze(data.analysisDataBL{1}(iElec,1,:,:));
+            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,:,:))-squeeze(data.analysisDataBL{1}(iElec,:,:));
         end
         NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
     end        
 elseif analysisMeasure == 5
-    analysisData = squeeze(mean(data.analysisDataST{2}(:,1,:,:),1));
-    sem_analysisData = squeeze(std(squeeze(data.analysisDataST{2}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{2},1)));
-    analysisDataBL = squeeze(mean(data.analysisData_cBL{2}(:,1,:,:),1));
+    analysisData = squeeze(mean(data.analysisDataST{2},1));
+    sem_analysisData = squeeze(std(squeeze(data.analysisDataST{2}),[],1)./sqrt(size(data.analysisDataST{2},1)));
+    analysisDataBL = squeeze(mean(data.analysisData_cBL{2},1));
     for iElec= 1:size(data.analysisDataST{2},1)
         clear electrodeVals
         if ~relativeMeasuresFlag
-            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:));
+            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,:,:));
         else
-            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:))-squeeze(data.analysisDataBL{2}(iElec,1,:,:));
+            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,:,:))-squeeze(data.analysisDataBL{2}(iElec,:,:));
         end
         NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
     end
 elseif analysisMeasure == 6
-    analysisData = squeeze(mean(data.analysisDataST{3}(:,1,:,:),1));
-    sem_analysisData = squeeze(std(squeeze(data.analysisDataST{3}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{3},1)));
-    analysisDataBL = squeeze(mean(data.analysisData_cBL{3}(:,1,:,:),1));
+    analysisData = squeeze(mean(data.analysisDataST{3},1));
+    sem_analysisData = squeeze(std(squeeze(data.analysisDataST{3}),[],1)./sqrt(size(data.analysisDataST{3},1)));
+    analysisDataBL = squeeze(mean(data.analysisData_cBL{3},1));
     for iElec= 1:size(data.analysisDataST{3},1)
         clear electrodeVals
         if ~relativeMeasuresFlag
-            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,1,:,:));
+            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,:,:));
             NI_population(iElec) = abs(electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1); % log of low power values are negative!
         else
-            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,1,:,:))-squeeze(data.analysisDataBL{3}(iElec,1,:,:));
+            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,:,:))-squeeze(data.analysisDataBL{3}(iElec,:,:));
             NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
         end
     end 
 elseif analysisMeasure == 7
-    analysisData = squeeze(mean(data.analysisDataST{4}(:,2,:,:),1));
-    sem_analysisData = squeeze(std(squeeze(data.analysisDataST{4}(:,2,:,:)),[],1)./sqrt(size(data.analysisDataST{4},1)));
-    analysisDataBL = squeeze(mean(data.analysisData_cBL{4}(:,2,:,:),1));
+    analysisData = squeeze(mean(data.analysisDataST{4},1));
+    sem_analysisData = squeeze(std(squeeze(data.analysisDataST{4}),[],1)./sqrt(size(data.analysisDataST{4},1)));
+    analysisDataBL = squeeze(mean(data.analysisData_cBL{4},1));
     for iElec= 1:size(data.analysisDataST{4},1)
         clear electrodeVals
         if ~relativeMeasuresFlag
-            electrodeVals =  squeeze(data.analysisDataST{4}(iElec,2,:,:));
+            electrodeVals =  squeeze(data.analysisDataST{4}(iElec,:,:));
         else
-            electrodeVals =  squeeze(data.analysisDataST{4}(iElec,2,:,:))-squeeze(data.analysisDataBL{4}(iElec,2,:,:));
+            electrodeVals =  squeeze(data.analysisDataST{4}(iElec,:,:))-squeeze(data.analysisDataBL{4}(iElec,:,:));
         end
         NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
     end
@@ -1146,7 +1146,7 @@ end
 if relativeMeasuresFlag
     if analysisMeasure == 1||analysisMeasure == 2
             analysisData = analysisData-analysisDataBL;
-            sem_analysisData =  squeeze(std(squeeze(data.analysisDataST(:,1,:,:))-squeeze(data.analysisDataBL(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST,1)));
+            sem_analysisData =  squeeze(std((data.analysisDataST-data.analysisDataBL),[],1)./sqrt(size(data.analysisDataST,1)));
     elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
         if analysisMethod == 2
             analysisData = 10*(analysisData-analysisDataBL);% Change in power expressed in deciBel
@@ -1155,13 +1155,13 @@ if relativeMeasuresFlag
         end
         
         if analysisMeasure == 4
-            sem_analysisData = squeeze(std(squeeze(data.analysisDataST{1}(:,1,:,:))-squeeze(data.analysisDataBL{1}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{1},1)));
+            sem_analysisData =  squeeze(std((data.analysisDataST{1}-data.analysisDataBL{1}),[],1)./sqrt(size(data.analysisDataST{1},1)));
         elseif analysisMeasure == 5
-            sem_analysisData = squeeze(std(squeeze(data.analysisDataST{2}(:,1,:,:))-squeeze(data.analysisDataBL{2}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{2},1)));
+            sem_analysisData = squeeze(std((data.analysisDataST{2}-data.analysisDataBL{2}),[],1)./sqrt(size(data.analysisDataST{2},1)));
         elseif analysisMeasure == 6
-            sem_analysisData = squeeze(std(squeeze(data.analysisDataST{3}(:,1,:,:))-squeeze(data.analysisDataBL{3}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{3},1)));
+            sem_analysisData = squeeze(std((data.analysisDataST{3}-data.analysisDataBL{3}),[],1)./sqrt(size(data.analysisDataST{3},1)));
         elseif analysisMeasure == 7
-            sem_analysisData = squeeze(std(squeeze(data.analysisDataST{4}(:,2,:,:))-squeeze(data.analysisDataBL{4}(:,2,:,:)),[],1)./sqrt(size(data.analysisDataST{4},1)));
+            sem_analysisData = squeeze(std((data.analysisDataST{4}-data.analysisDataBL{4}),[],1)./sqrt(size(data.analysisDataST{4},1)));
         end
     end
 end
