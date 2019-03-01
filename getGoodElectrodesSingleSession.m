@@ -2,7 +2,7 @@
 % but was made a separate program to get the list of good electrodes for
 % energy computation.
 
-function [allGoodElectrodesStr,allGoodElectrodesArray,goodElectrodes] = getGoodElectrodesSingleSession(monkeyName,expDate,protocolName,gridType,folderSourceString,getOriSelectiveFlag,dRange,getSpikeElectrodesFlag,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList)
+function [allGoodElectrodesStr,allGoodElectrodesArray,goodElectrodes] = getGoodElectrodesSingleSession(monkeyName,expDate,protocolName,gridType,folderSourceString,getOriSelectiveFlag,versionNum,dRange,getSpikeElectrodesFlag,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList)
 
 if ~exist('gridType','var');                         gridType = 'microelectrode';           end
 if ~exist('getSpikeElectrodesFlag', 'var');          getSpikeElectrodesFlag = 1;            end
@@ -10,14 +10,14 @@ if ~exist('unitID', 'var');                          unitID = 0;                
 if ~exist('spikeCutoff', 'var');                     spikeCutoff = 20;                      end
 if ~exist('snrCutoff', 'var');                       snrCutoff = 2;                         end
 if ~exist('timeRangeFRComputation', 'var');          timeRangeFRComputation = [0.15 .4];    end
-if ~exist('contrastIndexList', 'var');               contrastIndexList =[1 5];                 end
+if ~exist('contrastIndexList', 'var');               contrastIndexList = {[1,1],[5,5]};     end
 if ~exist('dRange', 'var');                          dRange = [0 0.75];                     end
 
     
 % Selection criteria is selected as per Ray and Maunsell, 2010,
 % Neuron and 2011, JNS, both of which used the attention data.
 impedanceCutoff=2500;
-[expDates,~,positionList,oriList] = dataInformationPlaidNorm(monkeyName,gridType,0); % Plaid Protocols
+[expDates,~,positionList,oriList,~] = dataInformationPlaidNorm(monkeyName,gridType,0); % Plaid Protocols
 numDays = length(expDates);
 
 % Get a list of bad electrodes, Following Ray and Maunsell, 2011, JNS, a common list of bad electrodes was used
@@ -50,7 +50,7 @@ end
 usefulElectrodes = setdiff(electrodeList(intersect(find(d>=dRange(1)),find(d<dRange(2)))),badElectrodeList);
 % If spikes are required, check which electrodes have enough spikes
 if getSpikeElectrodesFlag
-    usefulElectrodes = intersect(usefulElectrodes,getRateAndSNRInfo(monkeyName,expDate,protocolName,folderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList));
+    usefulElectrodes = intersect(usefulElectrodes,getRateAndSNRInfo(monkeyName,expDate,protocolName,folderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList,versionNum));
 end
 
 SessionNum = find(strcmp(expDate,expDates));
@@ -110,14 +110,17 @@ else
 end
 
 end
-function goodElectrodes = getRateAndSNRInfo(monkeyName,expDate,protocolName,folderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList)
+function goodElectrodes = getRateAndSNRInfo(monkeyName,expDate,protocolName,folderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList,versionNum)
 
 % Good electrodes: spikes>spikeCutoff between 150-400 ms for individual gratings at 50% contrast & SNR>snrCutoff
 % Returns all electrodes that meet these criteria
 % Modification - We allow different intervals for computation of firing
 % rates.
-
-folderSave = fullfile(folderSourceString,'Projects\PlaidNormalizationProject\snrAndRatesPlaidNorm');%'E:\Projects\PlaidNormalizationProject\snrAndRatesPlaidNorm';
+if versionNum == 1
+    folderSave = fullfile(strtok(folderSourceString,'\'),'Projects\PlaidNormalizationProject\snrAndRatesPlaidNorm');
+elseif versionNum == 2
+    folderSave = fullfile(strtok(folderSourceString,'\'),'Projects\PlaidNormalizationProject\snrAndRatesPlaidNormV2');
+end
 fileSaveFR = fullfile(folderSave,[monkeyName expDate protocolName 'unsortedSpikeCountsAndRatesPlaidNorm' num2str(round(1000*timeRangeFRComputation(1))) '_' num2str(round(1000*timeRangeFRComputation(2))) '.mat']);
 if exist(fileSaveFR,'file')
     x=load(fileSaveFR);
@@ -126,6 +129,8 @@ end
 
 y=load(fullfile(folderSave,[monkeyName expDate protocolName 'unsortedSNR.mat']));
 
-goodPos = (x.SourceUnitID==unitID)&(min(min(x.nStim(:,contrastIndexList(1),contrastIndexList(2)),[],2),[],3)'>spikeCutoff)|(min(min(x.nStim(:,contrastIndexList(2),contrastIndexList(1)),[],2),[],3)'>spikeCutoff)&((y.snr>snrCutoff)==1);
-goodElectrodes = x.neuralChannelsStored(goodPos);
+goodPos = (x.SourceUnitID==unitID)&...
+          ((x.nStim(:,contrastIndexList{1}(1),contrastIndexList{1}(2))'>spikeCutoff)|...
+          (x.nStim(:,contrastIndexList{2}(1),contrastIndexList{2}(2))'>spikeCutoff))&...
+          ((y.snr>snrCutoff)==1);goodElectrodes = x.neuralChannelsStored(goodPos);
 end

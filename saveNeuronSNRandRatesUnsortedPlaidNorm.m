@@ -2,13 +2,22 @@
 % quality of isolation, snr, firing rate etc.
 
 
-function saveNeuronSNRandRatesUnsortedPlaidNorm(monkeyName,stimulusPeriod)
+function saveNeuronSNRandRatesUnsortedPlaidNorm(monkeyName,stimulusPeriod,versionNum)
 
 gridType = 'Microelectrode';
-[expDates,protocolNames,~,folderSourceString] = dataInformationPlaidNorm(monkeyName,gridType);
-
+[expDates,protocolNames,~,~,datafolderSourceString] = dataInformationPlaidNorm(monkeyName,gridType);
 numDays = length(expDates);
-folderSave = 'E:\Projects\PlaidNormalization Project\snrAndRatesPlaidNorm';
+
+folderSourceString = strtok(datafolderSourceString,'\');
+if versionNum == 1
+    folderSave = fullfile(folderSourceString,'Projects\PlaidNormalizationProject\snrAndRatesPlaidNorm');
+elseif versionNum == 2
+    folderSave = fullfile(folderSourceString,'Projects\PlaidNormalizationProject\snrAndRatesPlaidNormV2');
+end
+
+if ~exist(folderSave,'dir')
+    mkdir(folderSave);
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 for i=1:numDays
@@ -16,7 +25,7 @@ for i=1:numDays
     protocolName = protocolNames{i};
     disp([expDate protocolName]);
 
-    saveSpikeCountsAllElectrodes(monkeyName,expDate,protocolName,folderSourceString,gridType,folderSave,stimulusPeriod);
+    saveSpikeCountsAllElectrodes(monkeyName,expDate,protocolName,folderSourceString,gridType,folderSave,stimulusPeriod,versionNum);
     saveSNRFromSegments(monkeyName,expDate,protocolName,folderSourceString,folderSave);
 end
 end
@@ -54,7 +63,7 @@ end
 % Save
 save([appendIfNotPresent(folderSave,'\') monkeyName expDate protocolName 'unsortedSNR.mat'] ,'snr','meanSpike','N','signal','noise','segmentElectrodeList','segmentUnitList');
 end
-function saveSpikeCountsAllElectrodes(monkeyName,expDate,protocolName,folderSourceString,gridType,folderSave,stimulusPeriod)
+function saveSpikeCountsAllElectrodes(monkeyName,expDate,protocolName,folderSourceString,gridType,folderSave,stimulusPeriod,versionNum)
 
 validStimNum = 1;
 baselinePeriod = -0.05+[-diff(stimulusPeriod) 0];
@@ -73,40 +82,55 @@ load(fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName
 neuralChannelsStored = sort(neuralChannelsStored);
 
 numElectrodes = length(neuralChannelsStored);
-nStim = zeros(numElectrodes,5,5);
-frStim = zeros(numElectrodes,5,5);
-nBL = zeros(1,numElectrodes);
-frBL = zeros(1,numElectrodes);
-
 disp('Computing Spike Counts')
+
+cListFlipped_Ori1 = flip(1:length(cValsUnique)); 
+cListFlipped_Ori2 = flip(1:length(cValsUnique2)); 
 
 for i=1:numElectrodes
     clear spikeData
     load(fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName,'segmentedData','Spikes',['elec' num2str(neuralChannelsStored(i)) '_SID' num2str(SourceUnitID(i)) '.mat']));
     disp(['ElecNum: ' num2str(neuralChannelsStored(i))])
-
-    for cNum1=1:5
-        for cNum2=1:5
-            clear goodPos
-            goodPos = parameterCombinations{1,1,1,1,1,cNum1,1}; %#ok<USENS>
-            goodPos2 = parameterCombinations2{1,1,1,1,1,cNum2,1}; %#ok<USENS>
+    
+    if versionNum == 1
+        
+        for c_Ori1=1:length(cValsUnique)
+            for c_Ori2=1:length(cValsUnique2)
+            clear goodPos goodPos2
+            goodPos = parameterCombinations{1,1,1,1,1,cListFlipped_Ori1(c_Ori1),1}; %#ok<USENS>
+            goodPos2 = parameterCombinations2{1,1,1,1,1,c_Ori2,1}; %#ok<USENS>
             goodPos = intersect(goodPos,goodPos2);
             goodPos = setdiff(goodPos,badTrials);
 
-            nStim(i,cNum1,cNum2) = sum(getSpikeCounts(spikeData(goodPos),stimulusPeriod));
-            frStim(i,cNum1,cNum2) = (nStim(i,cNum1,cNum2)/length(goodPos))/diff(stimulusPeriod);
+            nStim(i,c_Ori1,c_Ori2) = sum(getSpikeCounts(spikeData(goodPos),stimulusPeriod));
+            frStim(i,c_Ori1,c_Ori2) = (nStim(i,c_Ori1,c_Ori2)/length(goodPos))/diff(stimulusPeriod);
+            end
         end
-    end
+        
+    elseif versionNum == 2
+        
+        for c_Ori2=1:length(cValsUnique2)
+            for c_Ori1=1:length(cValsUnique)
+                clear goodPos goodPos2
+                goodPos = parameterCombinations{1,1,1,1,1,c_Ori1,1}; 
+                goodPos2 = parameterCombinations2{1,1,1,1,1,cListFlipped_Ori2(c_Ori2),1};
+                goodPos = intersect(goodPos,goodPos2);
+                goodPos = setdiff(goodPos,badTrials);
 
+                nStim(i,c_Ori2,c_Ori1) = sum(getSpikeCounts(spikeData(goodPos),stimulusPeriod));
+                frStim(i,c_Ori2,c_Ori1) = (nStim(i,c_Ori2,c_Ori1)/length(goodPos))/diff(stimulusPeriod);
+            end
+        end
+        
+    end
     % For baseline, we combine all contrasts
-    
-        clear goodPos
-        goodPos = parameterCombinations{1,1,1,1,1,6,1}; 
-        goodPos2 = parameterCombinations2{1,1,1,1,1,6,1}; 
-        goodPos = intersect(goodPos,goodPos2);
-        goodPos = setdiff(goodPos,badTrials);
-        nBL(i)  = sum(getSpikeCounts(spikeData(goodPos),baselinePeriod));
-        frBL(i) = (nBL(i)/length(goodPos))/diff(baselinePeriod);
+    clear goodPos goodPos2
+    goodPos = parameterCombinations{1,1,1,1,1,6,1}; 
+    goodPos2 = parameterCombinations2{1,1,1,1,1,6,1}; 
+    goodPos = intersect(goodPos,goodPos2);
+    goodPos = setdiff(goodPos,badTrials);
+    nBL(i)  = sum(getSpikeCounts(spikeData(goodPos),baselinePeriod));
+    frBL(i) = (nBL(i)/length(goodPos))/diff(baselinePeriod);
     
 end
 

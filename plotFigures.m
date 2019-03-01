@@ -1,6 +1,6 @@
 function plotFigures(monkeyName,folderSourceString)
 if ~exist('folderSourceString','var') 
-   folderSourceString = 'M:\data\PlaidNorm\';
+   folderSourceString = 'M:\Data\PlaidNorm\';
 end
 close all; % closes any open figure to avoid any overlaying issues
 
@@ -9,11 +9,17 @@ spikeCutoff = 20;
 snrCutoff = 2;
 timeRangeForComputation = [0.15 0.4]; % expressed in second
 timeRangeForComputationBL = [-diff(timeRangeForComputation) 0];
+dRange = [0 0.75];
 tapers_MT = [1 1]; % parameters for MT analysis
 
 % Fixed parameters
 folderSave = 'savedData_Figures';
 gridType = 'Microelectrode';
+getSpikeElectrodesFlag = 1;
+combineUniqueElectrodeData = 0;
+unitID = 0;
+contrastIndexList{1} = [1 1]; % Plaid (Ori 1 contrast: 0% and Ori 2 contrast: 50%)
+contrastIndexList{2} = [5 5]; % Plaid (Ori 1 contrast: 50% and Ori 2 contrast: 0%)
 freqRanges{1} = [8 12]; % alpha
 freqRanges{2} = [30 80]; % gamma
 freqRanges{3} = [104 250]; % hi-gamma
@@ -68,15 +74,25 @@ hFigure5 = figure(5);
 set(hFigure5,'units','normalized','outerposition',[0 0 1 1])
 hPlotsFig5.hPlot1 = getPlotHandles(5,3,[0.3 0.1 0.4 0.8],0.06,0.01,1); linkaxes(hPlotsFig4.hPlot1);
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%%%%5%%%
+[allGoodElectrodes,allDaysToCombine] = getGoodElectrodesPlaidProtocols(monkeyName,gridType,dRange,combineUniqueElectrodeData,getSpikeElectrodesFlag,unitID,spikeCutoff,snrCutoff,timeRangeForComputation,contrastIndexList,folderSourceString);
+[expDates,protocolNames,~,~] = dataInformation(monkeyName,gridType,0);
+numGoodElectrodes = length(allGoodElectrodes);
 % get Data for Selected Session & Parameters
 [erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray] = getData(folderSourceString,...
  fileNameStringTMP,ElectrodeArrayListAll,timeRangeParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); 
 %             freqRangeStr = {'alpha','gamma','SSVEP'};
 %             numFreqRanges = length(freqRanges);       
 
-hFigure = figure(1);
-set(hFigure,'units','normalized','outerposition',[0 0 1 1])
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Get Data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+fileSave = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) ...
+    '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
+    '_tapers' num2str(tapers(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
+    '_gse' num2str(getSpikeElectrodesFlag) '.mat']); % Should also include gridType,unitID and contrastIndexList, but skipping for now.
+
+
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray] = ...
