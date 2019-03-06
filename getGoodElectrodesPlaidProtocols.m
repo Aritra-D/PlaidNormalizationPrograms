@@ -33,7 +33,7 @@ for i=1:numDays
     expDate = expDates{i};
 
     % badElectrodes
-    load(fullfile(folderSourceString,'data',monkeyName,gridType,expDate, 'impedanceValues.mat'));
+    load(fullfile(dataFolderSourceString,'data',monkeyName,gridType,expDate, 'impedanceValues.mat'));
     badElectrodeListAllDays = cat(2,badElectrodeListAllDays,find(impedanceValues>impedanceCutoff));
 end
 

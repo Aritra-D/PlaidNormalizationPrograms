@@ -75,12 +75,10 @@ set(hFigure5,'units','normalized','outerposition',[0 0 1 1])
 hPlotsFig5.hPlot1 = getPlotHandles(5,3,[0.3 0.1 0.4 0.8],0.06,0.01,1); linkaxes(hPlotsFig4.hPlot1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%%%%5%%%
-[allGoodElectrodes,allDaysToCombine] = getGoodElectrodesPlaidProtocols(monkeyName,gridType,dRange,combineUniqueElectrodeData,getSpikeElectrodesFlag,unitID,spikeCutoff,snrCutoff,timeRangeForComputation,contrastIndexList,folderSourceString);
+[allGoodElectrodes,allDaysToCombine] = getGoodElectrodesPlaidProtocols(folderSourceString,fileNameStringTMP,gridType,dRange,combineUniqueElectrodeData,getSpikeElectrodesFlag,unitID,spikeCutoff,snrCutoff,timeRangeForComputation,contrastIndexList);
 [expDates,protocolNames,~,~] = dataInformation(monkeyName,gridType,0);
 numGoodElectrodes = length(allGoodElectrodes);
-% get Data for Selected Session & Parameters
-[erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray] = getData(folderSourceString,...
- fileNameStringTMP,ElectrodeArrayListAll,timeRangeParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); 
+
 %             freqRangeStr = {'alpha','gamma','SSVEP'};
 %             numFreqRanges = length(freqRanges);       
 
@@ -89,7 +87,16 @@ numGoodElectrodes = length(allGoodElectrodes);
 fileSave = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) ...
     '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
     '_tapers' num2str(tapers(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
-    '_gse' num2str(getSpikeElectrodesFlag) '.mat']); % Should also include gridType,unitID and contrastIndexList, but skipping for now.
+    '_gse' num2str(getSpikeElectrodesFlag) '_gridType' gridType '_UnitID' num2str(unitID) '.mat']); 
+
+if exist(fileSave,'file')
+    load(fileSave);
+else
+    % get Data for Selected Session & Parameters
+    [erpData,firingRateData,fftData,energyData,~,NI_Data,~] = ...
+    getData(monkeyName,allGoodElectrodes,allDaysToCombine,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod);
+    save(fileSave,'erpData','firingRateData','fftData','energyData','NI_Data')
+end
 
 
 
