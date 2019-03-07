@@ -11,6 +11,7 @@ timeRangeForComputation = [0.15 0.4]; % expressed in second
 timeRangeForComputationBL = [-diff(timeRangeForComputation) 0];
 dRange = [0 0.75];
 tapers_MT = [1 1]; % parameters for MT analysis
+removeERPFlag = 1;
 
 % Fixed parameters
 folderSave = 'savedData_Figures';
@@ -18,8 +19,8 @@ gridType = 'Microelectrode';
 getSpikeElectrodesFlag = 1;
 combineUniqueElectrodeData = 0;
 unitID = 0;
-contrastIndexList{1} = [1 1]; % Plaid (Ori 1 contrast: 0% and Ori 2 contrast: 50%)
-contrastIndexList{2} = [5 5]; % Plaid (Ori 1 contrast: 50% and Ori 2 contrast: 0%)
+% contrastIndexList{1} = [1 1]; % Plaid (Ori 1 contrast: 0% and Ori 2 contrast: 50%)
+% contrastIndexList{2} = [5 5]; % Plaid (Ori 1 contrast: 50% and Ori 2 contrast: 0%)
 freqRanges{1} = [8 12]; % alpha
 freqRanges{2} = [30 80]; % gamma
 freqRanges{3} = [104 250]; % hi-gamma
@@ -27,78 +28,116 @@ freqRanges{4} = [16 16];  % SSVEP
 
 timeRangeParameters.blRange = timeRangeForComputationBL;
 timeRangeParameters.stRange = timeRangeForComputation;
+timeRangeParameters.erpRange = [0.05 0.2];
+
+if removeERPFlag ==0
+    LFPdataProcessingMethod = 'Evoked Response';
+elseif removeERPFlag ==1
+    LFPdataProcessingMethod = 'Induced Response';
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% display properties %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Figure 1 (Spike data from Orientation Selective Elecs-
-% Pref (x-axis) Null (y-axis) axes); spike data along
-% increasing contrasts of Pref Ori with contrasts of  null Ori presented 
-% by different colors; absolute color map 5x5; relative color map 5x5; 
-% CRF (no Norm, Pref,Pref+Null, Avg, Null) 
-hFigure1 = figure(1);
-set(hFigure1,'units','normalized','outerposition',[0 0 1 1])
-hPlotsFig1.hPlot1 = getPlotHandles(1,5,[0.15 0.65 0.7 0.2],0.01,0.01,1); linkaxes(hPlotsFig1.hPlot1);
-hPlotsFig1.hPlot2 = getPlotHandles(1,3,[0.15 0.2 0.7 0.3],0.1,0.05,0);
+% % Figure 1 (Spike data from Orientation Selective Elecs-
+% % Pref (x-axis) Null (y-axis) axes); spike data along
+% % increasing contrasts of Pref Ori with contrasts of  null Ori presented 
+% % by different colors; absolute color map 5x5; relative color map 5x5; 
+% % CRF (no Norm, Pref,Pref+Null, Avg, Null) 
+% hFigure1 = figure(1);
+% set(hFigure1,'units','normalized','outerposition',[0 0 1 1])
+% hPlotsFig1.hPlot1 = getPlotHandles(1,5,[0.15 0.65 0.7 0.2],0.01,0.01,1); linkaxes(hPlotsFig1.hPlot1);
+% hPlotsFig1.hPlot2 = getPlotHandles(1,3,[0.15 0.2 0.7 0.3],0.1,0.05,0);
+% 
+% % Figure 2 (Spike data from all Elecs)
+% hFigure2 = figure(2);
+% set(hFigure2,'units','normalized','outerposition',[0 0 1 1])
+% hPlotsFig2.hPlot1 = getPlotHandles(1,5,[0.15 0.65 0.7 0.2],0.01,0.01,1); linkaxes(hPlotsFig2.hPlot1);
+% hPlotsFig2.hPlot2 = getPlotHandles(1,3,[0.15 0.2 0.7 0.3],0.1,0.05,0);
+% 
+% % Figure 3 (PSDs (A); deltaPSDs (B) along increasing contrast of Ori 1 
+% % with contrasts of Ori 2 presented in different colors;
+% % absolute color map 5x5; relative color map 5x5; 
+% % CRF (no Norm, Pref,Pref+Null, Avg, Null) 
+% % for alpha (C), gamma (D) and high-gamma (E) for ERP-subtracted data
+% hFigure3 = figure(3);
+% set(hFigure3,'units','normalized','outerposition',[0 0 1 1])
+% hPlotsFig3.hPlot1 = getPlotHandles(2,5,[0.25 0.65 0.5 0.3],0.01,0.01,1); linkaxes(hPlotsFig3.hPlot1);
+% hPlotsFig3.hPlot2 = getPlotHandles(3,3,[0.25 0.05 0.5 0.55],0.1,0.01,0);
+% 
+% % Figure 4 (PSDs (A); deltaPSDs (B) along increasing contrast of Ori 1 
+% % with contrasts of Ori 2 presented in different colors;
+% % absolute color map 5x5; relative color map 5x5; 
+% % CRF (no Norm, Pref,Pref+Null, Avg, Null) 
+% % for SSVEP (C) for non-ERP subtracted data
+% hFigure4 = figure(4);
+% set(hFigure4,'units','normalized','outerposition',[0 0 1 1])
+% hPlotsFig4.hPlot1 = getPlotHandles(2,5,[0.15 0.5 0.7 0.4],0.01,0.01,1); linkaxes(hPlotsFig4.hPlot1);
+% hPlotsFig4.hPlot2 = getPlotHandles(1,3,[0.15 0.1 0.7 0.3],0.1,0.05,0);
+% 
+% 
+% % Figure 5: Comparison of fitted parameters for FR, alpha, gamma, high
+% % gamma, SSVEP--- Three plots for each NI, sigma and alpha fitted
+% % parameters
+% hFigure5 = figure(5);
+% set(hFigure5,'units','normalized','outerposition',[0 0 1 1])
+% hPlotsFig5.hPlot1 = getPlotHandles(5,3,[0.3 0.1 0.4 0.8],0.06,0.01,1); linkaxes(hPlotsFig4.hPlot1);
 
-% Figure 2 (Spike data from all Elecs)
-hFigure2 = figure(2);
-set(hFigure2,'units','normalized','outerposition',[0 0 1 1])
-hPlotsFig2.hPlot1 = getPlotHandles(1,5,[0.15 0.65 0.7 0.2],0.01,0.01,1); linkaxes(hPlotsFig2.hPlot1);
-hPlotsFig2.hPlot2 = getPlotHandles(1,3,[0.15 0.2 0.7 0.3],0.1,0.05,0);
+%%%%%%%%%%%%%%%%%%%%% Get Session Details for Monkey(s) %%%%%%%%%%%%%%%%%%%
+fileNameStringListAll = getFileNameStringList(monkeyName,gridType);
 
-% Figure 3 (PSDs (A); deltaPSDs (B) along increasing contrast of Ori 1 
-% with contrasts of Ori 2 presented in different colors;
-% absolute color map 5x5; relative color map 5x5; 
-% CRF (no Norm, Pref,Pref+Null, Avg, Null) 
-% for alpha (C), gamma (D) and high-gamma (E) for ERP-subtracted data
-hFigure3 = figure(3);
-set(hFigure3,'units','normalized','outerposition',[0 0 1 1])
-hPlotsFig3.hPlot1 = getPlotHandles(2,5,[0.25 0.65 0.5 0.3],0.01,0.01,1); linkaxes(hPlotsFig3.hPlot1);
-hPlotsFig3.hPlot2 = getPlotHandles(3,3,[0.25 0.05 0.5 0.55],0.1,0.01,0);
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%%%%%%%%
+disp('Orientation-Tuned Electrodes:')
+oriSelectiveFlag = 1; 
+electrodeList_OriTuned = getElectrodesList(fileNameStringListAll,oriSelectiveFlag,folderSourceString);
 
-% Figure 4 (PSDs (A); deltaPSDs (B) along increasing contrast of Ori 1 
-% with contrasts of Ori 2 presented in different colors;
-% absolute color map 5x5; relative color map 5x5; 
-% CRF (no Norm, Pref,Pref+Null, Avg, Null) 
-% for SSVEP (C) for non-ERP subtracted data
-hFigure4 = figure(4);
-set(hFigure4,'units','normalized','outerposition',[0 0 1 1])
-hPlotsFig4.hPlot1 = getPlotHandles(2,5,[0.15 0.5 0.7 0.4],0.01,0.01,1); linkaxes(hPlotsFig4.hPlot1);
-hPlotsFig4.hPlot2 = getPlotHandles(1,3,[0.15 0.1 0.7 0.3],0.1,0.05,0);
+disp('all Electrodes:')
+oriSelectiveFlag = 0;
+electrodeList_All = getElectrodesList(fileNameStringListAll,oriSelectiveFlag,folderSourceString);
 
-
-% Figure 5: Comparison of fitted parameters for FR, alpha, gamma, high
-% gamma, SSVEP--- Three plots for each NI, sigma and alpha fitted
-% parameters
-hFigure5 = figure(5);
-set(hFigure5,'units','normalized','outerposition',[0 0 1 1])
-hPlotsFig5.hPlot1 = getPlotHandles(5,3,[0.3 0.1 0.4 0.8],0.06,0.01,1); linkaxes(hPlotsFig4.hPlot1);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%%%%5%%%
-[allGoodElectrodes,allDaysToCombine] = getGoodElectrodesPlaidProtocols(folderSourceString,fileNameStringTMP,gridType,dRange,combineUniqueElectrodeData,getSpikeElectrodesFlag,unitID,spikeCutoff,snrCutoff,timeRangeForComputation,contrastIndexList);
-[expDates,protocolNames,~,~] = dataInformation(monkeyName,gridType,0);
-numGoodElectrodes = length(allGoodElectrodes);
 
 %             freqRangeStr = {'alpha','gamma','SSVEP'};
 %             numFreqRanges = length(freqRanges);       
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Get Data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-fileSave = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) ...
+% all Electrode data (Figures 1,3,4,5)
+fileSave1 = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) '_allElecs'...
     '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
-    '_tapers' num2str(tapers(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
+    '_d' num2str(dRange(1)) '_' num2str(dRange(2))...
+    '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
     '_gse' num2str(getSpikeElectrodesFlag) '_gridType' gridType '_UnitID' num2str(unitID) '.mat']); 
 
-if exist(fileSave,'file')
-    load(fileSave);
+if exist(fileSave1,'file')
+    load(fileSave1);
 else
-    % get Data for Selected Session & Parameters
+    % get Data all Session for particular monkey or both combined for all
+    % Electrodes
     [erpData,firingRateData,fftData,energyData,~,NI_Data,~] = ...
-    getData(monkeyName,allGoodElectrodes,allDaysToCombine,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod);
-    save(fileSave,'erpData','firingRateData','fftData','energyData','NI_Data')
+    getData(folderSourceString,fileNameStringListAll,electrodeList_All,timeRangeParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); %#ok<ASGLU>
+    save(fileSave1,'erpData','firingRateData','fftData','energyData','NI_Data')
 end
 
+% Put plot Functions for figures 1,3,4,5 here
 
+clear erpData firingRateData fftData energyData NI_Data 
+% Orientation-tuned electrode data (only required for Figure 2)
+fileSave2 = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) '_oriTunedElecs'...
+    '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
+    '_d' num2str(dRange(1)) '_' num2str(dRange(2))...
+    '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
+    '_gse' num2str(getSpikeElectrodesFlag) '_gridType' gridType '_UnitID' num2str(unitID) '.mat']); 
+
+if exist(fileSave2,'file')
+    load(fileSave2);
+else
+    % get Data all Session for particular monkey or both combined for all
+    % Electrodes
+    [erpData,firingRateData,fftData,energyData,~,NI_Data,~] = ...
+    getData(folderSourceString,fileNameStringListAll,electrodeList_OriTuned,timeRangeParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); %#ok<ASGLU>
+    save(fileSave2,'erpData','firingRateData','fftData','energyData','NI_Data')
+end
+
+% Put plot Function for Figyre 2 here!
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -313,7 +352,7 @@ else
                             
                            % Event-related potential
                            erp = mean(analogData(goodPos,:),1); %#ok<NODEF>
-                           erpDataTMP(iElec,t,c1,c2,:) = erp;
+                           erpDataTMP(iElec,t,c1,c2,:) = erp; %#ok<*AGROW>
                            RMSvalsBL(iElec,t,c1,c2) = rms(erp(blPos));
                            RMSvalsERP(iElec,t,c1,c2) = rms(erp(erpPos));
 
@@ -984,55 +1023,82 @@ load(badTrialFile);
 end
 
 % Get Color String
-function [colorString, colorNames] = getColorString
-
-colorNames = 'brkgcmy';
-colorString = 'blue|red|black|green|cyan|magenta|yellow';
-
-end
+% function [colorString, colorNames] = getColorString
+% 
+% colorNames = 'brkgcmy';
+% colorString = 'blue|red|black|green|cyan|magenta|yellow';
+% 
+% end
 
 % Get FileNamesList
-function [fileNameStringAll,fileNameStringListAll,fileNameStringListArray] = getFileNameStringList
+function fileNameStringListAll = getFileNameStringList(monkeyName,gridType)
 
-[tmpFileNameStringList,monkeyNameList] = getNormalizationExperimentDetails;
+if strcmp(monkeyName,'all')
+    clear monkeyName
+    monkeyName{1} = 'alpaH'; monkeyName{2} = 'kesariH';
+else
+    monkeyName = mat2cell(monkeyName,1);
+end
 
-fileNameStringAll = ''; pos=1;
-clear fileNameStringListArray
+fileNameStringList = cell(1,2);
+for i=1:size(monkeyName,2)
+    clear expDates protocolNames
+    [expDates,protocolNames,~]= dataInformationPlaidNorm(monkeyName{i},gridType,0);
+    numSessions = size(protocolNames,2);
+    tmpFileNameList = cell(1,numSessions);
+    for j = 1:numSessions
+    tmpFileNameList{j} = [monkeyName{i} expDates{j} protocolNames{j}];
+    end
+    fileNameStringList{i} = tmpFileNameList;
+end
 
-for i=1:length(monkeyNameList)
-    for j=1:length(tmpFileNameStringList{i})
-        fileNameStringAll = [cat(2,fileNameStringAll,tmpFileNameStringList{i}{j}) '|'];
-        fileNameStringListAll{pos} = tmpFileNameStringList{i}(j);
-        fileNameStringListArray{pos} = tmpFileNameStringList{i}(j); %#ok<*AGROW>
+pos=1;
+for i=1:size(monkeyName,2)
+    for j=1:length(fileNameStringList{i})
+        fileNameStringListAll{pos} = fileNameStringList{i}{j};
         pos=pos+1;
     end
 end
-
-allNames = [];
-for i=1:length(monkeyNameList)
-    fileNameStringAll = [cat(2,fileNameStringAll,monkeyNameList{i}) ' (N=' num2str(length(tmpFileNameStringList{i})) ')|'];
-    fileNameStringListAll{pos} = {[monkeyNameList{i} ' (N=' num2str(length(tmpFileNameStringList{i})) ')']};
-    fileNameStringListArray{pos} = tmpFileNameStringList{i};
-    allNames = cat(2,allNames,tmpFileNameStringList{i});
-    pos=pos+1;
-end
-
-fileNameStringAll = cat(2,fileNameStringAll,['all (N=' num2str(length(allNames)) ')']);
-fileNameStringListAll{pos} = {['all (N=' num2str(length(allNames)) ')']};
-fileNameStringListArray{pos} = allNames;
 end
 
 % Get ElectrodesList
-function [ElectrodeStringListAll,ElectrodeArrayListAll] = getElectrodesList(fileNameStringTMP,oriSelectiveFlag,folderSourceString)
+function ElectrodeArrayListAll = getElectrodesList(fileNameStringTMP,oriSelectiveFlag,folderSourceString)
 
-[tmpElectrodeStringList,tmpElectrodeArrayList,allElecs] = getGoodElectrodesDetails(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
+% [~,tmpElectrodeArrayList,~] = getGoodElectrodesDetails(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
 
-if length(tmpElectrodeStringList)> 1
-   clear tmpElectrodeStringList
-   tmpElectrodeStringList = {['all (N=' num2str(allElecs) ')']};
+gridType = 'microelectrode';
+
+numSessions = length(fileNameStringTMP);
+tmpElectrodeStringList = cell(1,numSessions);
+tmpElectrodeArrayList = cell(1,numSessions);
+numElecs = 0;
+for i = 1:numSessions
+    clear monkeyName
+    if strcmp(fileNameStringTMP{i}(1:5),'alpaH') 
+        monkeyName = 'alpaH';
+        expDate = fileNameStringTMP{i}(6:11);
+        protocolName = fileNameStringTMP{i}(12:end);
+    elseif strcmp(fileNameStringTMP{i}(1:7),'kesariH')
+        monkeyName = 'kesariH';
+        expDate = fileNameStringTMP{i}(8:13);
+        protocolName = fileNameStringTMP{i}(14:end);
+    end
+    if i == 1
+        disp(['MonkeyName: ' ,monkeyName])
+    elseif i == 13
+        disp(['MonkeyName: ' ,monkeyName])
+    end
+    versionNum = 2;
+    [tmpElectrodeStringList{i},tmpElectrodeArrayList{i},goodElectrodes] = getGoodElectrodesSingleSession(monkeyName,expDate,protocolName,gridType,folderSourceString,oriSelectiveFlag,versionNum);
+    numElecs = numElecs+length(goodElectrodes);
+%     allElecs = numElecs;
 end
+% if length(tmpElectrodeStringList)> 1
+%    clear tmpElectrodeStringList
+%    tmpElectrodeStringList = {['all (N=' num2str(allElecs) ')']};
+% end
 
-ElectrodeStringListAll = tmpElectrodeStringList;
+% ElectrodeStringListAll = tmpElectrodeStringList;
 ElectrodeArrayListAll = tmpElectrodeArrayList;
 end
 
@@ -1214,34 +1280,34 @@ yLims=[yMin yMax];
 end
 
 % Rescale data
-function rescaleData(plotHandles,xMin,xMax,yLims)
-
-[numRows,numCols] = size(plotHandles);
-labelSize=14;
-for i=1:numRows
-    for j=1:numCols
-        axis(plotHandles(i,j),[xMin xMax yLims]);
-        if (i==numRows && rem(j,2)==1)
-            if j==1
-                set(plotHandles(i,j),'fontSize',labelSize);
-            elseif j~=1
-                set(plotHandles(i,j),'YTickLabel',[],'fontSize',labelSize);
-            end
-        elseif (rem(i,2)==0 && j==1)
-            set(plotHandles(i,j),'XTickLabel',[],'YTickLabel',[],'fontSize',labelSize);
-
-        else 
-            set(plotHandles(i,j),'XTickLabel',[],'YTickLabel',[],'fontSize',labelSize);
-        end
-    end
-end
-
-% Remove Labels on the four corners
-%set(plotHandles(1,1),'XTickLabel',[],'YTickLabel',[]);
-%set(plotHandles(1,numCols),'XTickLabel',[],'YTickLabel',[]);
-%set(plotHandles(numRows,1),'XTickLabel',[],'YTickLabel',[]);
-%set(plotHandles(numRows,numCols),'XTickLabel',[],'YTickLabel',[]);
-end
+% function rescaleData(plotHandles,xMin,xMax,yLims)
+% 
+% [numRows,numCols] = size(plotHandles);
+% labelSize=14;
+% for i=1:numRows
+%     for j=1:numCols
+%         axis(plotHandles(i,j),[xMin xMax yLims]);
+%         if (i==numRows && rem(j,2)==1)
+%             if j==1
+%                 set(plotHandles(i,j),'fontSize',labelSize);
+%             elseif j~=1
+%                 set(plotHandles(i,j),'YTickLabel',[],'fontSize',labelSize);
+%             end
+%         elseif (rem(i,2)==0 && j==1)
+%             set(plotHandles(i,j),'XTickLabel',[],'YTickLabel',[],'fontSize',labelSize);
+% 
+%         else 
+%             set(plotHandles(i,j),'XTickLabel',[],'YTickLabel',[],'fontSize',labelSize);
+%         end
+%     end
+% end
+% 
+% % Remove Labels on the four corners
+% %set(plotHandles(1,1),'XTickLabel',[],'YTickLabel',[]);
+% %set(plotHandles(1,numCols),'XTickLabel',[],'YTickLabel',[]);
+% %set(plotHandles(numRows,1),'XTickLabel',[],'YTickLabel',[]);
+% %set(plotHandles(numRows,numCols),'XTickLabel',[],'YTickLabel',[]);
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
