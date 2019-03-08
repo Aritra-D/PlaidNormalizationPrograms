@@ -14,7 +14,10 @@ tapers_MT = [1 1]; % parameters for MT analysis
 removeERPFlag = 1;
 
 % Fixed parameters
-folderSave = 'savedData_Figures';
+folderSave = fullfile(folderSourceString,'Projects\PlaidNormalizationProject\savedData_Figures');
+if ~exist(folderSave,'dir')
+    mkdir(folderSave)
+end
 gridType = 'Microelectrode';
 getSpikeElectrodesFlag = 1;
 combineUniqueElectrodeData = 0;
@@ -38,16 +41,16 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% display properties %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% % Figure 1 (Spike data from Orientation Selective Elecs-
-% % Pref (x-axis) Null (y-axis) axes); spike data along
-% % increasing contrasts of Pref Ori with contrasts of  null Ori presented 
-% % by different colors; absolute color map 5x5; relative color map 5x5; 
-% % CRF (no Norm, Pref,Pref+Null, Avg, Null) 
-% hFigure1 = figure(1);
-% set(hFigure1,'units','normalized','outerposition',[0 0 1 1])
-% hPlotsFig1.hPlot1 = getPlotHandles(1,5,[0.15 0.65 0.7 0.2],0.01,0.01,1); linkaxes(hPlotsFig1.hPlot1);
-% hPlotsFig1.hPlot2 = getPlotHandles(1,3,[0.15 0.2 0.7 0.3],0.1,0.05,0);
-% 
+% Figure 1 (Spike data from Orientation Selective Elecs-
+% Pref (x-axis) Null (y-axis) axes); spike data along
+% increasing contrasts of Pref Ori with contrasts of  null Ori presented 
+% by different colors; absolute color map 5x5; relative color map 5x5; 
+% CRF (no Norm, Pref,Pref+Null, Avg, Null) 
+hFigure1 = figure(1);
+set(hFigure1,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig1.hPlot1 = getPlotHandles(1,5,[0.15 0.65 0.7 0.2],0.01,0.01,1); linkaxes(hPlotsFig1.hPlot1);
+hPlotsFig1.hPlot2 = getPlotHandles(1,3,[0.15 0.2 0.7 0.3],0.1,0.05,0);
+
 % % Figure 2 (Spike data from all Elecs)
 % hFigure2 = figure(2);
 % set(hFigure2,'units','normalized','outerposition',[0 0 1 1])
@@ -85,31 +88,24 @@ end
 %%%%%%%%%%%%%%%%%%%%% Get Session Details for Monkey(s) %%%%%%%%%%%%%%%%%%%
 fileNameStringListAll = getFileNameStringList(monkeyName,gridType);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%%%%%%%%
-disp('Orientation-Tuned Electrodes:')
-oriSelectiveFlag = 1; 
-electrodeList_OriTuned = getElectrodesList(fileNameStringListAll,oriSelectiveFlag,folderSourceString);
+%%%%%%%%%%%%%%%%%%%%% Get data for all Good Electrodes %%%%%%%%%%%%%%%%%%%%
 
+% all Electrode data (Figures 1,3,4,5)
 disp('all Electrodes:')
 oriSelectiveFlag = 0;
 electrodeList_All = getElectrodesList(fileNameStringListAll,oriSelectiveFlag,folderSourceString);
 
-
-%             freqRangeStr = {'alpha','gamma','SSVEP'};
-%             numFreqRanges = length(freqRanges);       
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Get Data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% all Electrode data (Figures 1,3,4,5)
 fileSave1 = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) '_allElecs'...
     '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
     '_d' num2str(dRange(1)) '_' num2str(dRange(2))...
     '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
-    '_gse' num2str(getSpikeElectrodesFlag) '_gridType' gridType '_UnitID' num2str(unitID) '.mat']); 
+    '_gse' num2str(getSpikeElectrodesFlag) '_gridType_' gridType '_UnitID' num2str(unitID) '.mat']); 
 
 if exist(fileSave1,'file')
+    disp(['Loading file ' fileSave1]);
     load(fileSave1);
 else
+    oriSelectiveFlag = 0;
     % get Data all Session for particular monkey or both combined for all
     % Electrodes
     [erpData,firingRateData,fftData,energyData,~,NI_Data,~] = ...
@@ -118,26 +114,38 @@ else
 end
 
 % Put plot Functions for figures 1,3,4,5 here
+plotData_spikes(hPlotsFig1,firingRateData,0) % spikes for static gratings, Fig 1
+plotData_energy(hPlotsFig3,hPlotsFig4,energyData) % alpha, gamma, hi-gamma for static gratings, Fig 3; SSVEP for flickering ratings, Fig 4; 
 
-clear erpData firingRateData fftData energyData NI_Data 
+%%%%%%%%%%%% Get data for Orientation selective Good Electrodes %%%%%%%%%%%
+disp('Orientation-Tuned Electrodes:')
+oriSelectiveFlag = 1; 
+electrodeList_OriTuned = getElectrodesList(fileNameStringListAll,oriSelectiveFlag,folderSourceString);
+
+clear erpData firingRateData fftData energyData NI_Data % clear data for all Elecs
+
 % Orientation-tuned electrode data (only required for Figure 2)
 fileSave2 = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) '_oriTunedElecs'...
     '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
     '_d' num2str(dRange(1)) '_' num2str(dRange(2))...
     '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
-    '_gse' num2str(getSpikeElectrodesFlag) '_gridType' gridType '_UnitID' num2str(unitID) '.mat']); 
+    '_gse' num2str(getSpikeElectrodesFlag) '_gridType_' gridType '_UnitID' num2str(unitID) '.mat']); 
 
 if exist(fileSave2,'file')
+    disp(['Loading file ' fileSave2]);
     load(fileSave2);
 else
-    % get Data all Session for particular monkey or both combined for all
-    % Electrodes
+    oriSelectiveFlag = 1;
+    % get Data all Session for particular monkey or both combined for 
+    % ori-tuned Electrodes
     [erpData,firingRateData,fftData,energyData,~,NI_Data,~] = ...
     getData(folderSourceString,fileNameStringListAll,electrodeList_OriTuned,timeRangeParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); %#ok<ASGLU>
     save(fileSave2,'erpData','firingRateData','fftData','energyData','NI_Data')
 end
 
 % Put plot Function for Figyre 2 here!
+plotData_spikes(hPlotsFig1,firingRateData,0) % spikes for static gratings from ori-selective electrodes, Fig 1
+
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -199,8 +207,6 @@ if length(fileNameStringTMP)>1
     end
 end
 end
-
-
 
 function [erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray] = ...
     getDataSingleSession(folderSourceString,fileNameStringTMP,...
@@ -306,11 +312,11 @@ else
     params.fpass    = [0 250];
     params.trialave = 1;
 
-    c1List = length(cValsUnique):-1:1; %  Flipping data Row-wise so that positive x-axis and positive y-axis denotes increase in Contrast
-    c2List = 1:length(cValsUnique2);
+%     cList_Ori1 = 1:length(cValsUnique); 
+    cListFlipped_Ori2 = flip(1:length(cValsUnique2)); 
 
-    % Main Loop (Stores data in elec x tempFreq x Contrast of Ori 1 x
-    % Contrast of Ori 2 x dataPoints)
+    % Main Loop (Stores data in elec x tempFreq x Contrast of Ori 2 x
+    % Contrast of Ori 1 x dataPoints)
 
     for iElec = 1:length(ElectrodeList)
         % Get LFP data
@@ -327,41 +333,47 @@ else
             badTrials=[];
         else
             badTrials = loadBadTrials(badTrialFile);
-            disp([num2str(length(badTrials)) ' bad trials']);
+            if iElec == 1
+                disp([num2str(length(badTrials)) ' bad trials']);
+            end
         end
 
+        disp(['Processing electrode (' num2str(iElec) ') : ' num2str(ElectrodeList(iElec))]);
 
         for t = 1:length(tList)
-            for c1=1:length(c1List)
-                for c2=1:length(c2List)
+            for c_Ori2 = 1:length(cValsUnique2)
+                for c_Ori1 = 1:length(cValsUnique)
 
                     clear goodPos fftBL fftST erp dataBL dataST
-                    goodPos = parameterCombinations{a,e,s,f,o,c1List(c1),tList(t)};
-                    goodPos2 = parameterCombinations2{a,e,s,f,o,c2List(c2),tList(t)};
+                    goodPos = parameterCombinations{a,e,s,f,o,c_Ori1,tList(t)};
+                    goodPos2 = parameterCombinations2{a,e,s,f,o,cListFlipped_Ori2(c_Ori2),tList(t)};
                     goodPos = intersect(goodPos,goodPos2);
                     goodPos = setdiff(goodPos,badTrials);
 
                     if isempty(goodPos)
                         disp('No entries for this combination..');
                     else
-                        disp(['pos=(' num2str(c1List(c1)) ',' num2str(c2List(c2)) ') ,n=' num2str(length(goodPos))]);
-                        N(iElec,t,c1List(c1),c2List(c2)) = length(goodPos);
+%                         disp(['pos=(' num2str(cListFlipped_Ori2(c_Ori2)) ',' num2str(c_Ori1) ') ,n=' num2str(length(goodPos))]);
+                        N(iElec,t,c_Ori2,c_Ori1) = length(goodPos);
                         if round(diff(dataParameters.blRange)*Fs) ~= round(diff(dataParameters.stRange)*Fs)
                             disp('baseline and stimulus ranges are not the same');
                         else
                             
-                           % Event-related potential
-                           erp = mean(analogData(goodPos,:),1); %#ok<NODEF>
-                           erpDataTMP(iElec,t,c1,c2,:) = erp; %#ok<*AGROW>
-                           RMSvalsBL(iElec,t,c1,c2) = rms(erp(blPos));
-                           RMSvalsERP(iElec,t,c1,c2) = rms(erp(erpPos));
+                           if t == 1 % ERP and firing rate data processed only for static stimuli 
+                               % Event-related potential
+                               erp = mean(analogData(goodPos,:),1); %#ok<NODEF>
+                               erpDataTMP(iElec,t,c_Ori2,c_Ori1,:) = erp;
+                               RMSvalsBL(iElec,t,c_Ori2,c_Ori1) = rms(erp(blPos));
+                               RMSvalsERP(iElec,t,c_Ori2,c_Ori1) = rms(erp(erpPos));
 
-                           % PSTH & firing rate 
-                           [psthData(iElec,t,c1,c2,:),xsFR] = getPSTH(spikeData(goodPos),10,[timeVals(1) timeVals(end)]);
-                           firingRatesBL(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.blRange))/diff(dataParameters.blRange);
-                           firingRatesST(iElec,t,c1,c2) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.stRange))/diff(dataParameters.stRange);
-
-                           % fft data
+                               % PSTH & firing rate 
+                               [psthData(iElec,t,c_Ori2,c_Ori1,:),xsFR] = getPSTH(spikeData(goodPos),10,[timeVals(1) timeVals(end)]);
+                               firingRatesBL(iElec,t,c_Ori2,c_Ori1) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.blRange))/diff(dataParameters.blRange);
+                               firingRatesST(iElec,t,c_Ori2,c_Ori1) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.stRange))/diff(dataParameters.stRange);
+                           end
+                           
+                           % fft data is processed for both static and
+                           % flickering stimuli
                            if strcmp(strtok(LFPdataProcessingMethod),'Evoked')
                                fftBL = squeeze(mean(abs(fft(analogData(goodPos,blPos),[],2))));
                                fftST = squeeze(mean(abs(fft(analogData(goodPos,stPos),[],2))));
@@ -369,10 +381,11 @@ else
                                fftBL = squeeze(mean(abs(fft(removeERP(analogData(goodPos,blPos)),[],2))));
                                fftST = squeeze(mean(abs(fft(removeERP(analogData(goodPos,stPos)),[],2))));
                            end
-                           fftDataBL(iElec,t,c1,c2,:) = conv2Log(fftBL);
-                           fftDataST(iElec,t,c1,c2,:) = conv2Log(fftST);
+                           fftDataBL(iElec,t,c_Ori2,c_Ori1,:) = conv2Log(fftBL); %#ok<*AGROW>
+                           fftDataST(iElec,t,c_Ori2,c_Ori1,:) = conv2Log(fftST);
                            
                            % Power Estimation by MT method
+                           % for both static and flickering stimuli
                            if strcmp(strtok(LFPdataProcessingMethod),'Evoked')
                                dataBL = analogData(goodPos,blPos)';
                                dataST = analogData(goodPos,stPos)';
@@ -386,25 +399,25 @@ else
                            if isequal(freqValsBL,freqValsST)
                                freqValsMT = freqValsST;
                            end
-                           mEnergyVsFreqBL(iElec,t,c1,c2,:) = conv2Log(tmpEBL);
-                           mEnergyVsFreqST(iElec,t,c1,c2,:) = conv2Log(tmpEST);
+                           mEnergyVsFreqBL(iElec,t,c_Ori2,c_Ori1,:) = conv2Log(tmpEBL);
+                           mEnergyVsFreqST(iElec,t,c_Ori2,c_Ori1,:) = conv2Log(tmpEST);
 
                            % computing analysis Data for particular
                            % frequency band
                            
                            if t == 1
                                for i=1:numFreqs-1
-                                   fftAmpBL{i}(iElec,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{i}));
-                                   fftAmpST{i}(iElec,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{i}));
-                                   energyValsBL{i}(iElec,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{i}));
-                                   energyValsST{i}(iElec,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{i}));
+                                   fftAmpBL{i}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{i}));
+                                   fftAmpST{i}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{i}));
+                                   energyValsBL{i}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{i}));
+                                   energyValsST{i}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{i}));
                                end
                                
                            elseif t == 2 %% fft and energy data for only SSVEP frequency
-                               fftAmpBL{numFreqs}(iElec,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{numFreqs}));
-                               fftAmpST{numFreqs}(iElec,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{numFreqs}));
-                               energyValsBL{numFreqs}(iElec,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{numFreqs}));
-                               energyValsST{numFreqs}(iElec,c1,c2,:) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{numFreqs}));
+                               fftAmpBL{numFreqs}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{numFreqs}));
+                               fftAmpST{numFreqs}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{numFreqs}));
+                               energyValsBL{numFreqs}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{numFreqs}));
+                               energyValsST{numFreqs}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{numFreqs}));
                            end
                         end
                     end
@@ -413,17 +426,42 @@ else
         end
     end
     
+    % display Stimulus repeats in a Table for Static Stimuli & Flickering
+    % Stimuli
+    for t = 1:length(tList)
+        clear allElecStimReps
+        allElecStimReps = N(:,t,:,:);
+        count = 0;
+        for iElec = 1:size(allElecStimReps,1)
+            if isequal(squeeze(allElecStimReps(iElec,:,:,:)),squeeze(allElecStimReps(1,:,:,:)))
+                count = count+1;
+            else
+                error('Stimulus repeats are not equal for different electrodes')
+            end
+        end
+        
+        if count == size(allElecStimReps,1)
+            if t == 1
+                disp('Stim Repeats for Static Stimuli, con_Ori2 (rows) x con_Ori1 (columns)')
+            elseif t == 2  
+                disp('Stim Repeats for Flickering Stimuli, con_Ori2 (rows) x con_Ori1 (columns)')
+            end
+            disp(squeeze(allElecStimReps(1,:,:,:)))
+        end
+    end
+    
+    
     % Time-Domain data
     erpData.data = erpDataTMP;
     erpData.analysisDataBL = RMSvalsBL;
-    erpData.analysisData_cBL = getCommonBaseline(RMSvalsBL); % gets common (mean baseline) for all 5 x 5 contrast conditions 
+    erpData.analysisData_cBL = getCommonBaseline(RMSvalsBL); % gets common (mean baseline) for all con_Ori2 x con_Ori1 contrast conditions 
     erpData.analysisDataST = RMSvalsERP;
     erpData.timeVals = timeVals;
     erpData.N = N;
 
     firingRateData.data = psthData;
     firingRateData.analysisDataBL = firingRatesBL;
-    firingRateData.analysisData_cBL = getCommonBaseline(firingRatesBL); % gets common (mean baseline) for all 5 x 5 contrast conditions 
+    firingRateData.analysisData_cBL = getCommonBaseline(firingRatesBL); % gets common (mean baseline) for all con_Ori2 x con_Ori1 contrast conditions 
     firingRateData.analysisDataST = firingRatesST;
     firingRateData.timeVals = xsFR;
     firingRateData.N = N;
@@ -451,10 +489,12 @@ else
     % done for orientation selective electrodes
     if oriSelectiveFlag
         elecs_neededtoFlipped = find(abs(oriTuningData.PO-oValsUnique)<abs(oriTuningData.PO-oValsUnique2));
-        erpData = segregate_Pref_Null_data(erpData,elecs_neededtoFlipped);
-        firingRateData = segregate_Pref_Null_data(firingRateData,elecs_neededtoFlipped);
-        fftData = segregate_Pref_Null_data(fftData,elecs_neededtoFlipped);
-        energyData = segregate_Pref_Null_data(energyData,elecs_neededtoFlipped);
+        if ~isempty(elecs_neededtoFlipped)
+            erpData = segregate_Pref_Null_data(erpData,elecs_neededtoFlipped);
+            firingRateData = segregate_Pref_Null_data(firingRateData,elecs_neededtoFlipped);
+            fftData = segregate_Pref_Null_data(fftData,elecs_neededtoFlipped);
+            energyData = segregate_Pref_Null_data(energyData,elecs_neededtoFlipped);
+        end
     end
 
     
@@ -469,526 +509,52 @@ else
 end
 end
 
-function plotData(hPlots_Fig1,hPlots_Fig2,hPlots_Fig3,sessionNum,xs,data,oriTuningData,colorName,analysisMethod,analysisMeasure,LFPdataProcessingMethod,relativeMeasuresFlag,NormalizeDataFlag,electrodeNum)
 
-if strcmp(strtok(LFPdataProcessingMethod),'Induced') && analysisMeasure == 7
-    error('SSVEP is a time locked Signal. Subtracting ERP from each trials will wipe out the SSVEP signal at 2nd Harmonic. Please use evoked SSVEP response')
-end
 
-cValsUnique = [0 12.5 25 50 100]./2;
-cValsUnique2 = [0 12.5 25 50 100]./2;
+function plotData_spikes(hPlot,data,NormalizeDataFlag)
 
-if isnumeric(electrodeNum)
-    data = getDataSingleElec(data,electrodeNum,analysisMeasure);
-elseif strcmp(electrodeNum,'all')
-end
+cValsUnique = [0 12.5 25 50 100]/2;
+cValsUnique2 = [0 12.5 25 50 100]/2;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%    Processing data accoring to selected neural measure    %%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Main 5x5 plot for Neural Measure
-if analysisMeasure == 1 || analysisMeasure == 2
-    if NormalizeDataFlag
+if NormalizeDataFlag
     % Normalize ERP and spike Data 
     %(fft or energy data need not be normalized because of log conversion
-    data = normalizeData(data);
-    end
-dataPlot = squeeze(mean(data.data(:,1,:,:,:),1)); % Handles single electrode or multi-electrode data similarly
-    
-elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6 || analysisMeasure == 7
-    if size(data.dataBL) ~= size(data.dataST) 
-       error('Size of fftDataBL and fftDataST do not match!')
-    end
-    
-    % Absolute BL & ST neural measure
-    dataPlotBL = squeeze(mean(data.data_cBL(:,1,:,:,:),1));
-    dataPlotST = squeeze(mean(data.dataST(:,1,:,:,:),1));
-    if analysisMeasure == 7
-        dataPlotBL = squeeze(mean(data.data_cBL(:,2,:,:,:),1));
-        dataPlotST = squeeze(mean(data.dataST(:,2,:,:,:),1));
-    end
-
-    % When Change in neural measures are to be plotted
-    if relativeMeasuresFlag
-        dataPlotdiffSTvsBL = dataPlotST-dataPlotBL;
-        if analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6 || analysisMeasure == 7
-            if analysisMethod == 2
-                dataPlotdiffSTvsBL = 10*(dataPlotST-dataPlotBL);  % Change in Power expressed in deciBel for MT method
-            end
-        end
-    end
+    data = normalizeData(data);    
 end
 
-% Color coded 5x5 Matrix of raw Neural Measures
-if analysisMeasure == 1 || analysisMeasure == 2
-    analysisData = squeeze(mean(data.analysisDataST(:,1,:,:),1));
-    sem_analysisData = squeeze(std(squeeze(data.analysisDataST(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST,1)));
-    analysisDataBL = squeeze(mean(data.analysisData_cBL(:,1,:,:),1));
-    for iElec= 1:size(data.analysisDataST,1)
-        clear electrodeVals
-        if ~relativeMeasuresFlag
-            electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:));
-        else
-            electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:))-squeeze(data.analysisDataBL(iElec,1,:,:));
-        end
-        NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
-    end
-elseif analysisMeasure == 4 
-    analysisData = squeeze(mean(data.analysisDataST{1}(:,1,:,:),1));
-    sem_analysisData = squeeze(std(squeeze(data.analysisDataST{1}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{1},1)));
-    analysisDataBL = squeeze(mean(data.analysisData_cBL{1}(:,1,:,:),1));
-    for iElec= 1:size(data.analysisDataST{1},1)
-        clear electrodeVals
-        if ~relativeMeasuresFlag
-            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:));
-        else
-            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,1,:,:))-squeeze(data.analysisDataBL{1}(iElec,1,:,:));
-        end
-        NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
-    end        
-elseif analysisMeasure == 5
-    analysisData = squeeze(mean(data.analysisDataST{2}(:,1,:,:),1));
-    sem_analysisData = squeeze(std(squeeze(data.analysisDataST{2}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{2},1)));
-    analysisDataBL = squeeze(mean(data.analysisData_cBL{2}(:,1,:,:),1));
-    for iElec= 1:size(data.analysisDataST{2},1)
-        clear electrodeVals
-        if ~relativeMeasuresFlag
-            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:));
-        else
-            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,1,:,:))-squeeze(data.analysisDataBL{2}(iElec,1,:,:));
-        end
-        NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
-    end
-elseif analysisMeasure == 6
-    analysisData = squeeze(mean(data.analysisDataST{3}(:,1,:,:),1));
-    sem_analysisData = squeeze(std(squeeze(data.analysisDataST{3}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{3},1)));
-    analysisDataBL = squeeze(mean(data.analysisData_cBL{3}(:,1,:,:),1));
-    for iElec= 1:size(data.analysisDataST{3},1)
-        clear electrodeVals
-        if ~relativeMeasuresFlag
-            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,1,:,:));
-            NI_population(iElec) = abs(electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1); % log of low power values are negative!
-        else
-            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,1,:,:))-squeeze(data.analysisDataBL{3}(iElec,1,:,:));
-            NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
-        end
-    end 
-elseif analysisMeasure == 7
-    analysisData = squeeze(mean(data.analysisDataST{4}(:,2,:,:),1));
-    sem_analysisData = squeeze(std(squeeze(data.analysisDataST{4}(:,2,:,:)),[],1)./sqrt(size(data.analysisDataST{4},1)));
-    analysisDataBL = squeeze(mean(data.analysisData_cBL{4}(:,2,:,:),1));
-    for iElec= 1:size(data.analysisDataST{4},1)
-        clear electrodeVals
-        if ~relativeMeasuresFlag
-            electrodeVals =  squeeze(data.analysisDataST{4}(iElec,2,:,:));
-        else
-            electrodeVals =  squeeze(data.analysisDataST{4}(iElec,2,:,:))-squeeze(data.analysisDataBL{4}(iElec,2,:,:));
-        end
-        NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
+% mean PSTH data across electrodes: con_Ori2 (rows) x con_Ori2 (columns) x
+% timeVals
+psthData = squeeze(mean(data.data,1));
+
+% spike rate data: con_Ori2 (rows) x con_Ori2 (columns)
+spikeRateDataST = squeeze(mean(data.analysisDataST,1));
+% spikeRateDataBL = squeeze(mean(data.analysisData_cBL,1));
+% 
+% diff_spikeRate = spikeRateDataST - spikeRateDataBL;
+sem_spikeRate = squeeze(std(squeeze(data.analysisDataST),[],1)./sqrt(size(data.analysisDataST,1)));
+
+% computing N.I. population
+for iElec= 1:size(data.analysisDataST,1)
+    clear electrodeVals
+    electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:));
+%     electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:))-squeeze(data.analysisDataBL(iElec,1,:,:));
+    NI_population_spikeRate(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
+end
+
+% PSTH plots
+colors = jet(length(cValsUnique));
+cFlipped_Indices = flip(1:length(cValsUnique2)); 
+
+for c_Ori2 = 1: length(cValsUnique2)
+    for c_Ori1 = 1:length(cValsUnique)
+        plot(hPlot.hPlot1(1,c_Ori1),data.timeVals,squeeze(psthData(cFlipped_Indices(c_Ori2),c_Ori1,:)),'color',colors(c_Ori2,:,:),'LineWidth',2);
+        hold(hPlot.hPlot1(1,c_Ori1),'on');
     end
 end
 
-if relativeMeasuresFlag
-    if analysisMeasure == 1||analysisMeasure == 2
-            analysisData = analysisData-analysisDataBL;
-            sem_analysisData =  squeeze(std(squeeze(data.analysisDataST(:,1,:,:))-squeeze(data.analysisDataBL(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST,1)));
-    elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
-        if analysisMethod == 2
-            analysisData = 10*(analysisData-analysisDataBL);% Change in power expressed in deciBel
-        else
-            analysisData = (analysisData-analysisDataBL);
-        end
-        
-        if analysisMeasure == 4
-            sem_analysisData = squeeze(std(squeeze(data.analysisDataST{1}(:,1,:,:))-squeeze(data.analysisDataBL{1}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{1},1)));
-        elseif analysisMeasure == 5
-            sem_analysisData = squeeze(std(squeeze(data.analysisDataST{2}(:,1,:,:))-squeeze(data.analysisDataBL{2}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{2},1)));
-        elseif analysisMeasure == 6
-            sem_analysisData = squeeze(std(squeeze(data.analysisDataST{3}(:,1,:,:))-squeeze(data.analysisDataBL{3}(:,1,:,:)),[],1)./sqrt(size(data.analysisDataST{3},1)));
-        elseif analysisMeasure == 7
-            sem_analysisData = squeeze(std(squeeze(data.analysisDataST{4}(:,2,:,:))-squeeze(data.analysisDataBL{4}(:,2,:,:)),[],1)./sqrt(size(data.analysisDataST{4},1)));
-        end
-    end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%   Figure 1   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Ori Tuning data shown only for single session (single or all electrodes)
-if analysisMeasure == 1||analysisMeasure == 2
-    num_Electrodes = size(data.data,1);
-else
-    num_Electrodes = size(data.dataST,1);    
-end
-colorNamesOriTuning = hsv(num_Electrodes);
-oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
-
-if sessionNum <=22 % Single Session
-    if num_Electrodes == 1
-        plot(hPlots_Fig1.hPlot8,oValsUnique_Tuning,oriTuningData.FR(electrodeNum,:),'Marker','o','color',colorNamesOriTuning);
-        text(0.7,0.5,['PO: ' num2str(oriTuningData.PO(electrodeNum)) ',OS: ' num2str(round(oriTuningData.OS(electrodeNum),2))],'color',colorNamesOriTuning,'unit','normalized','fontSize',6,'parent',hPlots_Fig1.hPlot8);
-    else
-        for iElec = 1:num_Electrodes
-            plot(hPlots_Fig1.hPlot8,oValsUnique_Tuning,oriTuningData.FR(iElec,:),'Marker','o','color',colorNamesOriTuning(iElec,:,:));
-            text(0.7,iElec*0.05+0.1,['PO: ' num2str(oriTuningData.PO(iElec)) ',OS: ' num2str(round(oriTuningData.OS(iElec),2))],'color',colorNamesOriTuning(iElec,:,:),'unit','normalized','fontSize',6,'parent',hPlots_Fig1.hPlot8);
-            hold(hPlots_Fig1.hPlot8,'on');
-        end
-        hold(hPlots_Fig1.hPlot8,'off');
-    end
-else
-    text(0.5,0.5,{'Orientation Tuning data' 'not shown for' 'multiple sessions'},'unit','normalized','HorizontalAlignment','center','fontSize',10,'parent',hPlots_Fig1.hPlot8);
-end
-title(hPlots_Fig1.hPlot8,'Ori Tuning for Single Session (Spike Data)','fontSize',10);
-xlim(hPlots_Fig1.hPlot8,[0 250]);
-set(hPlots_Fig1.hPlot8,'XTick',oValsUnique_Tuning); set(hPlots_Fig1.hPlot8,'XTickLabelRotation',90);
-
-% Plotting 5x5 plots for raw Neural Measures
-conFlipped = 5:-1:1;
-for c1 = 1:5
-    for c2 = 1:5
-        if analysisMeasure == 1 || analysisMeasure == 2
-            plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlot(c1,c2,:)),'color',colorName);
-        elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
-            if ~relativeMeasuresFlag
-            plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlotBL(c1,c2,:)),'g');
-            hold(hPlots_Fig1.hPlot1(c1,c2),'on')
-            plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlotST(c1,c2,:)),'k');
-            hold(hPlots_Fig1.hPlot1(c1,c2),'off')
-            else
-                plot(hPlots_Fig1.hPlot1(c1,c2),xs,squeeze(dataPlotdiffSTvsBL(c1,c2,:)),'b');
-            end
-        end
-    end
-end
-
-for c = 1:5
-title(hPlots_Fig1.hPlot1(1,c),[num2str(cValsUnique(c)) ' %']);
-ylabel(hPlots_Fig1.hPlot1(c,1),[num2str(cValsUnique(conFlipped(c))) ' %'],'fontWeight','bold');
-end
-
-% Plotting of analysisData as 5x5 color matrix
-imagesc(analysisData,'parent',hPlots_Fig1.hPlot2);colorbar(hPlots_Fig1.hPlot2);set(hPlots_Fig1.hPlot2,'Position',[0.52 0.05 0.12 0.25]);
-title(hPlots_Fig1.hPlot2,['Mean NI: ',num2str(round(mean(NI_population),2))],'fontWeight','bold');
-set(hPlots_Fig1.hPlot2,'XTickLabel',cValsUnique);
-set(hPlots_Fig1.hPlot2,'YTickLabel',flip(cValsUnique2));
-
-% NI population histogram
-if num_Electrodes>1
-histogram(hPlots_Fig1.hPlot7,NI_population,-2:0.2:2);
-end
-
-% Contrast Response curves Row-Wise & Column-wise
-CRFColors = jet(length(cValsUnique));
-for iCon = 1:5
-    plot(hPlots_Fig1.hPlot3(1,iCon),cValsUnique,analysisData(conFlipped(iCon),:),...
-        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    plot(hPlots_Fig1.hPlot4(1,iCon),cValsUnique2,flip(analysisData(:,iCon),1),...
-        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    plot(hPlots_Fig1.hPlot5(1,1),cValsUnique,analysisData(conFlipped(iCon),:),...
-        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    hold(hPlots_Fig1.hPlot5(1,1),'on')
-    plot(hPlots_Fig1.hPlot6(1,1),cValsUnique2,flip(analysisData(:,iCon),1),...
-        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    hold(hPlots_Fig1.hPlot6(1,1),'on')
-end
-hold(hPlots_Fig1.hPlot5(1,1),'off'); hold(hPlots_Fig1.hPlot6(1,1),'off')
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%   Figure 2   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-colors = jet(5);
-% Plot Figure 2 neural response plots
-for c1 = 1:5
-    for c2 = 1:5
-        if analysisMeasure == 1 || analysisMeasure == 2
-            plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlot(conFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
-            hold(hPlots_Fig2.hPlot1(1,c2),'on');
-        elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
-            if ~relativeMeasuresFlag
-                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotBL(conFlipped(c1),c2,:)),'k');
-                hold(hPlots_Fig2.hPlot1(1,c2),'on')
-                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotST(conFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
-            else
-                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotBL(conFlipped(c1),c2,:))-squeeze(dataPlotBL(conFlipped(c1),c2,:)),'k');
-                hold(hPlots_Fig2.hPlot1(1,c2),'on')
-                plot(hPlots_Fig2.hPlot1(1,c2),xs,squeeze(dataPlotdiffSTvsBL(conFlipped(c1),c2,:)),'color',colors(c1,:,:),'LineWidth',2);
-            end
-        end
-        title(hPlots_Fig2.hPlot1(1,c2),[num2str(cValsUnique(c2)) ' %'])
-    end
-end
-
-% Figure 2 5x5 color-coded analysisData matrix
-imagesc(analysisData,'parent',hPlots_Fig2.hPlot2(3));
-color_Bar = colorbar(hPlots_Fig2.hPlot2(3)); 
-colorYlabelHandle = get(color_Bar,'Ylabel');
-if analysisMeasure==1
-    YlabelString = 'Potential';
-elseif analysisMeasure==2
-    YlabelString = 'Spikes/s';
-elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
-    if ~relativeMeasuresFlag
-        YlabelString = 'log_1_0(FFT Amplitude)';
-    else
-        YlabelString = 'log_1_0(\Delta FFT Amplitude)';
-        if analysisMethod == 2
-            YlabelString = 'Change in Power (dB)';
-        end
-    end
-end
-
-set(colorYlabelHandle,'String',YlabelString,'fontSize',14);
-plotPos = get(hPlots_Fig2.hPlot2(3),'Position');
-set(hPlots_Fig2.hPlot2(3),'Position',[plotPos(1) plotPos(2) 0.12 plotPos(4)]);
-title(hPlots_Fig2.hPlot2(3),['Mean NI: ',num2str(round(mean(NI_population),2))],'fontWeight','bold');
-
-if num_Electrodes>1
-% NI population histogram
-histogram(hPlots_Fig2.hPlot2(2),NI_population,-2:0.2:2);
-end
-tickLengthPlot = 2*get(hPlots_Fig2.hPlot2(1),'TickLength');
-set(hPlots_Fig2.hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-xlabel(hPlots_Fig2.hPlot2(2),'Normalization Index'); ylabel(hPlots_Fig2.hPlot2(2),'No. of Electrodes');
-title(hPlots_Fig2.hPlot2(2),'Population NI Histogram')
-
-set(hPlots_Fig2.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-set(hPlots_Fig2.hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
-xlabel(hPlots_Fig2.hPlot2(3),'Contrast (%)');ylabel(hPlots_Fig2.hPlot2(3),'Contrast (%)');
-
-% Figure 2 CRF plot
-CRFColors = jet(length(cValsUnique));
-for iCon = 1:5
-    plot(hPlots_Fig2.hPlot2(1),cValsUnique,analysisData(conFlipped(iCon),:),...
-        'Marker','o','LineWidth',2,'color',CRFColors(iCon,:,:))
-    hold(hPlots_Fig2.hPlot2(1),'on')
-end
-hold(hPlots_Fig2.hPlot2(1),'off');
-
-if analysisMeasure == 1||analysisMeasure == 2
-    displayRange(hPlots_Fig2.hPlot1,[0.2 0.4],getYLims(hPlots_Fig2.hPlot1),'k');
-elseif analysisMeasure ==4 
-    displayRange(hPlots_Fig2.hPlot1,[8 12],getYLims(hPlots_Fig2.hPlot1),'k');
-elseif analysisMeasure == 5  
-    displayRange(hPlots_Fig2.hPlot1,[30 80],getYLims(hPlots_Fig2.hPlot1),'k');
-elseif analysisMeasure == 6     
-    displayRange(hPlots_Fig2.hPlot1,[16 16],getYLims(hPlots_Fig2.hPlot1),'k');
-end
-
-tickLengthPlot = 2*get(hPlots_Fig2.hPlot2(1),'TickLength');
-
-for idx =1:5
-set(hPlots_Fig2.hPlot1(idx),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-end
-if analysisMeasure == 1||analysisMeasure == 2
-    xlabel(hPlots_Fig2.hPlot1(1),'Time(ms)');
-elseif analysisMeasure == 4||analysisMeasure == 5|| analysisMeasure == 6 ||analysisMeasure == 7
-    xlabel(hPlots_Fig2.hPlot1(1),'Frequency(Hz)');
-end
-
-if analysisMeasure == 1
-    ylabel(hPlots_Fig2.hPlot1(1),'ERP (\mu V)');ylabel(hPlots_Fig2.hPlot2(1),'RMS value of ERP');
-elseif analysisMeasure == 2 
-    ylabel(hPlots_Fig2.hPlot1(1),'Spikes/s');ylabel(hPlots_Fig2.hPlot2(1),'spikes/s');
-elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6||analysisMeasure == 7
-    if analysisMethod ==1
-        ylabel(hPlots_Fig2.hPlot1(1),'log_1_0 (FFT Amplitude)'); ylabel(hPlots_Fig2.hPlot2(1),'log_1_0 (FFT Amplitude)');
-        if relativeMeasuresFlag
-            ylabel(hPlots_Fig2.hPlot1(1),'log_1_0 (\Delta FFT Amplitude)'); ylabel(hPlots_Fig2.hPlot2(1),'log_1_0 (\Delta FFT Amplitude)')
-        end
-
-    elseif analysisMethod ==2
-        ylabel(hPlots_Fig2.hPlot1(1),'log_1_0 (Power)');ylabel(hPlots_Fig2.hPlot2(1),'log_1_0 (Power)')
-        if relativeMeasuresFlag
-            ylabel(hPlots_Fig2.hPlot1(1),'Change in Power (dB)');  ylabel(hPlots_Fig2.hPlot2(1),'Change in Power (dB)');
-        end
-    end
-
-end
-
-text(0.5,0.3,['N = ' num2str(num_Electrodes)],'color','k','unit','normalized','fontSize',14,'fontWeight','bold','parent',hPlots_Fig2.hPlot2(1))
-set(hPlots_Fig2.hPlot2(1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-set(hPlots_Fig2.hPlot2(1),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
-xlabel(hPlots_Fig2.hPlot2(1),'Contrast (%)');
-title(hPlots_Fig2.hPlot2(1),'CRF along Orientation 1')
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%   Figure 3   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Norm_colorNames(1,:) = colors(5,:);
-Norm_colorNames(2:5,:) = flip(parula(4),1);
-% Plot Figure 3 neural response plots
-for c = 1:5
-    if analysisMeasure == 1 || analysisMeasure == 2
-        plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlot(conFlipped(1),c,:)),'color',colors(c,:,:),'LineWidth',2);
-        hold(hPlots_Fig3.hPlot1(1),'on');
-        plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlot(c,conFlipped(1),:)),'color',Norm_colorNames(conFlipped(c),:,:),'LineWidth',2);
-        hold(hPlots_Fig3.hPlot1(2),'on');
-    elseif analysisMeasure == 4 || analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
-        if ~relativeMeasuresFlag
-        plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlotBL(conFlipped(1),c,:)),'k');
-        hold(hPlots_Fig3.hPlot1(1),'on')
-        plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlotST(conFlipped(1),c,:)),'color',colors(c,:,:),'LineWidth',2);
-        
-        plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotBL(conFlipped(c),conFlipped(1),:)),'k');
-        hold(hPlots_Fig3.hPlot1(2),'on')
-        plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotST(conFlipped(c),conFlipped(1),:)),'color',Norm_colorNames(c,:,:),'LineWidth',2);      
-        else
-            plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlotBL(conFlipped(1),c,:))-squeeze(dataPlotBL(conFlipped(1),c,:)),'k');
-            hold(hPlots_Fig3.hPlot1(1),'on')
-            plot(hPlots_Fig3.hPlot1(1),xs,squeeze(dataPlotdiffSTvsBL(conFlipped(1),c,:)),'color',colors(c,:,:),'LineWidth',2);
-            
-            plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotBL(conFlipped(c),conFlipped(1),:))-squeeze(dataPlotBL(conFlipped(c),conFlipped(1),:)),'k');
-            hold(hPlots_Fig3.hPlot1(2),'on')
-            if analysisMeasure == 4||analysisMeasure ==5||analysisMeasure ==6
-                plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotdiffSTvsBL(conFlipped(c),conFlipped(1),:)),'color',Norm_colorNames(c,:,:),'LineWidth',2);
-            elseif analysisMeasure == 7
-                plot(hPlots_Fig3.hPlot1(2),xs,squeeze(dataPlotdiffSTvsBL(c,conFlipped(1),:)),'color',Norm_colorNames(conFlipped(c),:,:),'LineWidth',2);
-            end
-        end
-    end
-    
-    if analysisMeasure == 2
-        text(0.55,0.45+c*0.08,[num2str(cValsUnique(c)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-        text(0.55,0.45+c*0.08,[num2str(cValsUnique(c)) ' %'],'color',Norm_colorNames(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-        text(0.55,0.45+6*0.08,'Ori:1','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-        text(0.55,0.45+6*0.08,'Ori:2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-
-    elseif analysisMeasure == 5
-        text(0.05,0.45+c*0.08,[num2str(cValsUnique(c)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-        text(0.05,0.45+6*0.08,'Ori:1','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-
-        text(0.05,0.45+c*0.08,[num2str(cValsUnique(conFlipped(c))) ' %'],'color',Norm_colorNames(conFlipped(c),:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-        text(0.05,0.45+6*0.08,'Ori:2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-    elseif analysisMeasure == 6||analysisMeasure == 7
-        text(0.1+c*0.15,0.15,[num2str(cValsUnique(c)) ' %'],'color',colors(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-        if c==1
-            text(0.1,0.15,'Ori 1:','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(1))
-        end
-
-        text(0.1+c*0.15,0.15,[num2str(cValsUnique(c)) ' %'],'color',Norm_colorNames(c,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-        if c==1
-            text(0.1,0.15,'Ori 2:','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot1(2))
-        end
-    end
-
-end
-if analysisMeasure == 2
-    title(hPlots_Fig3.hPlot1(1),'Spike Response for Orientation 1')
-    title(hPlots_Fig3.hPlot1(2),{'Spike Response at 50% contrast of Ori 1','when Ori 2 is added'},'HorizontalAlignment','Center')
-else
-    title(hPlots_Fig3.hPlot1(1),'Change in PSD for Orientation 1')
-    title(hPlots_Fig3.hPlot1(2),{'Change in PSD at 50% contrast of Ori 1','when Ori 2 is added'},'HorizontalAlignment','Center')
-end
-hold(hPlots_Fig3.hPlot1(1),'off');
-hold(hPlots_Fig3.hPlot1(2),'off');
-
-imagesc(analysisData,'parent',hPlots_Fig3.hPlot2(3));
-color_Bar = colorbar(hPlots_Fig3.hPlot2(3));% 
-colorYlabelHandle = get(color_Bar,'Ylabel');
-if analysisMeasure==1
-    YlabelString = 'Potential';
-elseif analysisMeasure==2
-    YlabelString = 'Spikes/s';
-elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6
-    if ~relativeMeasuresFlag
-        YlabelString = 'log_1_0(FFT Amplitude)';
-    else
-        YlabelString = 'log_1_0(\Delta FFT Amplitude)';
-        if analysisMethod == 2
-            YlabelString = 'Change in Power (dB)';
-        end
-    end
-end
-
-set(colorYlabelHandle,'String',YlabelString,'fontSize',14);
-plotPos = get(hPlots_Fig3.hPlot2(3),'Position');
-set(hPlots_Fig3.hPlot2(3),'Position',[plotPos(1) plotPos(2) 0.12 plotPos(4)]);
-title(hPlots_Fig3.hPlot2(3),['Mean NI: ',num2str(round(mean(NI_population),2))],'fontWeight','bold');
-
-if num_Electrodes>1
-% NI population histogram
-histogram(hPlots_Fig3.hPlot2(2),NI_population,-2:0.2:2);
-end
-
-set(hPlots_Fig3.hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-xlabel(hPlots_Fig3.hPlot2(2),'Normalization Index'); ylabel(hPlots_Fig3.hPlot2(2),'No. of Electrodes');
-title(hPlots_Fig3.hPlot2(2),{'Population NI Histogram,' ,['Median NI: ' num2str(round(median(NI_population),2))]})
-line([round(median(NI_population),2) round(median(NI_population),2)],getYLims(hPlots_Fig3.hPlot2(2)),'color','k','lineWidth',2,'parent',hPlots_Fig3.hPlot2(2))
-
-set(hPlots_Fig3.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-set(hPlots_Fig3.hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
-xlabel(hPlots_Fig3.hPlot2(3),'Ori 1 Contrast (%)');ylabel(hPlots_Fig3.hPlot2(3),'Ori 2 Contrast (%)');
-
-errorbar(cValsUnique,analysisData(conFlipped(1),:),sem_analysisData(conFlipped(1),:),...
-    'Marker','o','LineWidth',2,'color',Norm_colorNames(1,:,:),'parent',hPlots_Fig3.hPlot2(1))
-    hold(hPlots_Fig3.hPlot2(1),'on');
-    
-errorbar(cValsUnique,diag(flipud(analysisData)),diag(flipud(sem_analysisData)),'Marker','o','LineWidth',2,'color','k','parent',hPlots_Fig3.hPlot2(1));
-    
-% for iCon = 1:5
-%     errorbar(cValsUnique,analysisData(conFlipped(iCon),:),sem_analysisData(conFlipped(iCon),:),...
-%         'Marker','o','LineWidth',2,'color',Norm_colorNames(iCon,:,:),'parent',hPlots_Fig3.hPlot2(1))
-%     hold(hPlots_Fig3.hPlot2(1),'on')
-%     text(0.5,iCon*0.07+0.05,['Ori 2: ' num2str(cValsUnique(iCon)) ' %'],'color',Norm_colorNames(iCon,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot2(1))
-% end
-hold(hPlots_Fig3.hPlot2(1),'off');
-text(0.5,0.2,'Ori 2: 0%','color',colors(5,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot2(1))
-text(0.5,0.1,'Ori 1 = Ori 2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlots_Fig3.hPlot2(1))
 
 
-if analysisMeasure == 1||analysisMeasure == 2
-    displayRange(hPlots_Fig3.hPlot1,[0.2 0.4],getYLims(hPlots_Fig3.hPlot1),'k');
-elseif analysisMeasure ==4 
-    displayRange(hPlots_Fig3.hPlot1,[8 12],getYLims(hPlots_Fig3.hPlot1),'k');
-elseif analysisMeasure == 5  
-    displayRange(hPlots_Fig3.hPlot1,[30 80],getYLims(hPlots_Fig3.hPlot1),'k');
-elseif analysisMeasure == 6     
-    displayRange(hPlots_Fig3.hPlot1,[104 250],getYLims(hPlots_Fig3.hPlot1),'k');
-elseif analysisMeasure == 7    
-displayRange(hPlots_Fig3.hPlot1,[16 16],getYLims(hPlots_Fig3.hPlot1),'k');
-end
 
-tickLengthPlot = 2*get(hPlots_Fig3.hPlot2(1),'TickLength');
-
-for idx =1:2
-    set(hPlots_Fig3.hPlot1(idx),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-end
-if analysisMeasure == 1||analysisMeasure == 2
-    xlabel(hPlots_Fig3.hPlot1(1),'Time(ms)');
-elseif analysisMeasure == 4||analysisMeasure == 5|| analysisMeasure == 6|| analysisMeasure == 7
-    xlabel(hPlots_Fig3.hPlot1(1),'Frequency(Hz)');
-end
-
-if analysisMeasure == 1
-    ylabel(hPlots_Fig3.hPlot1(1),'ERP (\mu V)');ylabel(hPlots_Fig3.hPlot2(1),'RMS value of ERP');
-elseif analysisMeasure == 2 
-    ylabel(hPlots_Fig3.hPlot1(1),'Spikes/s');ylabel(hPlots_Fig3.hPlot2(1),'spikes/s');
-elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6|| analysisMeasure == 7
-    if analysisMethod ==1
-        ylabel(hPlots_Fig3.hPlot1(1),'log_1_0 (FFT Amplitude)'); ylabel(hPlots_Fig3.hPlot2(1),'log_1_0 (FFT Amplitude)');
-        if relativeMeasuresFlag
-            ylabel(hPlots_Fig3.hPlot1(1),'log_1_0 (\Delta FFT Amplitude)'); ylabel(hPlots_Fig3.hPlot2(1),'log_1_0 (\Delta FFT Amplitude)')
-        end
-
-    elseif analysisMethod ==2
-        ylabel(hPlots_Fig3.hPlot1(1),'log_1_0 (Power)');ylabel(hPlots_Fig3.hPlot2(1),'log_1_0 (Power)')
-        if relativeMeasuresFlag
-            ylabel(hPlots_Fig3.hPlot1(1),'Change in Power (dB)');  ylabel(hPlots_Fig3.hPlot2(1),'Change in Power (dB)');
-        end
-    end
-
-end
-
-% set(hOtherMeaures(1),'XScale','linear')
-% text(0.5,0.3,['N = ' num2str(dataSize(1))],'color','k','unit','normalized','fontSize',14,'fontWeight','bold','parent',hPlots_Fig3.hPlot2(1))
-set(hPlots_Fig3.hPlot2(1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-set(hPlots_Fig3.hPlot2(1),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
-xlabel(hPlots_Fig3.hPlot2(1),'Ori 1 Contrast (%)');
-title(hPlots_Fig3.hPlot2(1),'CRF along Ori 1')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1188,7 +754,9 @@ function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
         for iTF = 1:2
             disp ([num2str(iElec), ' ' num2str(iTF)])
             if numel(fieldnames(data)) == 6
-                data.data(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.data(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
+                if iTF == 1
+                    data.data(elecs_neededtoFlipped(iElec),:,:,:,:) = flip(flip(permute(squeeze(data.data(elecs_neededtoFlipped(iElec),:,:,:,:)),[2 1 3]),1),2);
+                end
             elseif numel(fieldnames(data)) == 8
                 data.dataBL(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.dataBL(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
                 data.data_cBL(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.data_cBL(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
@@ -1198,9 +766,9 @@ function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
     end
     
     if ~iscell(data.analysisDataBL) && ~iscell(data.analysisDataST)
-        data.analysisDataBL(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataBL(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
-        data.analysisData_cBL(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
-        data.analysisDataST(elecs_neededtoFlipped(iElec),iTF,:,:) = flip(flip(permute(squeeze(data.analysisDataST(elecs_neededtoFlipped(iElec),iTF,:,:)),[2 1]),1),2);
+        data.analysisDataBL(elecs_neededtoFlipped(iElec),:,:) = flip(flip(permute(squeeze(data.analysisDataBL(elecs_neededtoFlipped(iElec),:,:)),[2 1]),1),2);
+        data.analysisData_cBL(elecs_neededtoFlipped(iElec),:,:) = flip(flip(permute(squeeze(data.analysisData_cBL(elecs_neededtoFlipped(iElec),:,:)),[2 1]),1),2);
+        data.analysisDataST(elecs_neededtoFlipped(iElec),:,:) = flip(flip(permute(squeeze(data.analysisDataST(elecs_neededtoFlipped(iElec),:,:)),[2 1]),1),2);
     elseif iscell(data.analysisDataBL) && iscell(data.analysisDataST)
         for iCell = 1:length(data.analysisDataBL)
             data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),:,:) = flip(flip(permute(squeeze(data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),:,:)),[2 1]),1),2);
