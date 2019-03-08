@@ -528,17 +528,19 @@ psthData = squeeze(mean(data.data,1));
 
 % spike rate data: con_Ori2 (rows) x con_Ori2 (columns)
 spikeRateDataST = squeeze(mean(data.analysisDataST,1));
-% spikeRateDataBL = squeeze(mean(data.analysisData_cBL,1));
-% 
-% diff_spikeRate = spikeRateDataST - spikeRateDataBL;
-sem_spikeRate = squeeze(std(squeeze(data.analysisDataST),[],1)./sqrt(size(data.analysisDataST,1)));
+spikeRateDataBL = squeeze(mean(data.analysisData_cBL,1));
+
+diff_spikeRateData = spikeRateDataST - spikeRateDataBL;
+
+% sem_spikeRate = squeeze(std(squeeze(data.analysisDataST),[],1)./sqrt(size(data.analysisDataST,1)));
 
 % computing N.I. population
 for iElec= 1:size(data.analysisDataST,1)
-    clear electrodeVals
-    electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:));
-%     electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:))-squeeze(data.analysisDataBL(iElec,1,:,:));
-    NI_population_spikeRate(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
+    clear spikeRateElecVals_absolute spikeRateElecVals_relative
+    spikeRateElecVals_absolute =  squeeze(data.analysisDataST(iElec,1,:,:));
+    spikeRateElecVals_relative =  squeeze(data.analysisDataST(iElec,1,:,:))-squeeze(data.analysisDataBL(iElec,1,:,:));
+    NI_population_spikeRateAbsolute(iElec) = spikeRateElecVals_absolute(1,5)/(((spikeRateElecVals_absolute(1,1)+spikeRateElecVals_absolute(5,5)))/2)-1;
+    NI_population_spikeRateRelative(iElec) = spikeRateElecVals_relative(1,5)/(((spikeRateElecVals_relative(1,1)+spikeRateElecVals_relative(5,5)))/2)-1;
 end
 
 % PSTH plots
@@ -552,7 +554,12 @@ for c_Ori2 = 1: length(cValsUnique2)
     end
 end
 
+% Color coded Plots of Spike Rates
+imagesc(spikeRateDataST,'parent',hPlot.hPlot2(1));
+title(hPlot.hPlot2(1),['Mean NI: ',num2str(round(mean(NI_population_spikeRateAbsolute),2))],'fontWeight','bold');
 
+imagesc(diff_spikeRateData,'parent',hPlot.hPlot2(2));
+title(hPlot.hPlot2(2),['Mean NI: ',num2str(round(mean(NI_population_spikeRateRelative),2))],'fontWeight','bold');
 
 
 end
