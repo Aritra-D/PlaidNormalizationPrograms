@@ -1036,7 +1036,7 @@ else
     % Segregation into Preferred-null axis is done when analysis is being
     % done for orientation selective electrodes
     if oriSelectiveFlag
-        elecs_neededtoFlipped = find(abs(oriTuningData.PO-oValsUnique)<abs(oriTuningData.PO-oValsUnique2));
+        elecs_neededtoFlipped = find(abs(oriTuningData.PO-oValsUnique2)<abs(oriTuningData.PO-oValsUnique));
         erpData = segregate_Pref_Null_data(erpData,elecs_neededtoFlipped);
         firingRateData = segregate_Pref_Null_data(firingRateData,elecs_neededtoFlipped);
         fftData = segregate_Pref_Null_data(fftData,elecs_neededtoFlipped);
