@@ -741,11 +741,15 @@ if length(fileNameStringTMP)>1
             energyData.analysisDataST{j} = cat(1,energyData.analysisDataST{j},energyDataTMP.analysisDataST{j});
         end
         
-        NI_Data.erp = cat(1, NI_Data.erp, NI_DataTMP.erp);
-        NI_Data.firingRate = cat(1, NI_Data.firingRate, NI_DataTMP.firingRate);
-        for j =1:length(NI_Data.fft)
-            NI_Data.fft{j} = cat(2, NI_Data.fft{j}, NI_DataTMP.fft{j});
-            NI_Data.energy{j} = cat(2, NI_Data.energy{j}, NI_DataTMP.energy{j});
+        NI_Data.ERP_RMS_ST = cat(1, NI_Data.ERP_RMS_ST, NI_DataTMP.ERP_RMS_ST);
+        NI_Data.ERP_dRMS = cat(1, NI_Data.ERP_dRMS, NI_DataTMP.ERP_dRMS);
+        NI_Data.firingRate_ST = cat(1, NI_Data.firingRate_ST, NI_DataTMP.firingRate_ST);
+        NI_Data.dfiringRate = cat(1, NI_Data.dfiringRate, NI_DataTMP.dfiringRate);
+        for j =1:length(NI_Data.fft_ST)
+            NI_Data.fft_ST{j} = cat(2, NI_Data.fft_ST{j}, NI_DataTMP.fft_ST{j});
+            NI_Data.dfft{j} = cat(2, NI_Data.dfft{j}, NI_DataTMP.dfft{j});
+            NI_Data.energy_ST{j} = cat(2, NI_Data.energy_ST{j}, NI_DataTMP.energy_ST{j});
+            NI_Data.denergy{j} = cat(2, NI_Data.denergy{j}, NI_DataTMP.denergy{j});
         end
 
         % Combining OriData across sessions may be required! Right now, there is no requirement!        
@@ -1045,10 +1049,10 @@ else
 
     
     % Get Normalization Indices
-    NI_Data.erp = getNI(erpData);
-    NI_Data.firingRate = getNI(firingRateData);
-    NI_Data.fft = getNI(fftData);
-    NI_Data.energy = getNI(energyData);
+    [NI_Data.ERP_RMS_ST, NI_Data.ERP_dRMS] = getNI(erpData);
+    [NI_Data.firingRate_ST,NI_Data.dfiringRate] = getNI(firingRateData);
+    [NI_Data.fft_ST,NI_Data.dfft] = getNI(fftData);
+    [NI_Data.energy_ST,NI_Data.denergy] = getNI(energyData);
 
     % Save Data for particular session
     save(fileToSave,'erpData','firingRateData','fftData','energyData','oriTuningData','NI_Data','electrodeArray');
