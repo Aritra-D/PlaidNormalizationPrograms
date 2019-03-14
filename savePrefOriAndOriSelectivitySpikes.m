@@ -1,4 +1,4 @@
-function [computationVals,PO,OS] = savePrefOriAndOriSelectivitySpikes(subjectName,expDate,protocolName,folderSourceString,gridType)
+function [computationVals,PO,OS] = savePrefOriAndOriSelectivitySpikes(subjectName,expDate,protocolName,folderSourceString,gridType,timeForComputation)
 
 folderName = fullfile(folderSourceString,'data',subjectName,gridType,expDate,protocolName);
 
@@ -31,7 +31,7 @@ tLen = length(tValsUnique);
 % blRange = [-0.2 0];
 % stRange = [0.2 0.4];
 % For orientation selectivity analysis
-timeForComputation = [150 400]/1000; % s
+% timeForComputation = [150 400]/1000; % s
 
 % neuralChannelString = getNeuralStringFromValues(neuralChannelsStored,SourceUnitIDs);
 unitID = 0;
@@ -85,10 +85,8 @@ end
 
 
 fileToSave = fullfile(folderSave,['oriTuningData_' num2str(1000*timeForComputation(1)) 'ms_' num2str(1000*timeForComputation(2)) 'ms.mat']);
-if exist(fileToSave,'file')
-else
-    save(fileToSave,'computationVals','PO','OS');
-end
+save(fileToSave,'computationVals','PO','OS');
+
 end
 
 % load Data

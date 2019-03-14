@@ -7,8 +7,8 @@ close all; % closes any open figure to avoid any overlaying issues
 % Variable Parameters
 spikeCutoff = 20;
 snrCutoff = 2;
-timeRangeForComputation = [0.15 0.4]; % expressed in second
-timeRangeForComputationBL = [-diff(timeRangeForComputation) 0];
+timeRangeForComputation = [0.25 0.5]; % expressed in second
+timeRangeForComputationBL = -0.05+[-diff(timeRangeForComputation) 0];
 dRange = [0 0.75];
 tapers_MT = [1 1]; % parameters for MT analysis
 removeERPFlag = 1;
@@ -49,7 +49,7 @@ end
 hFigure1 = figure(1);
 set(hFigure1,'units','normalized','outerposition',[0 0 1 1])
 hPlotsFig1.hPlot1 = getPlotHandles(1,5,[0.15 0.65 0.7 0.2],0.01,0.01,1); linkaxes(hPlotsFig1.hPlot1);
-hPlotsFig1.hPlot2 = getPlotHandles(1,3,[0.15 0.23 0.7 0.2578],0.1188,0.05,0); %axis(hPlotsFig1.hPlot2,'square')
+hPlotsFig1.hPlot2 = getPlotHandles(1,3,[0.15 0.23 0.7 0.2578],0.1188,0.05,0); 
 
 % Figure 2 (Spike data from all Elecs)
 hFigure2 = figure(2);
@@ -85,7 +85,7 @@ hPlotsFig4.hPlot2 = getPlotHandles(1,3,[0.15 0.1 0.7 0.2578],0.1188,0.05,0);
 % % parameters
 % hFigure5 = figure(5);
 % set(hFigure5,'units','normalized','outerposition',[0 0 1 1])
-% hPlotsFig5.hPlot1 = getPlotHandles(5,3,[0.3 0.1 0.4 0.8],0.06,0.01,1); linkaxes(hPlotsFig4.hPlot1);
+% hPlotsFig5.hPlot1 = getPlotHandles(5,3,[0.3 0.1 0.4 0.8],0.06,0.01,1); 
 
 %%%%%%%%%%%%%%%%%%%%% Get Session Details for Monkey(s) %%%%%%%%%%%%%%%%%%%
 fileNameStringListAll = getFileNameStringList(monkeyName,gridType);
@@ -109,9 +109,7 @@ if exist(fileSave1,'file')
     disp(['Loading file ' fileSave1]);
     load(fileSave1);
 else
-%     oriSelectiveFlag = 0;
-    % get Data all Session for particular monkey or both combined for all
-    % Electrodes
+    % get Data all Session for monkey(s) for all Electrodes
     [erpData,firingRateData,fftData,energyData,~,NI_Data,~] = ...
     getData(folderSourceString,fileNameStringListAll,electrodeList_All,timeRangeParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); %#ok<ASGLU>
     save(fileSave1,'erpData','firingRateData','fftData','energyData','NI_Data')
@@ -133,7 +131,7 @@ rescaleData(hPlotsFig3.hPlot1(2,:),0,250,[-4 10],12);
 
 %%%%%%%%%%%% Get data for Orientation selective Good Electrodes %%%%%%%%%%%
 disp('Orientation-Tuned Electrodes:')
-oriSelectiveFlag = 1; 
+oriSelectiveFlag = 1; % Fig 2 spike data for orientation selective elecs
 electrodeList_OriTuned = getElectrodesList(fileNameStringListAll,oriSelectiveFlag,folderSourceString);
 
 clear erpData firingRateData fftData energyData NI_Data % clear data for all Elecs
@@ -149,7 +147,6 @@ if exist(fileSave2,'file')
     disp(['Loading file ' fileSave2]);
     load(fileSave2);
 else
-%     oriSelectiveFlag = 1;
     % get Data all Session for particular monkey or both combined for 
     % ori-tuned Electrodes
     [erpData,firingRateData,fftData,energyData,~,NI_Data,~] = ...
@@ -169,11 +166,8 @@ rescaleData(hPlotsFig2.hPlot2(3),0,50,getYLims(hPlotsFig2.hPlot2(3)),14);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 removeERPFlag = 0; % Evoked Response
-if removeERPFlag ==0
-    LFPdataProcessingMethod = 'Evoked Response';
-elseif removeERPFlag ==1
-    LFPdataProcessingMethod = 'Induced Response';
-end
+LFPdataProcessingMethod = 'Evoked Response';
+
 fileSave3 = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) '_allElecs'...
     '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
     '_d' num2str(dRange(1)) '_' num2str(dRange(2))...
@@ -188,19 +182,15 @@ else
     % Electrodes
     [erpData,firingRateData,fftData,energyData,~,NI_Data,~] = ...
     getData(folderSourceString,fileNameStringListAll,electrodeList_All,timeRangeParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); %#ok<ASGLU>
-    save(fileSave1,'erpData','firingRateData','fftData','energyData','NI_Data')
+    save(fileSave3,'erpData','firingRateData','fftData','energyData','NI_Data')
 end
 
 plotData_SSVEP(hPlotsFig4,energyData) % SSVEP Evoked, Fig 4;
 rescaleData(hPlotsFig4.hPlot1,0,24,getYLims(hPlotsFig4.hPlot1),14);
 rescaleData(hPlotsFig4.hPlot1(1,:),0,24,getYLims(hPlotsFig4.hPlot1(1,:)),14);
 rescaleData(hPlotsFig4.hPlot1(2,:),0,24,getYLims(hPlotsFig4.hPlot1(2,:)),14);
-% rescaleData(hPlotsFig4.hPlot1(1,:),0,24,[-1.5 3.5],14);
-% rescaleData(hPlotsFig4.hPlot1(2,:),0,24,[-4 10],14);
-% rescaleData(hPlotsFig4.hPlot1(2,:),0,24,getYLims(hPlotsFig4.hPlot1(2,:)),14);
 rescaleData(hPlotsFig4.hPlot2(3),0,50,getYLims(hPlotsFig4.hPlot2(3)),14);
-% ylim(hPlotsFig4.hPlot1(1,1),[0 35]);
-% ylim(hPlotsFig4.hPlot1(2,1),[-5 12]);
+
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -261,7 +251,6 @@ if length(fileNameStringTMP)>1
             NI_Data.denergy{j} = cat(2, NI_Data.denergy{j}, NI_DataTMP.denergy{j});
         end
 
-        % Combining OriData across sessions may be required! Right now, there is no requirement!        
         electrodeArray = cat(2,electrodeArray,electrodeArrayTMP);
     end
 end
@@ -312,7 +301,7 @@ if exist(oriTuningDataFile,'file')
     load(oriTuningDataFile);
 else
     % Get OrientationTuning Data
-    [computationVals,PO,OS] = savePrefOriAndOriSelectivitySpikes(monkeyName,expDate,oriTuning_protocolName,folderSourceString,gridType);
+    [computationVals,PO,OS] = savePrefOriAndOriSelectivitySpikes(monkeyName,expDate,oriTuning_protocolName,folderSourceString,gridType,dataParameters.stRange);
 end
 
 oriTuningData.PO = PO(ElectrodeListTMP{end});
@@ -371,8 +360,7 @@ else
     params.fpass    = [0 250];
     params.trialave = 1;
 
-%     cList_Ori1 = 1:length(cValsUnique); 
-    cListFlipped_Ori2 = flip(1:length(cValsUnique2)); 
+    cListFlipped_Ori2 = flip(1:length(cValsUnique2)); % helps in plotting the responses from low to high contrast
 
     % Main Loop (Stores data in elec x tempFreq x Contrast of Ori 2 x
     % Contrast of Ori 1 x dataPoints)
@@ -602,6 +590,14 @@ for iElec= 1:size(data.analysisDataST,1)
     NI_population_spikeRateRelative(iElec) = spikeRateElecVals_relative(1,5)/(((spikeRateElecVals_relative(1,1)+spikeRateElecVals_relative(5,5)))/2)-1;
 end
 
+%
+OutlierVals = [-15 15];
+NI_population_outlier = find(NI_population_spikeRateAbsolute<OutlierVals(1) | NI_population_spikeRateAbsolute>OutlierVals(2));
+NI_population_outlierVals = NI_population_spikeRateAbsolute(NI_population_outlier);
+NI_population_spikeRateAbsolute = NI_population_spikeRateAbsolute(setdiff(1:length(NI_population_spikeRateAbsolute),NI_population_outlier));
+fprintf(['Deleting Electrode number: ',num2str(NI_population_outlier) ' \nfor NI calculation because NI value(s) '...
+    num2str(NI_population_outlierVals) '\nfalls outside range ' num2str(OutlierVals(1)) ' < NI values < ' num2str(OutlierVals(2)) '\n'] )
+
 % remove Outlier elecs (add as a function)
 OutlierVals = [-15 15];
 NI_population_outlier = find(NI_population_spikeRateRelative<OutlierVals(1) | NI_population_spikeRateRelative>OutlierVals(2));
@@ -760,6 +756,20 @@ for i = 1: num_freqRanges
         NI_population_energyRelative(iElec) = energyData_Elec_relative(1,5)/(((energyData_Elec_relative(1,1)+energyData_Elec_relative(5,5)))/2)-1;
     end
 
+    OutlierVals = [-15 15];
+    NI_population_outlier = find(NI_population_energyAbsolute<OutlierVals(1) | NI_population_energyAbsolute>OutlierVals(2));
+    NI_population_outlierVals = NI_population_energyAbsolute(NI_population_outlier);
+    NI_population_energyAbsolute = NI_population_energyAbsolute(setdiff(1:length(NI_population_energyAbsolute),NI_population_outlier));
+    fprintf(['Deleting Electrode number: ',num2str(NI_population_outlier) ' \nfor NI calculation because NI value(s) '...
+        num2str(NI_population_outlierVals) '\nfalls outside range ' num2str(OutlierVals(1)) ' < NI values < ' num2str(OutlierVals(2)) '\n'] )
+
+    % remove Outlier elecs (add as a function)
+    OutlierVals = [-15 15];
+    NI_population_outlier = find(NI_population_energyRelative<OutlierVals(1) | NI_population_energyRelative>OutlierVals(2));
+    NI_population_outlierVals = NI_population_energyRelative(NI_population_outlier);
+    NI_population_energyRelative = NI_population_energyRelative(setdiff(1:length(NI_population_energyRelative),NI_population_outlier));
+    fprintf(['Deleting Electrode number: ',num2str(NI_population_outlier) ' \nfor NI calculation because NI value(s) '...
+        num2str(NI_population_outlierVals) '\nfalls outside range ' num2str(OutlierVals(1)) ' < NI values < ' num2str(OutlierVals(2)) '\n'] )
     % remove Outlier elecs (add as a function)
 %     OutlierVals = [-15 15];
 %     NI_population_outlier = find(NI_population_spikeRateRelative<OutlierVals(1) | NI_population_spikeRateRelative>OutlierVals(2));
@@ -905,6 +915,20 @@ end
 %     NI_population_spikeRateRelative = NI_population_spikeRateRelative(setdiff(1:length(NI_population_spikeRateRelative),NI_population_outlier));
 %     fprintf(['Deleting Electrode number: ',num2str(NI_population_outlier) ' \nfor NI calculation because NI value(s) '...
 %         num2str(NI_population_outlierVals) '\nfalls outside range ' num2str(OutlierVals(1)) ' < NI values < ' num2str(OutlierVals(2)) '\n'] )
+    OutlierVals = [-15 15];
+    NI_population_outlier = find(NI_population_energyAbsolute<OutlierVals(1) | NI_population_energyAbsolute>OutlierVals(2));
+    NI_population_outlierVals = NI_population_energyAbsolute(NI_population_outlier);
+    NI_population_energyAbsolute = NI_population_energyAbsolute(setdiff(1:length(NI_population_energyAbsolute),NI_population_outlier));
+    fprintf(['Deleting Electrode number: ',num2str(NI_population_outlier) ' \nfor NI calculation because NI value(s) '...
+        num2str(NI_population_outlierVals) '\nfalls outside range ' num2str(OutlierVals(1)) ' < NI values < ' num2str(OutlierVals(2)) '\n'] )
+
+    % remove Outlier elecs (add as a function)
+    OutlierVals = [-15 15];
+    NI_population_outlier = find(NI_population_energyRelative<OutlierVals(1) | NI_population_energyRelative>OutlierVals(2));
+    NI_population_outlierVals = NI_population_energyRelative(NI_population_outlier);
+    NI_population_energyRelative = NI_population_energyRelative(setdiff(1:length(NI_population_energyRelative),NI_population_outlier));
+    fprintf(['Deleting Electrode number: ',num2str(NI_population_outlier) ' \nfor NI calculation because NI value(s) '...
+        num2str(NI_population_outlierVals) '\nfalls outside range ' num2str(OutlierVals(1)) ' < NI values < ' num2str(OutlierVals(2)) '\n'] )
 
 
 
@@ -1062,6 +1086,12 @@ numSessions = length(fileNameStringTMP);
 tmpElectrodeStringList = cell(1,numSessions);
 tmpElectrodeArrayList = cell(1,numSessions);
 numElecs = 0;
+
+Monkey1_ExpDates = dataInformationPlaidNorm('alpaH',gridType,0);
+Monkey1_SessionNum = length(Monkey1_ExpDates);
+% Monkey2_ExpDates = dataInformationPlaidNorm('kesariH',gridType,0);
+% Monkey2_SessionNum = length(Monkey2_ExpDates);
+
 for i = 1:numSessions
     clear monkeyName
     if strcmp(fileNameStringTMP{i}(1:5),'alpaH') 
@@ -1075,7 +1105,7 @@ for i = 1:numSessions
     end
     if i == 1
         disp(['MonkeyName: ' ,monkeyName])
-    elseif i == 13
+    elseif i == Monkey1_SessionNum+1 % 13 Sessions are from alpaH; 9 Sessions from kesariH;
         disp(['MonkeyName: ' ,monkeyName])
     end
     versionNum = 2;

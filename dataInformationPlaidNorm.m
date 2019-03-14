@@ -17,10 +17,10 @@ end
 if strcmp(monkeyName,'alpaH')
     [allExpDates,allProtocolNames,~,~] = getAllProtocols(monkeyName, gridType);
     if OrientationTuningFlag == 1
-       protocolList = [306 308 312 319 321 324 330 355 359 361 372 374];
+       protocolList = [306 308 312 314 319 321 324 330 355 359 361 372 374];
         
     elseif OrientationTuningFlag == 0
-       protocolList = [307 309 313 320 322 325 331 356 360 362 373 375]; 
+       protocolList = [307 309 313 315 320 322 325 331 356 360 362 373 375]; 
             
     end
     
@@ -38,24 +38,25 @@ if strcmp(monkeyName,'alpaH')
     oriList{1} = [0 90];
     oriList{2} = [45 135];
     oriList{3} = [22.5 112.5];
-    oriList{4} = [0 90];
-    oriList{5} = [45 135];
-    oriList{6} = [22.5 112.5];
-    oriList{7} = [67.5 157.5];
-    oriList{8} = [22.5 112.5];
-    oriList{9} = [0 90];
-    oriList{10} = [45 135];
-    oriList{11} = [22.5 112.5];
-    oriList{12} = [67.5 157.5];
+    oriList{4} = [67.5 157.5]; % add later after combining 315 and 316 into 315
+    oriList{5} = [0 90];
+    oriList{6} = [45 135];
+    oriList{7} = [22.5 112.5];
+    oriList{8} = [67.5 157.5];
+    oriList{9} = [22.5 112.5];
+    oriList{10} = [0 90];
+    oriList{11} = [45 135];
+    oriList{12} = [22.5 112.5];
+    oriList{13} = [67.5 157.5];
     
 elseif strcmp(monkeyName,'kesariH')
     
     [allExpDates,allProtocolNames,~,~] = getAllProtocols(monkeyName, gridType);
     if OrientationTuningFlag == 1
-       protocolList = [70 94 106 111 114 116 118 120 122 124];
+       protocolList = [70 94 111 114 116 118 120 122 124]; % 106 not used; OriTuning Protocol for 107
         
     elseif OrientationTuningFlag == 0
-       protocolList = [71 95 107 112 115 117 119 121 123 125]; 
+       protocolList = [71 95 112 115 117 119 121 123 125]; % 107 not used; driifting instead of counter-phase
             
     end
     
@@ -72,14 +73,15 @@ elseif strcmp(monkeyName,'kesariH')
     
     oriList{1} = [0 90];
     oriList{2} = [45 135];
-    oriList{3} = [22.5 112.5]; % Drifting grating, no SSVEP measure
-    oriList{4} = [22.5 112.5];
-    oriList{5} = [67.5 157.5];
-    oriList{6} = [0 90];
-    oriList{7} = [45 135];
-    oriList{8} = [22.5 112.5];
-    oriList{9} = [67.5 157.5];
-    oriList{10} = [22.5 112.5];
+%     oriList{3} = [22.5 112.5]; % 107; Drifting grating, no SSVEP measure;
+%     excluded
+    oriList{3} = [22.5 112.5];
+    oriList{4} = [67.5 157.5];
+    oriList{5} = [0 90];
+    oriList{6} = [45 135];
+    oriList{7} = [22.5 112.5];
+    oriList{8} = [67.5 157.5];
+    oriList{9} = [22.5 112.5];
   
     
 end
