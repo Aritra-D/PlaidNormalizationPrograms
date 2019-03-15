@@ -1121,18 +1121,18 @@ if analysisMeasure == 1 || analysisMeasure == 2
         if ~relativeMeasuresFlag
             electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:));
         else
-            electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:))-squeeze(data.analysisDataBL(iElec,1,:,:));
+            electrodeVals =  squeeze(data.analysisDataST(iElec,1,:,:))-squeeze(data.analysisData_cBL(iElec,1,:,:));
         end
         NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
     end
     
-    OutlierVals = [-15 15];
-    NI_population_outlier = find(NI_population<OutlierVals(1) | NI_population>OutlierVals(2));
-    NI_population_outlierVals = NI_population(NI_population_outlier);
-    NI_population = NI_population(setdiff(1:length(NI_population),NI_population_outlier));
-    fprintf(['Deleting Electrode number: ',num2str(NI_population_outlier) ' \nfor NI calculation because NI value(s) '...
-        num2str(NI_population_outlierVals) '\nfalls outside range ' num2str(OutlierVals(1)) ' < NI values < ' num2str(OutlierVals(2)) '\n'] )
-            
+%     OutlierVals = [-15 15];
+%     NI_population_outlier = find(NI_population<OutlierVals(1) | NI_population>OutlierVals(2));
+%     NI_population_outlierVals = NI_population(NI_population_outlier);
+%     NI_population = NI_population(setdiff(1:length(NI_population),NI_population_outlier));
+%     fprintf(['Deleting Electrode number: ',num2str(NI_population_outlier) ' \nfor NI calculation because NI value(s) '...
+%         num2str(NI_population_outlierVals) '\nfalls outside range ' num2str(OutlierVals(1)) ' < NI values < ' num2str(OutlierVals(2)) '\n'] )
+%             
 elseif analysisMeasure == 4 
     analysisData = squeeze(mean(data.analysisDataST{1},1));
     sem_analysisData = squeeze(std(squeeze(data.analysisDataST{1}),[],1)./sqrt(size(data.analysisDataST{1},1)));
@@ -1142,7 +1142,7 @@ elseif analysisMeasure == 4
         if ~relativeMeasuresFlag
             electrodeVals =  squeeze(data.analysisDataST{1}(iElec,:,:));
         else
-            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,:,:))-squeeze(data.analysisDataBL{1}(iElec,:,:));
+            electrodeVals =  squeeze(data.analysisDataST{1}(iElec,:,:))-squeeze(data.analysisData_cBL{1}(iElec,:,:));
         end
         NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
     end        
@@ -1155,7 +1155,7 @@ elseif analysisMeasure == 5
         if ~relativeMeasuresFlag
             electrodeVals =  squeeze(data.analysisDataST{2}(iElec,:,:));
         else
-            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,:,:))-squeeze(data.analysisDataBL{2}(iElec,:,:));
+            electrodeVals =  squeeze(data.analysisDataST{2}(iElec,:,:))-squeeze(data.analysisData_cBL{2}(iElec,:,:));
         end
         NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
     end
@@ -1169,7 +1169,7 @@ elseif analysisMeasure == 6
             electrodeVals =  squeeze(data.analysisDataST{3}(iElec,:,:));
             NI_population(iElec) = abs(electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1); % log of low power values are negative!
         else
-            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,:,:))-squeeze(data.analysisDataBL{3}(iElec,:,:));
+            electrodeVals =  squeeze(data.analysisDataST{3}(iElec,:,:))-squeeze(data.analysisData_cBL{3}(iElec,:,:));
             NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
         end
     end 
@@ -1182,7 +1182,7 @@ elseif analysisMeasure == 7
         if ~relativeMeasuresFlag
             electrodeVals =  squeeze(data.analysisDataST{4}(iElec,:,:));
         else
-            electrodeVals =  squeeze(data.analysisDataST{4}(iElec,:,:))-squeeze(data.analysisDataBL{4}(iElec,:,:));
+            electrodeVals =  squeeze(data.analysisDataST{4}(iElec,:,:))-squeeze(data.analysisData_cBL{4}(iElec,:,:));
         end
         NI_population(iElec) = electrodeVals(1,5)/(((electrodeVals(1,1)+electrodeVals(5,5)))/2)-1;
     end
@@ -1191,7 +1191,7 @@ end
 if relativeMeasuresFlag
     if analysisMeasure == 1||analysisMeasure == 2
             analysisData = analysisData-analysisDataBL;
-            sem_analysisData =  squeeze(std((data.analysisDataST-data.analysisDataBL),[],1)./sqrt(size(data.analysisDataST,1)));
+            sem_analysisData =  squeeze(std((data.analysisDataST-data.analysisData_cBL),[],1)./sqrt(size(data.analysisDataST,1)));
     elseif analysisMeasure == 4||analysisMeasure == 5||analysisMeasure == 6||analysisMeasure == 7
         if analysisMethod == 2
             analysisData = 10*(analysisData-analysisDataBL);% Change in power expressed in deciBel
@@ -1522,12 +1522,19 @@ set(hPlots_Fig3.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthP
 set(hPlots_Fig3.hPlot2(3),'XTick',1:5,'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
 xlabel(hPlots_Fig3.hPlot2(3),'Ori 1 Contrast (%)');ylabel(hPlots_Fig3.hPlot2(3),'Ori 2 Contrast (%)');
 
-errorbar(cValsUnique,analysisData(conFlipped(1),:),sem_analysisData(conFlipped(1),:),...
+if num_Electrodes>1
+    errorbar(cValsUnique,analysisData(conFlipped(1),:),sem_analysisData(conFlipped(1),:),...
     'Marker','o','LineWidth',2,'color',Norm_colorNames(1,:,:),'parent',hPlots_Fig3.hPlot2(1))
     hold(hPlots_Fig3.hPlot2(1),'on');
     
-errorbar(cValsUnique,diag(flipud(analysisData)),diag(flipud(sem_analysisData)),'Marker','o','LineWidth',2,'color','k','parent',hPlots_Fig3.hPlot2(1));
+    errorbar(cValsUnique,diag(flipud(analysisData)),diag(flipud(sem_analysisData)),'Marker','o','LineWidth',2,'color','k','parent',hPlots_Fig3.hPlot2(1));
+else
+    plot(cValsUnique,analysisData(conFlipped(1),:),...
+    'Marker','o','LineWidth',2,'color',Norm_colorNames(1,:,:),'parent',hPlots_Fig3.hPlot2(1))
+    hold(hPlots_Fig3.hPlot2(1),'on');
     
+    plot(cValsUnique,diag(flipud(analysisData)),'Marker','o','LineWidth',2,'color','k','parent',hPlots_Fig3.hPlot2(1));
+end
 % for iCon = 1:5
 %     errorbar(cValsUnique,analysisData(conFlipped(iCon),:),sem_analysisData(conFlipped(iCon),:),...
 %         'Marker','o','LineWidth',2,'color',Norm_colorNames(iCon,:,:),'parent',hPlots_Fig3.hPlot2(1))
@@ -1693,6 +1700,7 @@ for iElec = 1:size(x.data,1)
     for t = 1:size(x.data,2)
         normData.data(iElec,t,:,:,:) = x.data(iElec,t,:,:,:)./max(max(max(abs(x.data(iElec,t,:,:,:)))));
         normData.analysisDataBL(iElec,t,:,:) = x.analysisDataBL(iElec,t,:,:)./max(max(abs(x.analysisDataBL(iElec,t,:,:))));
+        normData.analysisData_cBL(iElec,t,:,:) = x.analysisData_cBL(iElec,t,:,:)./max(max(abs(x.analysisData_cBL(iElec,t,:,:))));
         normData.analysisDataST(iElec,t,:,:) = x.analysisDataST(iElec,t,:,:)./max(max(abs(x.analysisDataST(iElec,t,:,:))));
         normData.timeVals = x.timeVals;
         normData.N = x.N;
@@ -1705,13 +1713,16 @@ function data = getDataSingleElec(data,electrodeNum,analysisMeasure)
     if analysisMeasure == 1 || analysisMeasure ==2
     data.data = data.data(electrodeNum,:,:,:,:);
     data.analysisDataBL = data.analysisDataBL(electrodeNum,:,:,:);
+    data.analysisData_cBL = data.analysisData_cBL(electrodeNum,:,:,:);
     data.analysisDataST = data.analysisDataST(electrodeNum,:,:,:);
+    data.N = data.N(electrodeNum,:,:,:);
     
     elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6||analysisMeasure == 7
         data.dataBL = data.dataBL(electrodeNum,:,:,:,:);
         data.dataST = data.dataST(electrodeNum,:,:,:,:);
         for i = 1:length(data.analysisDataST)
             data.analysisDataBL{i} = data.analysisDataBL{i}(electrodeNum,:,:,:);
+            data.analysisData_cBL{i} = data.analysisData_cBL{i}(electrodeNum,:,:,:);
             data.analysisDataST{i} = data.analysisDataST{i}(electrodeNum,:,:,:);
         end
     end

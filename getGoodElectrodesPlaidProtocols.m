@@ -4,7 +4,7 @@
 
 function [allGoodElectrodes,allDaysToCombine,allGoodElectrodesStr,goodElectrodes,goodDays] = getGoodElectrodesPlaidProtocols(monkeyName,versionNum,gridType,dRange,combineUniqueElectrodeData,getSpikeElectrodesFlag,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList)
 
-if ~exist('folderSourceString','var');               folderSourceString = 'E:\';            end
+% if ~exist('folderSourceString','var');               folderSourceString = 'E:\';            end
 if ~exist('gridType','var');                         gridType = 'microelectrode';           end
 if ~exist('combineUniqueElectrodeData','var');       combineUniqueElectrodeData = 0;        end
 if ~exist('getSpikeElectrodesFlag', 'var');          getSpikeElectrodesFlag = 1;            end
@@ -22,7 +22,7 @@ impedanceCutoff=2500;
 allUsefulElectrodes  = [];
 allDayIndices        = [];
 
-[expDates,protocolNames,positionList,oriList,dataFolderSourceString] = dataInformationPlaidNorm(monkeyName,gridType,0); % OrientationTuningFlag set to zero 
+[expDates,protocolNames,positionList,~,dataFolderSourceString] = dataInformationPlaidNorm(monkeyName,gridType,0); % OrientationTuningFlag set to zero 
 
 numDays = length(expDates);
 
@@ -126,8 +126,8 @@ end
 y=load(fullfile(folderSave,[monkeyName expDate protocolName 'unsortedSNR.mat']));
 
 goodPos = (x.SourceUnitID==unitID)&...
-          ((x.nStim(:,contrastIndexList{1}(1),contrastIndexList{1}(2))'>spikeCutoff)|...
-          (x.nStim(:,contrastIndexList{2}(1),contrastIndexList{2}(2))'>spikeCutoff))&...
+          (((x.nStim(:,contrastIndexList{1}(1),contrastIndexList{1}(2))'>spikeCutoff)&(x.nStim(:,contrastIndexList{2}(1),contrastIndexList{2}(2))'<5))|...
+          ((x.nStim(:,contrastIndexList{2}(1),contrastIndexList{2}(2))'>spikeCutoff)&(x.nStim(:,contrastIndexList{1}(1),contrastIndexList{1}(2))'<5)))&...
           ((y.snr>snrCutoff)==1);
 goodElectrodes = x.neuralChannelsStored(goodPos);
 end

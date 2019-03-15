@@ -1,4 +1,4 @@
-function plotFigures(monkeyName,folderSourceString)
+function plotFigures(monkeyName,folderSourceString,timeRangeForComputation)
 if ~exist('folderSourceString','var') 
    folderSourceString = 'M:\Data\PlaidNorm\';
 end
@@ -7,7 +7,7 @@ close all; % closes any open figure to avoid any overlaying issues
 % Variable Parameters
 spikeCutoff = 20;
 snrCutoff = 2;
-timeRangeForComputation = [0.25 0.5]; % expressed in second
+% timeRangeForComputation = [0.25 0.5]; % expressed in second
 timeRangeForComputationBL = -0.05+[-diff(timeRangeForComputation) 0];
 dRange = [0 0.75];
 tapers_MT = [1 1]; % parameters for MT analysis
@@ -1140,6 +1140,7 @@ for iElec = 1:size(x.data,1)
     for t = 1:size(x.data,2)
         normData.data(iElec,t,:,:,:) = x.data(iElec,t,:,:,:)./max(max(max(abs(x.data(iElec,t,:,:,:)))));
         normData.analysisDataBL(iElec,t,:,:) = x.analysisDataBL(iElec,t,:,:)./max(max(abs(x.analysisDataBL(iElec,t,:,:))));
+        normData.analysisData_cBL(iElec,t,:,:) = x.analysisData_cBL(iElec,t,:,:)./max(max(abs(x.analysisData_cBL(iElec,t,:,:))));
         normData.analysisDataST(iElec,t,:,:) = x.analysisDataST(iElec,t,:,:)./max(max(abs(x.analysisDataST(iElec,t,:,:))));
         normData.timeVals = x.timeVals;
         normData.N = x.N;
