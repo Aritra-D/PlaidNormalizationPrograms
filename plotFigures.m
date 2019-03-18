@@ -14,7 +14,8 @@ tapers_MT = [1 1]; % parameters for MT analysis
 removeERPFlag = 1;
 
 % Fixed parameters
-folderSave = fullfile(folderSourceString,'Projects\PlaidNormalizationProject\savedData_Figures');
+folderSourceString_Project = strtok(folderSourceString,'\');
+folderSave = fullfile(folderSourceString_Project,'Projects\PlaidNormalizationProject\savedData_Figures');
 if ~exist(folderSave,'dir')
     mkdir(folderSave)
 end
@@ -83,9 +84,9 @@ hPlotsFig4.hPlot2 = getPlotHandles(1,3,[0.15 0.1 0.7 0.2578],0.1188,0.05,0);
 % % Figure 5: Comparison of fitted parameters for FR, alpha, gamma, high
 % % gamma, SSVEP--- Three plots for each NI, sigma and alpha fitted
 % % parameters
-% hFigure5 = figure(5);
-% set(hFigure5,'units','normalized','outerposition',[0 0 1 1])
-% hPlotsFig5.hPlot1 = getPlotHandles(5,3,[0.3 0.1 0.4 0.8],0.06,0.01,1); 
+hFigure5 = figure(5);
+set(hFigure5,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig5.hPlot1 = getPlotHandles(6,4,[0.2 0.05 0.6 0.9],0.05,0.04,1); 
 
 %%%%%%%%%%%%%%%%%%%%% Get Session Details for Monkey(s) %%%%%%%%%%%%%%%%%%%
 fileNameStringListAll = getFileNameStringList(monkeyName,gridType);
@@ -108,6 +109,7 @@ fileSave1 = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2s
 if exist(fileSave1,'file')
     disp(['Loading file ' fileSave1]);
     load(fileSave1);
+    NI_Data_allElecsInduced = NI_Data; %#ok<NODEF>
 else
     % get Data all Session for monkey(s) for all Electrodes
     [erpData,firingRateData,fftData,energyData,~,NI_Data,~] = ...
@@ -119,12 +121,31 @@ end
 plotData_spikes(hPlotsFig1,firingRateData,0) % spikes for static gratings, Fig 1
 rescaleData(hPlotsFig1.hPlot1,-0.1,0.5,getYLims(hPlotsFig1.hPlot1),14);
 rescaleData(hPlotsFig1.hPlot2(3),0,50,getYLims(hPlotsFig1.hPlot2(3)),14);
+folderSave_Figs = fullfile(folderSourceString_Project,'Projects\PlaidNormalizationProject\Figures');
+if ~exist(folderSave_Figs,'dir')
+    mkdir(folderSave_Figs)
+end
+FigName1 = fullfile(folderSave_Figs,['Figure 1_' monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) '_allElecs'...
+    '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
+    '_d' num2str(dRange(1)) '_' num2str(dRange(2))...
+    '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
+    '_gse' num2str(getSpikeElectrodesFlag) '_gridType_' gridType '_UnitID' num2str(unitID)]);
+saveas(hFigure1,[FigName1 '.fig'])
+saveas(hFigure1,[FigName1,'.tif'])
+    
 
 plotData_energy(hPlotsFig3,energyData) % alpha, gamma, hi-gamma for static gratings, Fig 3; 
 rescaleData(hPlotsFig3.hPlot1,0,250,getYLims(hPlotsFig3.hPlot1),12);
 rescaleData(hPlotsFig3.hPlot1(1,:),0,250,[-1.5 3.5],12);
 rescaleData(hPlotsFig3.hPlot1(2,:),0,250,[-4 10],12);
-
+set(findall(hFigure3,'-property','FontSize'),'FontSize',13);
+FigName3 = fullfile(folderSave_Figs,['Figure 3_' monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) '_allElecs'...
+    '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
+    '_d' num2str(dRange(1)) '_' num2str(dRange(2))...
+    '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
+    '_gse' num2str(getSpikeElectrodesFlag) '_gridType_' gridType '_UnitID' num2str(unitID) ]);
+saveas(hFigure3,[FigName3 '.fig'])
+saveas(hFigure3,[FigName3,'.tif'])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURE 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -146,6 +167,7 @@ fileSave2 = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2s
 if exist(fileSave2,'file')
     disp(['Loading file ' fileSave2]);
     load(fileSave2);
+    NI_Data_OriTunedElecs = NI_Data;
 else
     % get Data all Session for particular monkey or both combined for 
     % ori-tuned Electrodes
@@ -158,6 +180,13 @@ end
 plotData_spikes(hPlotsFig2,firingRateData,0) % spikes for static gratings from ori-selective electrodes, Fig 1
 rescaleData(hPlotsFig2.hPlot1,-0.1,0.5,getYLims(hPlotsFig2.hPlot1),14);
 rescaleData(hPlotsFig2.hPlot2(3),0,50,getYLims(hPlotsFig2.hPlot2(3)),14);
+FigName2 = fullfile(folderSave_Figs,['Figure 2_' monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) '_oriTunedElecs'...
+    '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
+    '_d' num2str(dRange(1)) '_' num2str(dRange(2))...
+    '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
+    '_gse' num2str(getSpikeElectrodesFlag) '_gridType_' gridType '_UnitID' num2str(unitID)] );
+saveas(hFigure2,[FigName2 '.fig'])
+saveas(hFigure2,[FigName2,'.tif'])
 % rescaleData(hPlotsFig3.hPlot1,0,250,getYLims(hPlotsFig3.hPlot1),12);
 
 
@@ -176,6 +205,7 @@ fileSave3 = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2s
 if exist(fileSave3,'file')
     disp(['Loading file ' fileSave3]);
     load(fileSave3);
+    NI_Data_allElecsEvoked = NI_Data;
 else
     oriSelectiveFlag = 0;
     % get Data all Session for particular monkey or both combined for all
@@ -190,9 +220,37 @@ rescaleData(hPlotsFig4.hPlot1,0,24,getYLims(hPlotsFig4.hPlot1),14);
 rescaleData(hPlotsFig4.hPlot1(1,:),0,24,getYLims(hPlotsFig4.hPlot1(1,:)),14);
 rescaleData(hPlotsFig4.hPlot1(2,:),0,24,getYLims(hPlotsFig4.hPlot1(2,:)),14);
 rescaleData(hPlotsFig4.hPlot2(3),0,50,getYLims(hPlotsFig4.hPlot2(3)),14);
+FigName4 = fullfile(folderSave_Figs,['Figure 4_' monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) '_allElecs'...
+    '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
+    '_d' num2str(dRange(1)) '_' num2str(dRange(2))...
+    '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
+    '_gse' num2str(getSpikeElectrodesFlag) '_gridType_' gridType '_UnitID' num2str(unitID) ]);
 
+saveas(hFigure4,[FigName4 '.fig'])
+saveas(hFigure4,[FigName4,'.tif'])
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURE 5 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+plotData_histogram(hPlotsFig5, NI_Data_allElecsInduced,NI_Data_OriTunedElecs,NI_Data_allElecsEvoked)
+FigName5 = fullfile(folderSave_Figs,['Figure 5_' monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff)...
+    '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
+    '_d' num2str(dRange(1)) '_' num2str(dRange(2))...
+    '_tapers' num2str(tapers_MT(2)) '_cne' num2str(combineUniqueElectrodeData) ...
+    '_gse' num2str(getSpikeElectrodesFlag) '_gridType_' gridType '_UnitID' num2str(unitID) ]);
+
+saveas(hFigure5,[FigName5 '.fig'])
+saveas(hFigure5,[FigName5,'.tif'])
 end
+
+
+
+
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function[erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray] = ...
     getData(folderSourceString,fileNameStringTMP,ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod)
@@ -1004,6 +1062,61 @@ set(hPlot.hPlot2(2),'Position',[plotPos(1) plotPos2(2) plotPos2(3) plotPos2(4)])
 plotPos = get(hPlot.hPlot1(2,5),'Position');
 plotPos2 = get(hPlot.hPlot2(3),'Position');
 set(hPlot.hPlot2(3),'Position',[plotPos(1) plotPos2(2) plotPos2(3)-(plotPos(1)-plotPos2(1)) plotPos2(4)]);
+end
+
+function plotData_histogram(hPlotsFig5, NI_Data_allElecsInduced,NI_Data_OriTunedElecs,NI_Data_allElecsEvoked)
+% 1st Row (Spike NI- allElecs) Column 1 & 2 gives NI of absolute and
+% relative measures respectively
+data = NI_Data_allElecsInduced.firingRate_ST;
+histogram(hPlotsFig5.hPlot1(1,1),data,min(data):0.2:max(data));
+
+data = NI_Data_allElecsInduced.dfiringRate;
+histogram(hPlotsFig5.hPlot1(1,2),data,min(data):0.2:max(data));
+
+% 2nd Row (Spike NI- oriTunedElecs) Column 1 & 2 gives NI of absolute and
+% relative measures respectively
+data = NI_Data_OriTunedElecs.firingRate_ST;
+histogram(hPlotsFig5.hPlot1(2,1),data,min(data):0.2:max(data));
+data = NI_Data_OriTunedElecs.dfiringRate;
+histogram(hPlotsFig5.hPlot1(2,2),data,min(data):0.2:max(data));
+
+% 3rd Row (alpha power induced- allElecs) Column 1 & 2 gives NI of absolute and
+% relative measures respectively
+data = NI_Data_allElecsInduced.energy_ST{1};
+histogram(hPlotsFig5.hPlot1(3,1),data);
+data = NI_Data_OriTunedElecs.denergy{1};
+histogram(hPlotsFig5.hPlot1(3,2),data,min(data):0.2:max(data));
+
+% 4th Row (gamma power induced- allElecs) Column 1 & 2 gives NI of absolute and
+% relative measures respectively
+data = NI_Data_allElecsInduced.energy_ST{2};
+histogram(hPlotsFig5.hPlot1(4,1),data,min(data):0.2:max(data));
+data = NI_Data_allElecsInduced.denergy{2};
+histogram(hPlotsFig5.hPlot1(4,2),data,min(data):0.2:max(data));
+
+
+% 5th Row (hi-gamma power induced- allElecs) Column 1 & 2 gives NI of absolute and
+% relative measures respectively
+data = NI_Data_allElecsInduced.energy_ST{3};
+histogram(hPlotsFig5.hPlot1(5,1),data);
+data = NI_Data_allElecsInduced.denergy{3};
+histogram(hPlotsFig5.hPlot1(5,2),data,min(data):0.2:max(data));
+
+% 6th Row (SSVEP power evoked- allElecs) Column 1 & 2 gives NI of absolute and
+% relative measures respectively
+data = NI_Data_allElecsEvoked.energy_ST{4};
+histogram(hPlotsFig5.hPlot1(6,1),data);
+data = NI_Data_allElecsEvoked.denergy{4};
+histogram(hPlotsFig5.hPlot1(6,2),data,min(data):0.2:max(data));
+
+title(hPlotsFig5.hPlot1(1,1),'NI-Absolute')
+title(hPlotsFig5.hPlot1(1,2),'NI-Relative')
+ylabel(hPlotsFig5.hPlot1(1,1),'Spikes')
+ylabel(hPlotsFig5.hPlot1(2,1),'Spikes-OriElec')
+ylabel(hPlotsFig5.hPlot1(3,1),'alpha')
+ylabel(hPlotsFig5.hPlot1(4,1),'gamma')
+ylabel(hPlotsFig5.hPlot1(5,1),'hi-gamma')
+ylabel(hPlotsFig5.hPlot1(6,1),'SSVEP')
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%  Accessory Functions  %%%%%%%%%%%%%%%%%%%%%%%%%
