@@ -12,6 +12,7 @@ timeRangeForComputationBL = -0.05+[-diff(timeRangeForComputation) 0];
 dRange = [0 0.75];
 tapers_MT = [1 1]; % parameters for MT analysis
 removeERPFlag = 1;
+normalizateSpikeDataFlag = 0;
 
 % Fixed parameters
 folderSourceString_Project = strtok(folderSourceString,'\');
@@ -112,13 +113,13 @@ if exist(fileSave1,'file')
     NI_Data_allElecsInduced = NI_Data; %#ok<NODEF>
 else
     % get Data all Session for monkey(s) for all Electrodes
-    [erpData,firingRateData,fftData,energyData,~,NI_Data,~] = ...
+    [erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,~] = ...
     getData(folderSourceString,fileNameStringListAll,electrodeList_All,timeRangeParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); %#ok<ASGLU>
-    save(fileSave1,'erpData','firingRateData','fftData','energyData','NI_Data')
+    save(fileSave1,'erpData','firingRateData','fftData','energyData','oriTuningData','NI_Data')
 end
 
 % Put plot Functions for figures 1,3
-plotData_spikes(hPlotsFig1,firingRateData,0) % spikes for static gratings, Fig 1
+plotData_spikes(hPlotsFig1,firingRateData,normalizateSpikeDataFlag) % spikes for static gratings, Fig 1
 rescaleData(hPlotsFig1.hPlot1,-0.1,0.5,getYLims(hPlotsFig1.hPlot1),14);
 rescaleData(hPlotsFig1.hPlot2(3),0,50,getYLims(hPlotsFig1.hPlot2(3)),14);
 folderSave_Figs = fullfile(folderSourceString_Project,'Projects\PlaidNormalizationProject\Figures');
@@ -171,13 +172,13 @@ if exist(fileSave2,'file')
 else
     % get Data all Session for particular monkey or both combined for 
     % ori-tuned Electrodes
-    [erpData,firingRateData,fftData,energyData,~,NI_Data,~] = ...
+    [erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,~] = ...
     getData(folderSourceString,fileNameStringListAll,electrodeList_OriTuned,timeRangeParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); %#ok<ASGLU>
-    save(fileSave2,'erpData','firingRateData','fftData','energyData','NI_Data')
+    save(fileSave2,'erpData','firingRateData','fftData','energyData','oriTuningData','NI_Data')
 end
 
 % Plotting Functions
-plotData_spikes(hPlotsFig2,firingRateData,0) % spikes for static gratings from ori-selective electrodes, Fig 1
+plotData_spikes(hPlotsFig2,firingRateData,normalizateSpikeDataFlag) % spikes for static gratings from ori-selective electrodes, Fig 1
 rescaleData(hPlotsFig2.hPlot1,-0.1,0.5,getYLims(hPlotsFig2.hPlot1),14);
 rescaleData(hPlotsFig2.hPlot2(3),0,50,getYLims(hPlotsFig2.hPlot2(3)),14);
 FigName2 = fullfile(folderSave_Figs,['Figure 2_' monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) '_oriTunedElecs'...
@@ -210,9 +211,9 @@ else
     oriSelectiveFlag = 0;
     % get Data all Session for particular monkey or both combined for all
     % Electrodes
-    [erpData,firingRateData,fftData,energyData,~,NI_Data,~] = ...
+    [erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,~] = ...
     getData(folderSourceString,fileNameStringListAll,electrodeList_All,timeRangeParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); %#ok<ASGLU>
-    save(fileSave3,'erpData','firingRateData','fftData','energyData','NI_Data')
+    save(fileSave3,'erpData','firingRateData','fftData','energyData','oriTuningData','NI_Data')
 end
 
 plotData_SSVEP(hPlotsFig4,energyData) % SSVEP Evoked, Fig 4;
@@ -267,7 +268,7 @@ if length(fileNameStringTMP)>1
            continue
         end
         disp(['Working on dataset ' num2str(i) ' of ' num2str(length(fileNameStringTMP))]);
-        [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,~,NI_DataTMP,electrodeArrayTMP] = getDataSingleSession(folderSourceString,fileNameStringTMP{i},...
+        [erpDataTMP,firingRateDataTMP,fftDataTMP,energyDataTMP,oriTuningDataTMP,NI_DataTMP,electrodeArrayTMP] = getDataSingleSession(folderSourceString,fileNameStringTMP{i},...
             ElectrodeListTMP{i},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod);
         
         erpData.data = cat(1,erpData.data,erpDataTMP.data);
@@ -308,6 +309,11 @@ if length(fileNameStringTMP)>1
             NI_Data.energy_ST{j} = cat(2, NI_Data.energy_ST{j}, NI_DataTMP.energy_ST{j});
             NI_Data.denergy{j} = cat(2, NI_Data.denergy{j}, NI_DataTMP.denergy{j});
         end
+        
+        oriTuningData.PO = cat(2,oriTuningData.PO,oriTuningDataTMP.PO);
+        oriTuningData.OS = cat(2,oriTuningData.OS,oriTuningDataTMP.OS);
+        oriTuningData.FR = cat(1,oriTuningData.FR,oriTuningDataTMP.FR);
+        oriTuningData.OriPairFR = cat(1,oriTuningData.OriPairFR,oriTuningDataTMP.OriPairFR);
 
         electrodeArray = cat(2,electrodeArray,electrodeArrayTMP);
     end
@@ -338,6 +344,7 @@ tuningProtocol_folderName =  fullfile(folderSourceString,'data',...
                         monkeyName,gridType,expDate,oriTuning_protocolName);                           
 
 % Get folders
+folderExtract_oriTuning = fullfile(tuningProtocol_folderName,'extractedData');
 folderExtract = fullfile(folderName,'extractedData');
 folderSegment = fullfile(folderName,'segmentedData');
 folderLFP = fullfile(folderSegment,'LFP');
@@ -365,6 +372,12 @@ end
 oriTuningData.PO = PO(ElectrodeListTMP{end});
 oriTuningData.OS = OS(ElectrodeListTMP{end});
 oriTuningData.FR = computationVals(ElectrodeListTMP{end},:);
+
+[~,~,~,~,~,oValsUnique_Grating,~,~] = loadOriTuningParameterCombinations(folderExtract_oriTuning);
+[~,~,~,~,~,~,oValsUnique_Plaid,~,~,~,~,~,~,oValsUnique2_Plaid,~,~] = loadParameterCombinations(folderExtract);
+
+oriPairIndex = [find(oValsUnique_Plaid == oValsUnique_Grating),find(oValsUnique2_Plaid == oValsUnique_Grating)];
+oriTuningData.OriPairFR = oriTuningData.FR(:,oriPairIndex);
 
 if oriSelectiveFlag 
     fileToSave = fullfile(folderSave,[fileNameStringTMP '_OriTunedElecData_StimPeriod_' num2str(1000*dataParameters.stRange(1)) '_' num2str(1000*dataParameters.stRange(2)) 'ms_tapers' num2str(tapers_MT(1)) '_' num2str(tapers_MT(2)) '_' strtok(LFPdataProcessingMethod) '.mat']);
@@ -696,7 +709,7 @@ set(colorYlabelHandle,'String','Absolute Spike Rate (spikes/s)','fontSize',14);
 plotPos = get(hPlot.hPlot2(1),'Position');
 set(hPlot.hPlot2(1),'Position',[plotPos(1) plotPos(2) plotPos(3)+0.02 plotPos(4)]);
 title(hPlot.hPlot2(1),['Mean NI: ',num2str(round(mean(NI_population_spikeRateAbsolute),2))],'fontWeight','bold');
-caxis(hPlot.hPlot2(1),[0 20]);
+% caxis(hPlot.hPlot2(1),[0 20]);
 set(hPlot.hPlot2(1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(1),'XTick',1:length(cValsUnique),'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
 xlabel(hPlot.hPlot2(1),'Contrast of Ori 1(%)');ylabel(hPlot.hPlot2(1),'Contrast of Ori 2(%)');
@@ -710,7 +723,7 @@ set(colorYlabelHandle,'String','Change in Spike Rate (spikes/s)','fontSize',14);
 plotPos = get(hPlot.hPlot2(2),'Position');
 set(hPlot.hPlot2(2),'Position',[plotPos(1) plotPos(2) plotPos(3)+0.02 plotPos(4)]);
 title(hPlot.hPlot2(2),['Mean NI: ',num2str(round(mean(NI_population_spikeRateRelative),2))],'fontWeight','bold');
-caxis(hPlot.hPlot2(2),[0 20]);
+% caxis(hPlot.hPlot2(2),[0 20]);
 set(hPlot.hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(2),'XTick',1:length(cValsUnique),'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
 xlabel(hPlot.hPlot2(2),'Contrast of Ori 1(%)');ylabel(hPlot.hPlot2(2),'Contrast of Ori 2(%)');
@@ -1129,6 +1142,17 @@ analogChannelsStored=sort(analogChannelsStored); %#ok<NODEF>
 if ~exist('analogInputNums','var')
     analogInputNums=[];
 end
+end
+
+% Get Tuning protocol Parameter combinations
+function [parameterCombinations,aValsUnique,eValsUnique,sValsUnique,...
+    fValsUnique,oValsUnique,cValsUnique,tValsUnique] = ...
+    loadOriTuningParameterCombinations(folderExtract)
+
+load(fullfile(folderExtract,'parameterCombinations.mat'));
+
+if ~exist('sValsUnique','var');    sValsUnique=rValsUnique;            end
+
 end
 
 % Get parameter combinations
