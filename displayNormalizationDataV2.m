@@ -752,8 +752,12 @@ if length(fileNameStringTMP)>1
             NI_Data.energy_ST{j} = cat(2, NI_Data.energy_ST{j}, NI_DataTMP.energy_ST{j});
             NI_Data.denergy{j} = cat(2, NI_Data.denergy{j}, NI_DataTMP.denergy{j});
         end
+        
+        oriTuningData.PO = cat(2,oriTuningData.PO,oriTuningDataTMP.PO);
+        oriTuningData.OS = cat(2,oriTuningData.OS,oriTuningDataTMP.OS);
+        oriTuningData.FR = cat(1,oriTuningData.FR,oriTuningDataTMP.FR);
+        oriTuningData.OriPairFR = cat(1,oriTuningData.OriPairFR,oriTuningDataTMP.OriPairFR);
 
-        % Combining OriData across sessions may be required! Right now, there is no requirement!        
         electrodeArray = cat(2,electrodeArray,electrodeArrayTMP);
     end
 end
@@ -785,6 +789,7 @@ tuningProtocol_folderName =  fullfile(folderSourceString,'data',...
                         monkeyName,gridType,expDate,oriTuning_protocolName);                           
 
 % Get folders
+folderExtract_oriTuning = fullfile(tuningProtocol_folderName,'extractedData');
 folderExtract = fullfile(folderName,'extractedData');
 folderSegment = fullfile(folderName,'segmentedData');
 folderLFP = fullfile(folderSegment,'LFP');
@@ -812,6 +817,12 @@ end
 oriTuningData.PO = PO(ElectrodeListTMP{end});
 oriTuningData.OS = OS(ElectrodeListTMP{end});
 oriTuningData.FR = computationVals(ElectrodeListTMP{end},:);
+
+[~,~,~,~,~,oValsUnique_Grating,~,~] = loadOriTuningParameterCombinations(folderExtract_oriTuning);
+[~,~,~,~,~,~,oValsUnique_Plaid,~,~,~,~,~,~,oValsUnique2_Plaid,~,~] = loadParameterCombinations(folderExtract);
+
+oriPairIndex = [find(oValsUnique_Plaid == oValsUnique_Grating),find(oValsUnique2_Plaid == oValsUnique_Grating)];
+oriTuningData.OriPairFR = oriTuningData.FR(:,oriPairIndex);
 
 if oriSelectiveFlag 
     fileToSave = fullfile(folderSave,[fileNameStringTMP '_OriTunedElecData_StimPeriod_' num2str(1000*dataParameters.stRange(1)) '_' num2str(1000*dataParameters.stRange(2)) 'ms_tapers' num2str(tapers_MT(1)) '_' num2str(tapers_MT(2)) '_' strtok(LFPdataProcessingMethod) '.mat']);
@@ -1608,6 +1619,17 @@ analogChannelsStored=sort(analogChannelsStored); %#ok<NODEF>
 if ~exist('analogInputNums','var')
     analogInputNums=[];
 end
+end
+
+% Get Tuning protocol Parameter combinations
+function [parameterCombinations,aValsUnique,eValsUnique,sValsUnique,...
+    fValsUnique,oValsUnique,cValsUnique,tValsUnique] = ...
+    loadOriTuningParameterCombinations(folderExtract)
+
+load(fullfile(folderExtract,'parameterCombinations.mat'));
+
+if ~exist('sValsUnique','var');    sValsUnique=rValsUnique;            end
+
 end
 
 % Get parameter combinations

@@ -648,6 +648,20 @@ psthData = squeeze(mean(data.data,1));
 spikeRateDataST = squeeze(mean(data.analysisDataST,1));
 spikeRateDataBL = squeeze(mean(data.analysisData_cBL,1));
 
+% mean spike rate for two orthogonal pairs gratings when presented alone (or when the contrast of the other grating is 0%) 
+for iElec = 1:size(data.analysisDataST,1)
+    avgSpikeRateDataST_elecwise(iElec,:) = (squeeze(data.analysisDataST(iElec,:,end,:))' + flip(squeeze(data.analysisDataST(iElec,:,:,1)))')/2;
+    sumSpikeRateDataST_elecwise(iElec,:) = squeeze(data.analysisDataST(iElec,:,end,:))' + flip(squeeze(data.analysisDataST(iElec,:,:,1)))';
+end
+
+avgSpikeRateDataST = mean(avgSpikeRateDataST_elecwise,1);
+sem_avgSpikeRateDataST = std(avgSpikeRateDataST_elecwise,[],1)./sqrt(size(avgSpikeRateDataST_elecwise,1));
+
+sumSpikeRateDataST = mean(sumSpikeRateDataST_elecwise,1);
+sem_sumSpikeRateDataST = std(sumSpikeRateDataST_elecwise,[],1)./sqrt(size(sumSpikeRateDataST_elecwise,1));
+
+% avgSpikeRateDataST = (spikeRateDataST(end,:)+ flip(spikeRateDataST(:,1))')/2;
+
 diff_spikeRateData = spikeRateDataST - spikeRateDataBL;
 
 sem_spikeRate = squeeze(std(squeeze(data.analysisDataST),[],1)./sqrt(size(data.analysisDataST,1)));
@@ -733,7 +747,13 @@ xlabel(hPlot.hPlot2(2),'Contrast of Ori 1(%)');ylabel(hPlot.hPlot2(2),'Contrast 
 errorbar(cValsUnique,spikeRateDataST(end,:),sem_spikeRate(end,:),...
     'Marker','o','LineWidth',2,'color',colors(end,:,:),'parent',hPlot.hPlot2(3))
 hold(hPlot.hPlot2(3),'on');
+errorbar(cValsUnique,flip(spikeRateDataST(:,1)),sem_spikeRate(:,1),...
+    'Marker','o','LineWidth',2,'color',colors(1,:,:),'parent',hPlot.hPlot2(3))
 errorbar(cValsUnique,diag(flipud(spikeRateDataST)),diag(flipud(sem_spikeRate)),'Marker','o','LineWidth',2,'color','k','parent',hPlot.hPlot2(3));
+errorbar(cValsUnique,avgSpikeRateDataST,sem_avgSpikeRateDataST,'Marker','o','LineStyle','--','LineWidth',2,'color',[0.5 0.5 0.5],'parent',hPlot.hPlot2(3));
+errorbar(cValsUnique,sumSpikeRateDataST,sem_sumSpikeRateDataST,'Marker','o','LineStyle','--','LineWidth',2,'color',[0.8 0.8 0.8],'parent',hPlot.hPlot2(3));
+
+
 hold(hPlot.hPlot2(3),'off');
 text(0.5,0.2,'cOri 2: 0%','color',colors(end,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(3))
 text(0.5,0.1,'cOri 1 = cOri 2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(3))
