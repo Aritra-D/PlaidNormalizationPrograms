@@ -274,6 +274,8 @@ psthData = squeeze(mean(data.data,1));
 spikeRateDataST = squeeze(mean(data.analysisDataST,1));
 spikeRateDataBL = squeeze(mean(data.analysisData_cBL,1));
 
+spikeData_elecwise = squeeze(data.analysisDataST); %#ok<NASGU>
+
 % mean spike rate for two orthogonal pairs gratings when presented alone (or when the contrast of the other grating is 0%) 
 for iElec = 1:size(data.analysisDataST,1)
     avgSpikeRateDataST_elecwise(iElec,:) = (squeeze(data.analysisDataST(iElec,:,end,:))' + flip(squeeze(data.analysisDataST(iElec,:,:,1)))')/2;
@@ -381,8 +383,11 @@ errorbar(cValsUnique,sumSpikeRateDataST,sem_sumSpikeRateDataST,'Marker','o','Lin
 
 
 hold(hPlot.hPlot2(3),'off');
-text(0.5,0.2,'cOri 2: 0%','color',colors(end,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(3))
-text(0.5,0.1,'cOri 1 = cOri 2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.7,0.05,'cOri 2: 0%','color',colors(end,:,:),'fontWeight','bold','fontSize',8,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.7,0.1,'cOri 1: 0%','color',colors(1,:,:),'fontWeight','bold','fontSize',8,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.7,0.2,'avg','color',[0.5 0.5 0.5],'fontWeight','bold','fontSize',8,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.7,0.25,'sum','color',[0.8 0.8 0.8],'fontWeight','bold','fontSize',8,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.7,0.15,'cOri 1 = cOri 2','color','k','fontWeight','bold','fontSize',8,'unit','normalized','parent',hPlot.hPlot2(3))
 set(hPlot.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(3),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
 xlabel(hPlot.hPlot2(3),'Contrast of Ori 1(%)');ylabel(hPlot.hPlot2(3),'Absolute Spike Rate (spike/s)');
@@ -456,13 +461,28 @@ ylabel(hPlot.hPlot1(2,1),{'Change in','Power (dB)'},'fontSize',12)
 % energy data: con_Ori2 (rows) x con_Ori2 (columns)
 for i = 1: num_freqRanges
 
-    clear energyDataST energyDataBL NI_population_energyAbsolute NI_population_energyRelative
+    clear energyDataST energyDataBL NI_population_energy Absolute NI_population_energyRelative
+    clear dEnergyData_elecwise
     energyDataST = squeeze(mean(data.analysisDataST{i},1));
     energyDataBL = squeeze(mean(data.analysisData_cBL{i},1));
 
 %     sem_EnergyDataST = squeeze(std(squeeze(data.analysisDataST{i}),[],1)./sqrt(size(data.analysisDataST{i},1)));
     dEnergyData = 10*(energyDataST - energyDataBL); %across elecs
     sem_dEnergyData = squeeze(std(10*(data.analysisDataST{i}-data.analysisDataBL{i}),[],1)./sqrt(size(data.analysisDataST{i},1)));
+    
+    % dEnergy data for two orthogonal pairs gratings when presented alone (or when the contrast of the other grating is 0%) 
+    dEnergyData_elecwise = 10*(data.analysisDataST{i} - data.analysisData_cBL{i});
+    
+    for iElec = 1:size(data.analysisDataST{4},1)
+        avg_dEnergyData_elecwise(iElec,:) = (abs(squeeze(dEnergyData_elecwise(iElec,end,:))') + abs(flip(squeeze(dEnergyData_elecwise(iElec,:,1)))))/2;
+        sum_dEnergyData_elecwise(iElec,:) = abs(squeeze(dEnergyData_elecwise(iElec,end,:))') + abs(flip(squeeze(dEnergyData_elecwise(iElec,:,1))));
+    end
+    
+    avg_dEnergyData = mean(avg_dEnergyData_elecwise,1);
+    sem_avg_dEnergyData = std(avg_dEnergyData_elecwise,[],1)./sqrt(size(avg_dEnergyData_elecwise,1));
+
+    sum_dEnergyData = mean(sum_dEnergyData_elecwise,1);
+    sem_sum_dEnergyData = std(sum_dEnergyData_elecwise,[],1)./sqrt(size(sum_dEnergyData_elecwise,1));
     
     % computing N.I. population
     for iElec= 1:size(data.analysisDataST{i},1)
@@ -507,7 +527,12 @@ for i = 1: num_freqRanges
     errorbar(cValsUnique,dEnergyData(end,:),sem_dEnergyData(end,:),...
         'Marker','o','LineWidth',2,'color',colors(end,:,:),'parent',hPlot.hPlot2(i,3))
     hold(hPlot.hPlot2(i,3),'on');
+    errorbar(cValsUnique,flip(dEnergyData(:,1)),sem_dEnergyData(:,1),...
+    'Marker','o','LineWidth',2,'color',colors(1,:,:),'parent',hPlot.hPlot2(i,3))
     errorbar(cValsUnique,diag(flipud(dEnergyData)),diag(flipud(sem_dEnergyData)),'Marker','o','LineWidth',2,'color','k','parent',hPlot.hPlot2(i,3));
+    errorbar(cValsUnique,avg_dEnergyData,sem_avg_dEnergyData,'Marker','o','LineStyle','--','LineWidth',2,'color',[0.5 0.5 0.5],'parent',hPlot.hPlot2(i,3));
+    errorbar(cValsUnique,sum_dEnergyData,sem_sum_dEnergyData,'Marker','o','LineStyle','--','LineWidth',2,'color',[0.8 0.8 0.8],'parent',hPlot.hPlot2(i,3));
+
     hold(hPlot.hPlot2(i,3),'off');
     
     % Setting axes properties
@@ -549,9 +574,12 @@ for i = 1: num_freqRanges
     end
 
     % % CRF
-    if i == 3
-        text(0.2,0.2,'cOri 2: 0%','color',colors(end,:,:),'fontWeight','bold','fontSize',10,'unit','normalized','parent',hPlot.hPlot2(i,3))
-        text(0.2,0.1,'cOri 1 = cOri 2','color','k','fontWeight','bold','fontSize',10,'unit','normalized','parent',hPlot.hPlot2(i,3))
+    if i == 2
+        text(0.2,0.1,'cOri 2: 0%','color',colors(end,:,:),'fontWeight','bold','fontSize',6,'unit','normalized','parent',hPlot.hPlot2(i,3))
+        text(0.2,0.2,'cOri 1: 0%','color',colors(1,:,:),'fontWeight','bold','fontSize',6,'unit','normalized','parent',hPlot.hPlot2(i,3))
+        text(0.2,0.4,'avg','color',[0.5 0.5 0.5],'fontWeight','bold','fontSize',6,'unit','normalized','parent',hPlot.hPlot2(i,3))
+        text(0.2,0.5,'sum','color',[0.8 0.8 0.8],'fontWeight','bold','fontSize',6,'unit','normalized','parent',hPlot.hPlot2(i,3))
+        text(0.2,0.3,'cOri 1 = cOri 2','color','k','fontWeight','bold','fontSize',6,'unit','normalized','parent',hPlot.hPlot2(i,3))
     end
     set(hPlot.hPlot2(i,3),'fontSize',12,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
     if i==3
@@ -608,13 +636,28 @@ end
 
 % energy data: con_Ori2 (rows) x con_Ori2 (columns)
 
-clear energyDataST energyDataBL NI_population_energyAbsolute NI_population_energyRelative
+clear energyDataST energyDataBL NI_population_energy Absolute NI_population_energyRelative
 energyDataST = squeeze(mean(data.analysisDataST{4},1));
 energyDataBL = squeeze(mean(data.analysisData_cBL{4},1));
 
 %     sem_EnergyDataST = squeeze(std(squeeze(data.analysisDataST{i}),[],1)./sqrt(size(data.analysisDataST{i},1)));
 dEnergyData = 10*(energyDataST - energyDataBL); %across elecs
 sem_dEnergyData = squeeze(std(10*(data.analysisDataST{4}-data.analysisDataBL{4}),[],1)./sqrt(size(data.analysisDataST{4},1)));
+
+% SSVEP power for two orthogonal pairs gratings when presented alone (or when the contrast of the other grating is 0%) 
+dEnergyData_elecwise = 10*(data.analysisDataST{4} - data.analysisData_cBL{4});
+
+for iElec = 1:size(data.analysisDataST{4},1)
+    avg_dEnergyData_elecwise(iElec,:) = (squeeze(dEnergyData_elecwise(iElec,end,:))' + flip(squeeze(dEnergyData_elecwise(iElec,:,1))))/2;
+    sum_dEnergyData_elecwise(iElec,:) = squeeze(dEnergyData_elecwise(iElec,end,:))' + flip(squeeze(dEnergyData_elecwise(iElec,:,1)));
+end
+
+avg_dEnergyData = mean(avg_dEnergyData_elecwise,1);
+sem_avg_dEnergyData = std(avg_dEnergyData_elecwise,[],1)./sqrt(size(avg_dEnergyData_elecwise,1));
+
+sum_dEnergyData = mean(sum_dEnergyData_elecwise,1);
+sem_sum_dEnergyData = std(sum_dEnergyData_elecwise,[],1)./sqrt(size(sum_dEnergyData_elecwise,1));
+
 
 % computing N.I. population
 for iElec= 1:size(data.analysisDataST{4},1)
@@ -659,7 +702,13 @@ imagesc(dEnergyData,'parent',hPlot.hPlot2(2));
 errorbar(cValsUnique,dEnergyData(end,:),sem_dEnergyData(end,:),...
     'Marker','o','LineWidth',2,'color',colors(end,:,:),'parent',hPlot.hPlot2(3))
 hold(hPlot.hPlot2(3),'on');
+errorbar(cValsUnique,flip(dEnergyData(:,1)),sem_dEnergyData(:,1),...
+    'Marker','o','LineWidth',2,'color',colors(1,:,:),'parent',hPlot.hPlot2(3))
 errorbar(cValsUnique,diag(flipud(dEnergyData)),diag(flipud(sem_dEnergyData)),'Marker','o','LineWidth',2,'color','k','parent',hPlot.hPlot2(3));
+errorbar(cValsUnique,avg_dEnergyData,sem_avg_dEnergyData,'Marker','o','LineStyle','--','LineWidth',2,'color',[0.5 0.5 0.5],'parent',hPlot.hPlot2(3));
+errorbar(cValsUnique,sum_dEnergyData,sem_sum_dEnergyData,'Marker','o','LineStyle','--','LineWidth',2,'color',[0.8 0.8 0.8],'parent',hPlot.hPlot2(3));
+
+
 hold(hPlot.hPlot2(3),'off');
 
 % Seeting axes properties
@@ -679,7 +728,7 @@ for i = 1:length(cValsUnique)
     set(hPlot.hPlot1(2,i),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 end
 
-% Color coded Plots of Spike Rates
+% Color coded Plots of SSVEP
 
 colorBar_absPSD = colorbar(hPlot.hPlot2(1)); 
 colorYlabelHandle = get(colorBar_absPSD,'Ylabel');
@@ -706,8 +755,11 @@ xlabel(hPlot.hPlot2(2),'Contrast of Ori 1(%)');ylabel(hPlot.hPlot2(2),'Contrast 
 
 
 % % CRF
-text(0.5,0.2,'cOri 2: 0%','color',colors(end,:,:),'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(3))
-text(0.5,0.1,'cOri 1 = cOri 2','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.5,0.05,'cOri 2: 0%','color',colors(end,:,:),'fontWeight','bold','fontSize',8,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.5,0.1,'cOri 1: 0%','color',colors(1,:,:),'fontWeight','bold','fontSize',8,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.5,0.2,'avg','color',[0.5 0.5 0.5],'fontWeight','bold','fontSize',8,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.5,0.25,'sum','color',[0.8 0.8 0.8],'fontWeight','bold','fontSize',8,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.5,0.15,'cOri 1 = cOri 2','color','k','fontWeight','bold','fontSize',8,'unit','normalized','parent',hPlot.hPlot2(3))
 set(hPlot.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(3),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
 xlabel(hPlot.hPlot2(3),'Contrast of Ori 1(%)');ylabel(hPlot.hPlot2(3),'Change in Power(dB)');
