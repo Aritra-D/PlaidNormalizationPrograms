@@ -473,9 +473,9 @@ for i = 1: num_freqRanges
     % dEnergy data for two orthogonal pairs gratings when presented alone (or when the contrast of the other grating is 0%) 
     dEnergyData_elecwise = 10*(data.analysisDataST{i} - data.analysisData_cBL{i});
     
-    for iElec = 1:size(data.analysisDataST{4},1)
-        avg_dEnergyData_elecwise(iElec,:) = (abs(squeeze(dEnergyData_elecwise(iElec,end,:))') + abs(flip(squeeze(dEnergyData_elecwise(iElec,:,1)))))/2;
-        sum_dEnergyData_elecwise(iElec,:) = abs(squeeze(dEnergyData_elecwise(iElec,end,:))') + abs(flip(squeeze(dEnergyData_elecwise(iElec,:,1))));
+    for iElec = 1:size(data.analysisDataST{i},1)
+        avg_dEnergyData_elecwise(iElec,:) = (squeeze(dEnergyData_elecwise(iElec,end,:))' + flip(squeeze(dEnergyData_elecwise(iElec,:,1))))/2;
+        sum_dEnergyData_elecwise(iElec,:) = squeeze(dEnergyData_elecwise(iElec,end,:))' + flip(squeeze(dEnergyData_elecwise(iElec,:,1)));
     end
     
     avg_dEnergyData = mean(avg_dEnergyData_elecwise,1);
