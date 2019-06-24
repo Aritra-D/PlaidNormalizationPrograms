@@ -785,7 +785,7 @@ folderExtract = fullfile(folderName,'extractedData');
 folderSegment = fullfile(folderName,'segmentedData');
 folderLFP = fullfile(folderSegment,'LFP');
 folderSpikes = fullfile(folderSegment,'Spikes');
-folderSave = fullfile(folderSourceString,'Projects\PlaidNormalizationProject\savedData');
+folderSave = fullfile(folderSourceString,'Projects\Aritra_PlaidNormalizationProject\savedData');
 folderSave_oriTuning = fullfile(tuningProtocol_folderName,'savedData');
 
 if ~exist(folderSave,'dir')

@@ -117,9 +117,9 @@ function goodElectrodes = getRateAndSNRInfo(monkeyName,expDate,protocolName,fold
 % Modification - We allow different intervals for computation of firing
 % rates.
 if versionNum == 1
-    folderSave = fullfile(strtok(folderSourceString,'\'),'Projects\PlaidNormalizationProject\snrAndRatesPlaidNorm');
+    folderSave = fullfile(strtok(folderSourceString,'\'),'Projects\Aritra_PlaidNormalizationProject\snrAndRatesPlaidNorm');
 elseif versionNum == 2
-    folderSave = fullfile(strtok(folderSourceString,'\'),'Projects\PlaidNormalizationProject\snrAndRatesPlaidNormV2');
+    folderSave = fullfile(strtok(folderSourceString,'\'),'Projects\Aritra_PlaidNormalizationProject\snrAndRatesPlaidNormV2');
 end
 fileSaveFR = fullfile(folderSave,[monkeyName expDate protocolName 'unsortedSpikeCountsAndRatesPlaidNorm' num2str(round(1000*timeRangeFRComputation(1))) '_' num2str(round(1000*timeRangeFRComputation(2))) '.mat']);
 if exist(fileSaveFR,'file')
