@@ -9,9 +9,9 @@ if ~exist('OrientationTuningFlag','var');               OrientationTuningFlag = 
 % in 8 steps of 22.5 degrees)
 
 if strcmp(getenv('computername'),'RAYLABPC-ARITRA')
-    dataFolderSourceString = 'E:\';
+    dataFolderSourceString = 'E:\data\PlaidNorm';
 else
-    dataFolderSourceString = 'M:\Data\PlaidNorm';
+    dataFolderSourceString = 'M:\CommonData\Non_Standard\PlaidNorm';
 end
 
 if strcmp(monkeyName,'alpaH')
