@@ -1,3 +1,12 @@
+% This program displays results of Normalization experiments
+% for different neural measures - spikes / LFP (alpha, gamma or SSVEP power)
+% for a single session or all sessions for a single monkey or both monkeys
+% based on options selected in the GUI panel
+
+% Response matrix is drawn in such a way that rows correspond to increasing 
+% contrasts of component Grating 1 in positive y direction and columns 
+% correspond to contrasts of component Grating 2 in positive x direction
+
 function displayNormalizationData(folderSourceString)
 
 if ~exist('folderSourceString','var') 

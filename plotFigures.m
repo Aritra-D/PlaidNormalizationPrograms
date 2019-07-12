@@ -1,6 +1,6 @@
 function plotFigures(monkeyName,folderSourceString,timeRangeForComputation)
 if ~exist('folderSourceString','var') 
-   folderSourceString = 'M:\Data\PlaidNorm\';
+   folderSourceString = 'E:\data\PlaidNorm\';
 end
 close all; % closes any open figure to avoid any overlaying issues
 
@@ -16,7 +16,7 @@ normalizateSpikeDataFlag = 0;
 
 % Fixed parameters
 folderSourceString_Project = strtok(folderSourceString,'\');
-folderSave = fullfile(folderSourceString_Project,'Projects\PlaidNormalizationProject\savedData_Figures');
+folderSave = fullfile(folderSourceString_Project,'Projects\Aritra_PlaidNormalizationProject\savedData_Figures');
 if ~exist(folderSave,'dir')
     mkdir(folderSave)
 end
@@ -119,10 +119,10 @@ else
 end
 
 % Put plot Functions for figures 1,3
-plotData_spikes(hPlotsFig1,firingRateData,normalizateSpikeDataFlag) % spikes for static gratings, Fig 1
+plotData_spikes(hPlotsFig1,firingRateData,timeRangeForComputation,normalizateSpikeDataFlag) % spikes for static gratings, Fig 1
 rescaleData(hPlotsFig1.hPlot1,-0.1,0.5,getYLims(hPlotsFig1.hPlot1),14);
 rescaleData(hPlotsFig1.hPlot2(3),0,50,getYLims(hPlotsFig1.hPlot2(3)),14);
-folderSave_Figs = fullfile(folderSourceString_Project,'Projects\PlaidNormalizationProject\Figures');
+folderSave_Figs = fullfile(folderSourceString_Project,'Projects\Aritra_PlaidNormalizationProject\Figures');
 if ~exist(folderSave_Figs,'dir')
     mkdir(folderSave_Figs)
 end
@@ -255,7 +255,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function plotData_spikes(hPlot,data,NormalizeDataFlag)
+function plotData_spikes(hPlot,data,timeRangeForComputation,NormalizeDataFlag)
 
 cValsUnique = [0 12.5 25 50 100]/2;
 cValsUnique2 = [0 12.5 25 50 100]/2;
@@ -336,7 +336,7 @@ set(hPlot.hPlot1(1),'YLim',[0 90]);
 tickLengthPlot = 2*get(hPlot.hPlot1(1),'TickLength');
 xlabel(hPlot.hPlot1(1),'Time (s)')
 ylabel(hPlot.hPlot1(1),'Spike rate(spike/s)')
-displayRange(hPlot.hPlot1,[0.2 0.4],getYLims(hPlot.hPlot1),'k');
+displayRange(hPlot.hPlot1,[timeRangeForComputation(1) timeRangeForComputation(2)],getYLims(hPlot.hPlot1),'k');
 
 
 for i = 1:length(cValsUnique)
