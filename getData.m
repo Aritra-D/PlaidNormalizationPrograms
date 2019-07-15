@@ -94,7 +94,7 @@ folderExtract = fullfile(folderName,'extractedData');
 folderSegment = fullfile(folderName,'segmentedData');
 folderLFP = fullfile(folderSegment,'LFP');
 folderSpikes = fullfile(folderSegment,'Spikes');
-folderSave = fullfile(folderSourceString,'Projects\PlaidNormalizationProject\savedDataV2');
+folderSave = fullfile(strtok(folderSourceString,'\'),'Projects\Aritra_PlaidNormalizationProject\savedDataV2');
 folderSave_oriTuning = fullfile(tuningProtocol_folderName,'savedData');
 
 if ~exist(folderSave,'dir')
@@ -468,7 +468,7 @@ end
 function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
     for iElec = 1:length(elecs_neededtoFlipped)
         for iTF = 1:2
-            disp ([num2str(iElec), ' ' num2str(iTF)])
+            disp (['elec: ' num2str(iElec), ', TF: ' num2str(iTF)])
             if numel(fieldnames(data)) == 6
                 if iTF == 1
                     data.data(elecs_neededtoFlipped(iElec),:,:,:,:) = flip(flip(permute(squeeze(data.data(elecs_neededtoFlipped(iElec),:,:,:,:)),[2 1 3]),1),2);
@@ -482,14 +482,14 @@ function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
     end
     
     if ~iscell(data.analysisDataBL) && ~iscell(data.analysisDataST)
-        data.analysisDataBL(elecs_neededtoFlipped(iElec),:,:) = flip(flip(permute(squeeze(data.analysisDataBL(elecs_neededtoFlipped(iElec),:,:)),[2 1]),1),2);
-        data.analysisData_cBL(elecs_neededtoFlipped(iElec),:,:) = flip(flip(permute(squeeze(data.analysisData_cBL(elecs_neededtoFlipped(iElec),:,:)),[2 1]),1),2);
-        data.analysisDataST(elecs_neededtoFlipped(iElec),:,:) = flip(flip(permute(squeeze(data.analysisDataST(elecs_neededtoFlipped(iElec),:,:)),[2 1]),1),2);
+        data.analysisDataBL(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisDataBL(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
+        data.analysisData_cBL(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
+        data.analysisDataST(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisDataST(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
     elseif iscell(data.analysisDataBL) && iscell(data.analysisDataST)
         for iCell = 1:length(data.analysisDataBL)
-            data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),:,:) = flip(flip(permute(squeeze(data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),:,:)),[2 1]),1),2);
-            data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),:,:) = flip(flip(permute(squeeze(data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),:,:)),[2 1]),1),2);
-            data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),:,:) = flip(flip(permute(squeeze(data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),:,:)),[2 1]),1),2);
+            data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
+            data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
+            data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
         end
     end
 end
