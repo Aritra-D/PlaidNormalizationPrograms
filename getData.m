@@ -479,17 +479,18 @@ function data = segregate_Pref_Null_data(data,elecs_neededtoFlipped)
                 data.dataST(elecs_neededtoFlipped(iElec),iTF,:,:,:) = flip(flip(permute(squeeze(data.dataST(elecs_neededtoFlipped(iElec),iTF,:,:,:)),[2 1 3]),1),2);
             end
         end
-    end
     
-    if ~iscell(data.analysisDataBL) && ~iscell(data.analysisDataST)
-        data.analysisDataBL(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisDataBL(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
-        data.analysisData_cBL(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
-        data.analysisDataST(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisDataST(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
-    elseif iscell(data.analysisDataBL) && iscell(data.analysisDataST)
-        for iCell = 1:length(data.analysisDataBL)
-            data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
-            data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
-            data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
+    
+        if ~iscell(data.analysisDataBL) && ~iscell(data.analysisDataST)
+            data.analysisDataBL(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisDataBL(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
+            data.analysisData_cBL(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
+            data.analysisDataST(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisDataST(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
+        elseif iscell(data.analysisDataBL) && iscell(data.analysisDataST)
+            for iCell = 1:length(data.analysisDataBL)
+                data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisDataBL{iCell}(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
+                data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisData_cBL{iCell}(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
+                data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),:,:,:) = flip(flip(permute(squeeze(data.analysisDataST{iCell}(elecs_neededtoFlipped(iElec),:,:,:)),[2 1]),1),2);
+            end
         end
     end
 end

@@ -110,13 +110,15 @@ fileSave1 = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2s
 if exist(fileSave1,'file')
     disp(['Loading file ' fileSave1]);
     load(fileSave1);
-    NI_Data_allElecsInduced = NI_Data; %#ok<NODEF>
 else
     % get Data all Session for monkey(s) for all Electrodes
     [erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,~] = ...
     getData(folderSourceString,fileNameStringListAll,electrodeList_All,timeRangeParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); %#ok<ASGLU>
     save(fileSave1,'erpData','firingRateData','fftData','energyData','oriTuningData','NI_Data')
 end
+
+NI_Data_allElecsInduced = NI_Data;
+
 
 % Put plot Functions for figures 1,3
 plotData_spikes(hPlotsFig1,firingRateData,timeRangeForComputation,normalizateSpikeDataFlag) % spikes for static gratings, Fig 1
@@ -168,7 +170,6 @@ fileSave2 = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2s
 if exist(fileSave2,'file')
     disp(['Loading file ' fileSave2]);
     load(fileSave2);
-    NI_Data_OriTunedElecs = NI_Data;
 else
     % get Data all Session for particular monkey or both combined for 
     % ori-tuned Electrodes
@@ -177,8 +178,11 @@ else
     save(fileSave2,'erpData','firingRateData','fftData','energyData','oriTuningData','NI_Data')
 end
 
+NI_Data_OriTunedElecs = NI_Data;
+
+
 % Plotting Functions
-plotData_spikes(hPlotsFig2,firingRateData,normalizateSpikeDataFlag) % spikes for static gratings from ori-selective electrodes, Fig 1
+plotData_spikes(hPlotsFig2,firingRateData,timeRangeForComputation,normalizateSpikeDataFlag) % spikes for static gratings from ori-selective electrodes, Fig 1
 rescaleData(hPlotsFig2.hPlot1,-0.1,0.5,getYLims(hPlotsFig2.hPlot1),14);
 rescaleData(hPlotsFig2.hPlot2(3),0,50,getYLims(hPlotsFig2.hPlot2(3)),14);
 FigName2 = fullfile(folderSave_Figs,['Figure 2_' monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) '_oriTunedElecs'...
@@ -206,7 +210,6 @@ fileSave3 = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2s
 if exist(fileSave3,'file')
     disp(['Loading file ' fileSave3]);
     load(fileSave3);
-    NI_Data_allElecsEvoked = NI_Data;
 else
     oriSelectiveFlag = 0;
     % get Data all Session for particular monkey or both combined for all
@@ -215,6 +218,9 @@ else
     getData(folderSourceString,fileNameStringListAll,electrodeList_All,timeRangeParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); %#ok<ASGLU>
     save(fileSave3,'erpData','firingRateData','fftData','energyData','oriTuningData','NI_Data')
 end
+
+NI_Data_allElecsEvoked = NI_Data;
+
 
 plotData_SSVEP(hPlotsFig4,energyData) % SSVEP Evoked, Fig 4;
 rescaleData(hPlotsFig4.hPlot1,0,24,getYLims(hPlotsFig4.hPlot1),14);
