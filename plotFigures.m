@@ -6,10 +6,12 @@ close all; % closes any open figure to avoid any overlaying issues
 
 % Variable Parameters
 spikeCutoff = 20;
-snrCutoff = 2;
+snrCutoff = 2.5;
 % timeRangeForComputation = [0.25 0.5]; % expressed in second
 timeRangeForComputationBL = -0.05+[-diff(timeRangeForComputation) 0];
 dRange = [0 0.75];
+getSpikeElectrodesFlag = 1;
+unitID = 0;
 tapers_MT = [1 1]; % parameters for MT analysis
 removeERPFlag = 1;
 normalizateSpikeDataFlag = 0;
@@ -99,7 +101,7 @@ fileNameStringListAll = getFileNameStringList(monkeyName,gridType);
 %%%%%%%%%%%%%%%%%%%%% Get data for all Good Electrodes %%%%%%%%%%%%%%%%%%%%
 disp('all Electrodes:')
 oriSelectiveFlag = 0;
-electrodeList_All = getElectrodesList(fileNameStringListAll,oriSelectiveFlag,folderSourceString);
+electrodeList_All = getElectrodesList(fileNameStringListAll,spikeCutoff,snrCutoff,oriSelectiveFlag,folderSourceString);
 
 fileSave1 = fullfile(folderSave,[monkeyName '_N' num2str(spikeCutoff) '_S' num2str(snrCutoff) '_allElecs'...
     '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
@@ -156,7 +158,7 @@ saveas(hFigure3,[FigName3,'.tif'])
 %%%%%%%%%%%% Get data for Orientation selective Good Electrodes %%%%%%%%%%%
 disp('Orientation-Tuned Electrodes:')
 oriSelectiveFlag = 1; % Fig 2 spike data for orientation selective elecs
-electrodeList_OriTuned = getElectrodesList(fileNameStringListAll,oriSelectiveFlag,folderSourceString);
+electrodeList_OriTuned = getElectrodesList(fileNameStringListAll,spikeCutoff,snrCutoff,oriSelectiveFlag,folderSourceString);
 
 clear erpData firingRateData fftData energyData NI_Data % clear data for all Elecs
 
@@ -877,7 +879,7 @@ end
 end
 
 % Get ElectrodesList
-function ElectrodeArrayListAll = getElectrodesList(fileNameStringTMP,oriSelectiveFlag,folderSourceString)
+function ElectrodeArrayListAll = getElectrodesList(fileNameStringTMP,spikeCutoff,snrCutoff,oriSelectiveFlag,folderSourceString)
 
 % [~,tmpElectrodeArrayList,~] = getGoodElectrodesDetails(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
 

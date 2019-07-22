@@ -2,13 +2,27 @@ function[erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electro
     getData(folderSourceString,fileNameStringTMP,ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod)
 
 numDatasets = length(fileNameStringTMP);
-disp(['Working on dataset 1 of ' num2str(numDatasets)]);
-[erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray]...
-= getDataSingleSession(folderSourceString,fileNameStringTMP{1},...
-ElectrodeListTMP{1},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); 
+dataset_init = 1;
+
+% if ~isempty(ElectrodeListTMP{dataset_init}{end})
+%     disp(['Working on dataset 1 of ' num2str(numDatasets)]);
+%     [erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray]...
+%     = getDataSingleSession(folderSourceString,fileNameStringTMP{1},...
+%     ElectrodeListTMP{dataset_init},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); 
+% else
+%     i = 1;
+    while isempty(ElectrodeListTMP{dataset_init}{end})
+        dataset_init= dataset_init+1;
+    end
+%     dataset_init = i;
+    disp(['Working on dataset ' num2str(dataset_init) 'of ' num2str(numDatasets)]);
+    [erpData,firingRateData,fftData,energyData,oriTuningData,NI_Data,electrodeArray]...
+    = getDataSingleSession(folderSourceString,fileNameStringTMP{dataset_init},...
+    ElectrodeListTMP{dataset_init},dataParameters,tapers_MT,freqRanges,oriSelectiveFlag,LFPdataProcessingMethod); 
+% end
 
 if length(fileNameStringTMP)>1
-    for i=2:numDatasets
+    for i= dataset_init+1:numDatasets
         if isempty(ElectrodeListTMP{i}{end})
            continue
         end
