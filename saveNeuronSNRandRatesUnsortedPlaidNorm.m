@@ -24,7 +24,7 @@ for i=1:numDays
     expDate = expDates{i};
     protocolName = protocolNames{i};
     disp([expDate protocolName]);
-
+    
     saveSpikeCountsAllElectrodes(monkeyName,expDate,protocolName,folderSourceString,gridType,folderSave,stimulusPeriod,versionNum);
     saveSNRFromSegments(monkeyName,expDate,protocolName,folderSourceString,folderSave);
 end
@@ -45,19 +45,19 @@ for i=1:length(segmentChannelsStored)
     
     uniqueIDs = unique(unitID);
     for j=1:length(uniqueIDs)
-    [snr(i),meanSpike(i,:),N(i),signal(i),noise(i)] = getSNR(segmentData(:,unitID==uniqueIDs(j))); %#ok<*NODEF>
-    disp(['ElecNum: ' num2str(segmentChannelsStored(i)) ', SNR Count: ' num2str(length(snr))])
-    segmentElectrodeList(i) = segmentChannelsStored(i);
-    segmentUnitList(i)      =  uniqueIDs(j);  %#ok<*AGROW,*NASGU>
-%     count=count+1;
+        [snr(i),meanSpike(i,:),N(i),signal(i),noise(i)] = getSNR(segmentData(:,unitID==uniqueIDs(j))); %#ok<*NODEF>
+        disp(['ElecNum: ' num2str(segmentChannelsStored(i)) ', SNR Count: ' num2str(length(snr))])
+        segmentElectrodeList(i) = segmentChannelsStored(i);
+        segmentUnitList(i)      =  uniqueIDs(j);  %#ok<*AGROW,*NASGU>
+        %     count=count+1;
     end
-%     for j=1:length(uniqueIDs)
-%         [snr(count),meanSpike(count,:),N(count),signal(count),noise(count)] = getSNR(segmentData(:,unitID==uniqueIDs(j))); %#ok<*NODEF>
-%         disp(['ElecNum: ' num2str(segmentChannelsStored(i)) ', SNR Count: ' num2str(length(snr))])
-%         segmentElectrodeList(count) = segmentChannelsStored(i);
-%         segmentUnitList(count)      =  uniqueIDs(j);  %#ok<*AGROW,*NASGU>
-%         count=count+1;
-%     end
+    %     for j=1:length(uniqueIDs)
+    %         [snr(count),meanSpike(count,:),N(count),signal(count),noise(count)] = getSNR(segmentData(:,unitID==uniqueIDs(j))); %#ok<*NODEF>
+    %         disp(['ElecNum: ' num2str(segmentChannelsStored(i)) ', SNR Count: ' num2str(length(snr))])
+    %         segmentElectrodeList(count) = segmentChannelsStored(i);
+    %         segmentUnitList(count)      =  uniqueIDs(j);  %#ok<*AGROW,*NASGU>
+    %         count=count+1;
+    %     end
 end
 
 % Save
@@ -84,8 +84,8 @@ neuralChannelsStored = sort(neuralChannelsStored);
 numElectrodes = length(neuralChannelsStored);
 disp('Computing Spike Counts')
 
-cListFlipped_Ori1 = flip(1:length(cValsUnique)); 
-cListFlipped_Ori2 = flip(1:length(cValsUnique2)); 
+cListFlipped_Ori1 = flip(1:length(cValsUnique));
+cListFlipped_Ori2 = flip(1:length(cValsUnique2));
 
 for i=1:numElectrodes
     clear spikeData
@@ -96,14 +96,14 @@ for i=1:numElectrodes
         
         for c_Ori1=1:length(cValsUnique)
             for c_Ori2=1:length(cValsUnique2)
-            clear goodPos goodPos2
-            goodPos = parameterCombinations{1,1,1,1,1,cListFlipped_Ori1(c_Ori1),1}; %#ok<USENS>
-            goodPos2 = parameterCombinations2{1,1,1,1,1,c_Ori2,1}; %#ok<USENS>
-            goodPos = intersect(goodPos,goodPos2);
-            goodPos = setdiff(goodPos,badTrials);
-
-            nStim(i,c_Ori1,c_Ori2) = sum(getSpikeCounts(spikeData(goodPos),stimulusPeriod));
-            frStim(i,c_Ori1,c_Ori2) = (nStim(i,c_Ori1,c_Ori2)/length(goodPos))/diff(stimulusPeriod);
+                clear goodPos goodPos2
+                goodPos = parameterCombinations{1,1,1,1,1,cListFlipped_Ori1(c_Ori1),1}; %#ok<USENS>
+                goodPos2 = parameterCombinations2{1,1,1,1,1,c_Ori2,1}; %#ok<USENS>
+                goodPos = intersect(goodPos,goodPos2);
+                goodPos = setdiff(goodPos,badTrials);
+                
+                nStim(i,c_Ori1,c_Ori2) = sum(getSpikeCounts(spikeData(goodPos),stimulusPeriod));
+                frStim(i,c_Ori1,c_Ori2) = (nStim(i,c_Ori1,c_Ori2)/length(goodPos))/diff(stimulusPeriod);
             end
         end
         
@@ -112,11 +112,11 @@ for i=1:numElectrodes
         for c_Ori2=1:length(cValsUnique2)
             for c_Ori1=1:length(cValsUnique)
                 clear goodPos goodPos2
-                goodPos = parameterCombinations{1,1,1,1,1,c_Ori1,1}; 
+                goodPos = parameterCombinations{1,1,1,1,1,c_Ori1,1};
                 goodPos2 = parameterCombinations2{1,1,1,1,1,cListFlipped_Ori2(c_Ori2),1};
                 goodPos = intersect(goodPos,goodPos2);
                 goodPos = setdiff(goodPos,badTrials);
-
+                
                 nStim(i,c_Ori2,c_Ori1) = sum(getSpikeCounts(spikeData(goodPos),stimulusPeriod));
                 frStim(i,c_Ori2,c_Ori1) = (nStim(i,c_Ori2,c_Ori1)/length(goodPos))/diff(stimulusPeriod);
             end
@@ -125,8 +125,8 @@ for i=1:numElectrodes
     end
     % For baseline, we combine all contrasts
     clear goodPos goodPos2
-    goodPos = parameterCombinations{1,1,1,1,1,6,1}; 
-    goodPos2 = parameterCombinations2{1,1,1,1,1,6,1}; 
+    goodPos = parameterCombinations{1,1,1,1,1,6,1};
+    goodPos2 = parameterCombinations2{1,1,1,1,1,6,1};
     goodPos = intersect(goodPos,goodPos2);
     goodPos = setdiff(goodPos,badTrials);
     nBL(i)  = sum(getSpikeCounts(spikeData(goodPos),baselinePeriod));

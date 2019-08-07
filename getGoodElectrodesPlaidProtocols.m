@@ -1,6 +1,5 @@
-% Electrode selection. Originally it was part of displayAttentionDataV2,
-% but was made a separate program to get the list of good electrodes for
-% energy computation.
+% Electrode selection. This displays all the good Electrodes for selected
+% criteria for Plaid Normalization Project
 
 function [allGoodElectrodes,allDaysToCombine,allGoodElectrodesStr,goodElectrodes,goodDays] = getGoodElectrodesPlaidProtocols(monkeyName,versionNum,gridType,dRange,combineUniqueElectrodeData,getSpikeElectrodesFlag,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList)
 
@@ -22,7 +21,7 @@ impedanceCutoff=2500;
 allUsefulElectrodes  = [];
 allDayIndices        = [];
 
-[expDates,protocolNames,positionList,~,dataFolderSourceString] = dataInformationPlaidNorm(monkeyName,gridType,0); % OrientationTuningFlag set to zero 
+[expDates,protocolNames,positionList,~,dataFolderSourceString] = dataInformationPlaidNorm(monkeyName,gridType,0); % OrientationTuningFlag set to zero
 
 numDays = length(expDates);
 
@@ -31,7 +30,7 @@ numDays = length(expDates);
 badElectrodeListAllDays = [];
 for i=1:numDays
     expDate = expDates{i};
-
+    
     % badElectrodes
     load(fullfile(dataFolderSourceString,'data',monkeyName,gridType,expDate, 'impedanceValues.mat'));
     badElectrodeListAllDays = cat(2,badElectrodeListAllDays,find(impedanceValues>impedanceCutoff));
@@ -45,7 +44,7 @@ electrodeList = highRMSElectrodes(find(highRMSElectrodes<=81));
 
 for i=1:numDays
     a=positionList(1); e=positionList(2);
-
+    
     clear d
     for j=1:length(electrodeList)
         azi = rfStats(electrodeList(j)).meanAzi;
@@ -73,7 +72,7 @@ goodElectrodes = allUsefulElectrodes;
 goodDays       = allDayIndices;
 
 disp([num2str(length(goodElectrodes)) ' good electrodes, ' num2str(length(unique(goodElectrodes))) ' unique.']);
-clear allGoodElectrodes allDaysToCombine allGoodElectrodesStr 
+clear allGoodElectrodes allDaysToCombine allGoodElectrodesStr
 if combineUniqueElectrodeData
     allUniqueGoodElectrodes  = unique(goodElectrodes);
     
@@ -113,9 +112,9 @@ function goodElectrodes = getRateAndSNRInfo(monkeyName,expDate,protocolName,data
 
 ProjectFolderSourceString = strtok(dataFolderSourceString,'\');
 if versionNum == 1
-    folderSave = fullfile(ProjectFolderSourceString,'Projects\PlaidNormalizationProject\snrAndRatesPlaidNorm\');
+    folderSave = fullfile(ProjectFolderSourceString,'Projects\Aritra_PlaidNormalizationProject\snrAndRatesPlaidNorm\');
 elseif versionNum == 2
-    folderSave = fullfile(ProjectFolderSourceString,'Projects\PlaidNormalizationProject\snrAndRatesPlaidNormV2\');
+    folderSave = fullfile(ProjectFolderSourceString,'Projects\Aritra_PlaidNormalizationProject\snrAndRatesPlaidNormV2\');
 end
 
 fileSaveFR = fullfile(folderSave,[monkeyName expDate protocolName 'unsortedSpikeCountsAndRatesPlaidNorm' num2str(round(1000*timeRangeFRComputation(1))) '_' num2str(round(1000*timeRangeFRComputation(2))) '.mat']);
@@ -125,9 +124,16 @@ else
 end
 y=load(fullfile(folderSave,[monkeyName expDate protocolName 'unsortedSNR.mat']));
 
-goodPos = (x.SourceUnitID==unitID)&...
-          ((x.nStim(:,contrastIndexList{1}(1),contrastIndexList{1}(2))'>spikeCutoff)|...
-          (x.nStim(:,contrastIndexList{2}(1),contrastIndexList{2}(2))'>spikeCutoff))&...
-          ((y.snr>snrCutoff)==1);goodElectrodes = x.neuralChannelsStored(goodPos);
+goodPos1 = (x.SourceUnitID==unitID)&...
+    ((x.nStim(:,contrastIndexList{1}(1),contrastIndexList{1}(2))'>spikeCutoff)|...
+    (x.nStim(:,contrastIndexList{2}(1),contrastIndexList{2}(2))'>spikeCutoff))&...
+    ((y.snr>snrCutoff)==1);
+
+goodPos2 = (x.SourceUnitID==unitID)&...
+    ((x.frStim(:,1,1)'+ x.frStim(:,5,5)')<= 2.*x.frStim(:,1,5)')&...
+    (y.snr>snrCutoff==1);
+
+goodPos = intersect(goodPos1,goodPos2);
+
 goodElectrodes = x.neuralChannelsStored(goodPos);
 end
