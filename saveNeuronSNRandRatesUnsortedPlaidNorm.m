@@ -10,9 +10,9 @@ numDays = length(expDates);
 
 folderSourceString = strtok(datafolderSourceString,'\');
 if versionNum == 1
-    folderSave = fullfile(folderSourceString,'Projects\PlaidNormalizationProject\snrAndRatesPlaidNorm');
+    folderSave = fullfile(folderSourceString,'Projects\Aritra_PlaidNormalizationProject\snrAndRatesPlaidNorm');
 elseif versionNum == 2
-    folderSave = fullfile(folderSourceString,'Projects\PlaidNormalizationProject\snrAndRatesPlaidNormV2');
+    folderSave = fullfile(folderSourceString,'Projects\Aritra_PlaidNormalizationProject\snrAndRatesPlaidNormV2');
 end
 
 if ~exist(folderSave,'dir')
@@ -32,7 +32,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function saveSNRFromSegments(monkeyName,expDate,protocolName,folderSourceString,folderSave)
 
-folderSegment = [folderSourceString 'data\' monkeyName '\' 'Microelectrode\' expDate '\' protocolName '\segmentedData\Segments\'];
+folderSegment = [folderSourceString 'data\PlaidNorm\data\' monkeyName '\' 'Microelectrode\' expDate '\' protocolName '\segmentedData\Segments\'];
 load([folderSegment 'segmentInfo.mat']);
 segmentChannelsStored = sort(segmentChannelsStored);
 
@@ -69,16 +69,16 @@ validStimNum = 1;
 baselinePeriod = -0.05+[-diff(stimulusPeriod) 0];
 
 % Get parameter combinations
-load(fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName,'extractedData','parameterCombinations.mat'));
+load(fullfile(folderSourceString,'data\PlaidNorm\data\',monkeyName,gridType,expDate,protocolName,'extractedData','parameterCombinations.mat'));
 % Get bad trials
-badTrialFile = fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName,'segmentedData','badTrials.mat');
+badTrialFile = fullfile(folderSourceString,'data\PlaidNorm\data\',monkeyName,gridType,expDate,protocolName,'segmentedData','badTrials.mat');
 if exist(badTrialFile,'file')
-    load(fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName,'segmentedData','badTrials.mat'));
+    load(fullfile(folderSourceString,'data\PlaidNorm\data\',monkeyName,gridType,expDate,protocolName,'segmentedData','badTrials.mat'));
 else
     [~,badTrials]= findBadTrialsWithLFPv4(monkeyName,expDate,protocolName,folderSourceString,gridType,[45,58,67,68,77],1,6,1000,-2000,[],1,[-0.5 0.5],1); % CheckTheseElectrodes alpa-[8 25 57 66 67] kesari - [45,58,67,68,77]
 end
 % Get Spike Data
-load(fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName,'segmentedData','Spikes','spikeInfo.mat'));
+load(fullfile(folderSourceString,'data\PlaidNorm\data\',monkeyName,gridType,expDate,protocolName,'segmentedData','Spikes','spikeInfo.mat'));
 neuralChannelsStored = sort(neuralChannelsStored);
 
 numElectrodes = length(neuralChannelsStored);
@@ -89,7 +89,7 @@ cListFlipped_Ori2 = flip(1:length(cValsUnique2));
 
 for i=1:numElectrodes
     clear spikeData
-    load(fullfile(folderSourceString,'data',monkeyName,gridType,expDate,protocolName,'segmentedData','Spikes',['elec' num2str(neuralChannelsStored(i)) '_SID' num2str(SourceUnitID(i)) '.mat']));
+    load(fullfile(folderSourceString,'data\PlaidNorm\data\',monkeyName,gridType,expDate,protocolName,'segmentedData','Spikes',['elec' num2str(neuralChannelsStored(i)) '_SID' num2str(SourceUnitID(i)) '.mat']));
     disp(['ElecNum: ' num2str(neuralChannelsStored(i))])
     
     if versionNum == 1

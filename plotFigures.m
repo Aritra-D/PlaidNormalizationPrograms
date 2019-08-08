@@ -299,9 +299,22 @@ FigName5 = fullfile(folderSave_Figs,['Figure 5_' monkeyName '_N' num2str(elecPar
     '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
     '_tapers' num2str(tapers_MT(2)) '_cne' num2str(combineUniqueElectrodeData) ...
     '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID) ]);
-
-saveas(hFigure5,[FigName5 '.fig'])
-saveas(hFigure5,[FigName5,'.tif'])
+% 
+% saveas(hFigure1,[FigName1 '.fig'])
+% saveas(hFigure1,[FigName1,'.tif'])
+% saveas(hFigure4,[FigName4 '.fig'])
+% saveas(hFigure4,[FigName4,'.tif'])
+% saveas(hFigure4,[FigName4 '.fig'])
+% saveas(hFigure4,[FigName4,'.tif'])
+% saveas(hFigure4,[FigName4 '.fig'])
+% saveas(hFigure4,[FigName4,'.tif'])
+% saveas(hFigure4,[FigName4 '.fig'])
+% saveas(hFigure4,[FigName4,'.tif'])
+% 
+% saveas(hFigure4,[FigName4 '.fig'])
+% saveas(hFigure4,[FigName4,'.tif'])
+% saveas(hFigure5,[FigName5 '.fig'])
+% saveas(hFigure5,[FigName5,'.tif'])
 end
 
 

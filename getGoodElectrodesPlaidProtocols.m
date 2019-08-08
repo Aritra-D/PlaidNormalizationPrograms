@@ -1,7 +1,7 @@
 % Electrode selection. This displays all the good Electrodes for selected
 % criteria for Plaid Normalization Project
 
-function [allGoodElectrodes,allDaysToCombine,allGoodElectrodesStr,goodElectrodes,goodDays] = getGoodElectrodesPlaidProtocols(monkeyName,versionNum,gridType,dRange,combineUniqueElectrodeData,getSpikeElectrodesFlag,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList)
+function [allGoodElectrodes,allDaysToCombine,allGoodElectrodesStr,allGoodElectrodesStrArray,goodElectrodes,goodDays,allGoodNs,allGoodSNRs] = getGoodElectrodesPlaidProtocols(monkeyName,versionNum,gridType,dRange,combineUniqueElectrodeData,getSpikeElectrodesFlag,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList)
 
 % if ~exist('folderSourceString','var');               folderSourceString = 'E:\';            end
 if ~exist('gridType','var');                         gridType = 'microelectrode';           end
@@ -20,6 +20,8 @@ if ~exist('dRange', 'var');                          dRange = [0 0.75];         
 impedanceCutoff=2500;
 allUsefulElectrodes  = [];
 allDayIndices        = [];
+allGoodNs = [];
+allGoodSNRs = [];
 
 [expDates,protocolNames,positionList,~,dataFolderSourceString] = dataInformationPlaidNorm(monkeyName,gridType,0); % OrientationTuningFlag set to zero
 
@@ -54,10 +56,12 @@ for i=1:numDays
     end
     
     usefulElectrodes = setdiff(electrodeList(intersect(find(d>=dRange(1)),find(d<dRange(2)))),badElectrodeList);
-    
+    [goodElecs,Ns,SNRs] = getRateAndSNRInfo(monkeyName,expDates{i},protocolNames{i},dataFolderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList,versionNum);
     % If spikes are required, check which electrodes have enough spikes
     if getSpikeElectrodesFlag
-        usefulElectrodes = intersect(usefulElectrodes,getRateAndSNRInfo(monkeyName,expDates{i},protocolNames{i},dataFolderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList,versionNum));
+        usefulElectrodes = intersect(usefulElectrodes,goodElecs);
+        usefulNs = Ns(:,usefulElectrodes);
+        usefulSNRs = SNRs(usefulElectrodes);
     end
     
     if ~isempty(usefulElectrodes)
@@ -65,6 +69,8 @@ for i=1:numDays
         disp(['day' num2str(i) ': electrodes - ' num2str(usefulElectrodes)]);
         allUsefulElectrodes = cat(2,allUsefulElectrodes,usefulElectrodes);
         allDayIndices       = cat(2,allDayIndices,i+zeros(1,length(usefulElectrodes)));
+        allGoodNs = cat(2,allGoodNs,usefulNs);
+        allGoodSNRs = cat(2,allGoodSNRs,usefulSNRs);
     end
 end
 
@@ -97,12 +103,13 @@ else
         thisElectrode = allGoodElectrodes(i);
         allDaysToCombine{i} = goodDays(i);
         allGoodElectrodesStr = [allGoodElectrodesStr 'elec' num2str(thisElectrode) '_' expDates{goodDays(i)} '_' protocolNames{goodDays(i)} '|'];
+        allGoodElectrodesStrArray{i} = ['elec' num2str(thisElectrode) '_' expDates{goodDays(i)} '_' protocolNames{goodDays(i)}];
     end
     allGoodElectrodesStr = [allGoodElectrodesStr 'all'];
 end
 
 end
-function goodElectrodes = getRateAndSNRInfo(monkeyName,expDate,protocolName,dataFolderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList,versionNum)
+function [goodElectrodes,Ns,SNRs] = getRateAndSNRInfo(monkeyName,expDate,protocolName,dataFolderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList,versionNum)
 
 % Good electrodes: >spikeCutoff spikes between 150-400 ms & SNR>snrCutoff
 % Returns all electrodes that meet these criteria
@@ -124,16 +131,21 @@ else
 end
 y=load(fullfile(folderSave,[monkeyName expDate protocolName 'unsortedSNR.mat']));
 
-goodPos1 = (x.SourceUnitID==unitID)&...
+goodPos = (x.SourceUnitID==unitID)&...
     ((x.nStim(:,contrastIndexList{1}(1),contrastIndexList{1}(2))'>spikeCutoff)|...
     (x.nStim(:,contrastIndexList{2}(1),contrastIndexList{2}(2))'>spikeCutoff))&...
     ((y.snr>snrCutoff)==1);
 
-goodPos2 = (x.SourceUnitID==unitID)&...
-    ((x.frStim(:,1,1)'+ x.frStim(:,5,5)')<= 2.*x.frStim(:,1,5)')&...
-    (y.snr>snrCutoff==1);
+% goodPos2 = (x.SourceUnitID==unitID)&...
+%     ((x.frStim(:,1,1)'+ x.frStim(:,5,5)')<= 2.*x.frStim(:,1,5)')&...
+%     (y.snr>snrCutoff==1);
 
-goodPos = intersect(goodPos1,goodPos2);
+% goodPos = intersect(goodPos1,goodPos2);
 
 goodElectrodes = x.neuralChannelsStored(goodPos);
+Ns(1,:) = x.nStim(:,contrastIndexList{1}(1),contrastIndexList{1}(2))';
+Ns(2,:) = x.nStim(:,contrastIndexList{2}(1),contrastIndexList{2}(2))';
+Ns(3,:) = x.nStim(:,contrastIndexList{1}(1),contrastIndexList{2}(2))';
+SNRs = y.snr;
+
 end
