@@ -26,43 +26,43 @@ for i=1:numDays
     disp([expDate protocolName]);
     
     saveSpikeCountsAllElectrodes(monkeyName,expDate,protocolName,folderSourceString,gridType,folderSave,stimulusPeriod,versionNum);
-    saveSNRFromSegments(monkeyName,expDate,protocolName,folderSourceString,folderSave);
+%     saveSNRFromSegments(monkeyName,expDate,protocolName,folderSourceString,folderSave);
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function saveSNRFromSegments(monkeyName,expDate,protocolName,folderSourceString,folderSave)
-
-folderSegment = [folderSourceString 'data\PlaidNorm\data\' monkeyName '\' 'Microelectrode\' expDate '\' protocolName '\segmentedData\Segments\'];
-load([folderSegment 'segmentInfo.mat']);
-segmentChannelsStored = sort(segmentChannelsStored);
-
-disp('Computing SNR')
-count=1;
-
-for i=1:length(segmentChannelsStored)
-    %disp(i);
-    load([folderSegment 'elec' num2str(segmentChannelsStored(i))]);
-    
-    uniqueIDs = unique(unitID);
-    for j=1:length(uniqueIDs)
-        [snr(i),meanSpike(i,:),N(i),signal(i),noise(i)] = getSNR(segmentData(:,unitID==uniqueIDs(j))); %#ok<*NODEF>
-        disp(['ElecNum: ' num2str(segmentChannelsStored(i)) ', SNR Count: ' num2str(length(snr))])
-        segmentElectrodeList(i) = segmentChannelsStored(i);
-        segmentUnitList(i)      =  uniqueIDs(j);  %#ok<*AGROW,*NASGU>
-        %     count=count+1;
-    end
-    %     for j=1:length(uniqueIDs)
-    %         [snr(count),meanSpike(count,:),N(count),signal(count),noise(count)] = getSNR(segmentData(:,unitID==uniqueIDs(j))); %#ok<*NODEF>
-    %         disp(['ElecNum: ' num2str(segmentChannelsStored(i)) ', SNR Count: ' num2str(length(snr))])
-    %         segmentElectrodeList(count) = segmentChannelsStored(i);
-    %         segmentUnitList(count)      =  uniqueIDs(j);  %#ok<*AGROW,*NASGU>
-    %         count=count+1;
-    %     end
-end
-
-% Save
-save([appendIfNotPresent(folderSave,'\') monkeyName expDate protocolName 'unsortedSNR.mat'] ,'snr','meanSpike','N','signal','noise','segmentElectrodeList','segmentUnitList');
-end
+% function saveSNRFromSegments(monkeyName,expDate,protocolName,folderSourceString,folderSave)
+% 
+% folderSegment = [folderSourceString 'data\PlaidNorm\data\' monkeyName '\' 'Microelectrode\' expDate '\' protocolName '\segmentedData\Segments\'];
+% load([folderSegment 'segmentInfo.mat']);
+% segmentChannelsStored = sort(segmentChannelsStored);
+% 
+% disp('Computing SNR')
+% count=1;
+% 
+% for i=1:length(segmentChannelsStored)
+%     %disp(i);
+%     load([folderSegment 'elec' num2str(segmentChannelsStored(i))]);
+%     
+%     uniqueIDs = unique(unitID);
+%     for j=1:length(uniqueIDs)
+%         [snr(i),meanSpike(i,:),N(i),signal(i),noise(i)] = getSNR(segmentData(:,unitID==uniqueIDs(j))); %#ok<*NODEF>
+%         disp(['ElecNum: ' num2str(segmentChannelsStored(i)) ', SNR Count: ' num2str(length(snr))])
+%         segmentElectrodeList(i) = segmentChannelsStored(i);
+%         segmentUnitList(i)      =  uniqueIDs(j);  %#ok<*AGROW,*NASGU>
+%         %     count=count+1;
+%     end
+%     %     for j=1:length(uniqueIDs)
+%     %         [snr(count),meanSpike(count,:),N(count),signal(count),noise(count)] = getSNR(segmentData(:,unitID==uniqueIDs(j))); %#ok<*NODEF>
+%     %         disp(['ElecNum: ' num2str(segmentChannelsStored(i)) ', SNR Count: ' num2str(length(snr))])
+%     %         segmentElectrodeList(count) = segmentChannelsStored(i);
+%     %         segmentUnitList(count)      =  uniqueIDs(j);  %#ok<*AGROW,*NASGU>
+%     %         count=count+1;
+%     %     end
+% end
+% 
+% % Save
+% save([appendIfNotPresent(folderSave,'\') monkeyName expDate protocolName 'unsortedSNR.mat'] ,'snr','meanSpike','N','signal','noise','segmentElectrodeList','segmentUnitList');
+% end
 function saveSpikeCountsAllElectrodes(monkeyName,expDate,protocolName,folderSourceString,gridType,folderSave,stimulusPeriod,versionNum)
 
 validStimNum = 1;
@@ -104,6 +104,8 @@ for i=1:numElectrodes
                 
                 nStim(i,c_Ori1,c_Ori2) = sum(getSpikeCounts(spikeData(goodPos),stimulusPeriod));
                 frStim(i,c_Ori1,c_Ori2) = (nStim(i,c_Ori1,c_Ori2)/length(goodPos))/diff(stimulusPeriod);
+                frStim2(i,c_Ori1,c_Ori2) = mean(getSpikeCounts(spikeData(goodPos),stimulusPeriod))/diff(stimulusPeriod);
+                
             end
         end
         
@@ -119,6 +121,7 @@ for i=1:numElectrodes
                 
                 nStim(i,c_Ori2,c_Ori1) = sum(getSpikeCounts(spikeData(goodPos),stimulusPeriod));
                 frStim(i,c_Ori2,c_Ori1) = (nStim(i,c_Ori2,c_Ori1)/length(goodPos))/diff(stimulusPeriod);
+                frStim2(i,c_Ori2,c_Ori1) = mean(getSpikeCounts(spikeData(goodPos),stimulusPeriod))/diff(stimulusPeriod);
             end
         end
         
@@ -131,9 +134,25 @@ for i=1:numElectrodes
     goodPos = setdiff(goodPos,badTrials);
     nBL(i)  = sum(getSpikeCounts(spikeData(goodPos),baselinePeriod));
     frBL(i) = (nBL(i)/length(goodPos))/diff(baselinePeriod);
+    frBL2(i) = mean(getSpikeCounts(spikeData(goodPos),stimulusPeriod));
+    
+    if versionNum == 1
+        for c_Ori1=1:length(cValsUnique)
+            for c_Ori2=1:length(cValsUnique2)
+                dFR(i,c_Ori1,c_Ori2) = frStim2(i,c_Ori1,c_Ori2) - frBL2(i);
+            end
+        end
+        
+    elseif versionNum == 2
+        for c_Ori2=1:length(cValsUnique2)
+            for c_Ori1=1:length(cValsUnique)
+                dFR(i,c_Ori2,c_Ori1) = frStim2(i,c_Ori2,c_Ori1) - frBL2(i);
+            end
+        end
+    end
     
 end
 
-save(fullfile(folderSave,[monkeyName expDate protocolName 'unsortedSpikeCountsAndRatesPlaidNorm' num2str(round(1000*stimulusPeriod(1))) '_' num2str(round(1000*stimulusPeriod(2))) '.mat']),'nStim','frStim','nBL','frBL','neuralChannelsStored','SourceUnitID');
+save(fullfile(folderSave,[monkeyName expDate protocolName 'unsortedSpikeCountsAndRatesPlaidNorm' num2str(round(1000*stimulusPeriod(1))) '_' num2str(round(1000*stimulusPeriod(2))) '.mat']),'nStim','frStim','frStim2','nBL','frBL','frBL2','dFR','neuralChannelsStored','SourceUnitID');
 
 end
