@@ -3,7 +3,13 @@
 % contrasts of component Grating 2 in positive y direction and columns
 % correspond to contrasts of component Grating 1 in positive x direction
 
-function plotFigures(monkeyName,folderSourceString,timeRangeForComputation,colorScheme)
+% monkeyName can be either 'alpaH','kesariH','all'
+% FolderSourceString is the path of all Extracted dataset
+% timeRangeForComputation is the Stimulus period for which analysis is
+% being performed
+% colorScheme = 'color' or 'grayScale'.
+
+function plotAllFigures(monkeyName,folderSourceString,timeRangeForComputation,combineUniqueElectrodeData,colorScheme)
 if ~exist('folderSourceString','var')
     if strcmp(getenv('username'),'Aritra') || strcmp(getenv('username'),'Lab Computer-Aritra')
         folderSourceString = 'E:\data\PlaidNorm\';
@@ -11,6 +17,7 @@ if ~exist('folderSourceString','var')
         folderSourceString = 'M:\CommonData\Non_Standard\PlaidNorm\';
     end
 end
+
 close all; % closes any open figure to avoid any overlaying issues
 
 % Variable Parameters
@@ -20,23 +27,20 @@ elecParams.dRange = [0 0.75];
 elecParams.unitID = 0;
 elecParams.oriSelectiveFlag = 0;
 elecParams.getSpikeElectrodesFlag = 1;
-% elecParams.NICutOff = 1;
-
-
 tapers_MT = [1 1]; % parameters for MT analysis
 removeERPFlag = 0;
-normalizateSpikeDataFlag = 0;
 
 % Fixed parameters
+gridType = 'Microelectrode';
+normalizateSpikeDataFlag = 0;
 timeRangeForComputationBL = -0.05+[-diff(timeRangeForComputation) 0];
 folderSourceString_Project = strtok(folderSourceString,'\');
+
+% path for Figures to be saved
 folderSave = fullfile(folderSourceString_Project,'Projects\Aritra_PlaidNormalizationProject\savedData_Figures');
 if ~exist(folderSave,'dir')
     mkdir(folderSave)
 end
-gridType = 'Microelectrode';
-combineUniqueElectrodeData = 0;
-
 
 freqRanges{1} = [8 12]; % alpha
 freqRanges{2} = [30 80]; % gamma
@@ -47,23 +51,46 @@ timeRangeParameters.blRange = timeRangeForComputationBL;
 timeRangeParameters.stRange = timeRangeForComputation;
 timeRangeParameters.erpRange = [0.05 0.2];
 
-% if removeERPFlag ==0
-%     LFPdataProcessingMethod = 'Evoked Response';
-% elseif removeERPFlag ==1
-%     LFPdataProcessingMethod = 'Induced Response';
-% end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% display properties %%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Figure 1: Example Single electrode PSTH data for a single session:
+hFigure1 = figure(1);
+set(hFigure1,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig1.hPlot1 = getPlotHandles(5,5,[0.2 0.4 0.55 0.55],0.01,0.01,0); linkaxes(hPlotsFig1.hPlot1);
+hPlotsFig1.hPlot2 = getPlotHandles(2,5,[0.2 0.08 0.55 0.22],0.01,0.01,1); linkaxes(hPlotsFig1.hPlot2);
 
-% Figure 1 (Spike data from Orientation Selective Elecs-
+textH{1} = getPlotHandles(1,1,[0.12 0.97 0.01 0.01]);
+textH{2} = getPlotHandles(1,1,[0.12 0.23 0.01 0.01]);
+
+textString = {'A','B'};
+for i = 1:2
+    set(textH{i},'Visible','Off')
+    text(0.35,1.15,textString{i},'unit','normalized','fontsize',20,'fontweight','bold','parent',textH{i});
+end
+
+% % Figure 2: Example Single electrode TF data for a single session:
+hFigure2 = figure(2);
+set(hFigure2,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig2.hPlot1 = getPlotHandles(5,5,[0.2 0.3 0.6 0.65],0.01,0.01,1); linkaxes(hPlotsFig2.hPlot1);
+hPlotsFig2.hPlot2 = getPlotHandles(1,5,[0.2 0.08 0.6 0.13],0.01,0.01,1); linkaxes(hPlotsFig2.hPlot2);
+
+textH{1} = getPlotHandles(1,1,[0.12 0.97 0.01 0.01]);
+textH{2} = getPlotHandles(1,1,[0.12 0.23 0.01 0.01]);
+
+textString = {'A','B'};
+for i = 1:2
+    set(textH{i},'Visible','Off')
+    text(0.35,1.15,textString{i},'unit','normalized','fontsize',20,'fontweight','bold','parent',textH{i});
+end
+
+% Figure 3 (Spike data from Orientation Selective Elecs-
 % Pref (x-axis) Null (y-axis) axes); spike data along
 % increasing contrasts of Pref Ori with contrasts of  null Ori presented
 % by different colors; absolute color map 5x5; relative color map 5x5;
 % CRF (no Norm, Pref,Pref+Null, Avg, Null)
-hFigure1 = figure(1);
-set(hFigure1,'units','normalized','outerposition',[0 0 1 1])
-hPlotsFig1.hPlot1 = getPlotHandles(1,5,[0.15 0.65 0.7 0.2],0.01,0.01,1); linkaxes(hPlotsFig1.hPlot1);
-hPlotsFig1.hPlot2 = getPlotHandles(1,3,[0.15 0.23 0.7 0.2578],0.1188,0.05,0);
+hFigure3 = figure(3);
+set(hFigure3,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig3.hPlot1 = getPlotHandles(1,5,[0.15 0.65 0.7 0.2],0.01,0.01,1); linkaxes(hPlotsFig3.hPlot1);
+hPlotsFig3.hPlot2 = getPlotHandles(1,3,[0.15 0.23 0.7 0.2578],0.1188,0.05,0);
 
 textH{1} = getPlotHandles(1,1,[0.1 0.9 0.01 0.01]);
 textH{2} = getPlotHandles(1,1,[0.1 0.5378 0.01 0.01]);
@@ -75,22 +102,17 @@ for i = 1:4
     set(textH{i},'Visible','Off')
     text(0.35,1.15,textString{i},'unit','normalized','fontsize',20,'fontweight','bold','parent',textH{i});
 end
-% Figure 2 (Spike data from all Elecs)
-% hFigure2 = figure(2);
-% set(hFigure2,'units','normalized','outerposition',[0 0 1 1])
-% hPlotsFig2.hPlot1 = getPlotHandles(1,5,[0.15 0.65 0.7 0.2],0.01,0.01,1); linkaxes(hPlotsFig2.hPlot1);
-% hPlotsFig2.hPlot2 = getPlotHandles(1,3,[0.15 0.23 0.7 0.2578],0.1188,0.05,0);
-%
-% % Figure 3 (PSDs (A); deltaPSDs (B) along increasing contrast of Ori 1
+
+% % Figure 4 (PSDs (A); deltaPSDs (B) along increasing contrast of Ori 1
 % % with contrasts of Ori 2 presented in different colors;
 % % absolute color map 5x5; relative color map 5x5;
 % % CRF (no Norm, Pref,Pref+Null, Avg, Null)
 % % for alpha (C), gamma (D) and high-gamma (E) for ERP-subtracted data
-hFigure3 = figure(3);
-set(hFigure3,'units','normalized','outerposition',[0 0 1 1])
-hPlotsFig3.hPlot1 = getPlotHandles(2,5,[0.25 0.69 0.5 0.28],0.01,0.01,1);
-linkaxes(hPlotsFig3.hPlot1(1,:)); linkaxes(hPlotsFig3.hPlot1(2,:));
-hPlotsFig3.hPlot2 = getPlotHandles(2,3,[0.25 0.08 0.5 0.51],0.07,0.07,1);
+hFigure4 = figure(4);
+set(hFigure4,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig4.hPlot1 = getPlotHandles(2,5,[0.25 0.69 0.5 0.28],0.01,0.01,1);
+linkaxes(hPlotsFig4.hPlot1(1,:)); linkaxes(hPlotsFig4.hPlot1(2,:));
+hPlotsFig4.hPlot2 = getPlotHandles(2,3,[0.25 0.08 0.5 0.51],0.07,0.07,1);
 
 textH{1} = getPlotHandles(1,1,[0.2 0.97 0.01 0.01]);
 textH{2} = getPlotHandles(1,1,[0.2 0.6 0.01 0.01]);
@@ -105,20 +127,20 @@ end
 
 
 %
-% % Figure 4 (PSDs (A); deltaPSDs (B) along increasing contrast of Ori 1
+% % Figure 5 (PSDs (A); deltaPSDs (B) along increasing contrast of Ori 1
 % % with contrasts of Ori 2 presented in different colors;
 % % absolute color map 5x5; relative color map 5x5;
 % % CRF (no Norm, Pref,Pref+Null, Avg, Null)
-% % for SSVEP (C) for non-ERP subtracted data
-hFigure4 = figure(4);
-set(hFigure4,'units','normalized','outerposition',[0 0 1 1])
-hPlotsFig4.hPlot1 = getPlotHandles(2,5,[0.15 0.5 0.7 0.4],0.01,0.01,1);
-linkaxes(hPlotsFig4.hPlot1(1,:));linkaxes(hPlotsFig4.hPlot1(2,:));
-hPlotsFig4.hPlot2 = getPlotHandles(1,3,[0.15 0.1 0.7 0.2578],0.1188,0.05,0);
+% % for SSVEP (C) for non-ERP subtracted (Evoked) data
+hFigure5 = figure(5);
+set(hFigure5,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig5.hPlot1 = getPlotHandles(2,5,[0.15 0.5 0.7 0.4],0.01,0.01,1);
+linkaxes(hPlotsFig5.hPlot1(1,:));linkaxes(hPlotsFig5.hPlot1(2,:));
+hPlotsFig5.hPlot2 = getPlotHandles(1,3,[0.15 0.1 0.7 0.2578],0.1188,0.05,0);
 %
 %
-textH{1} = getPlotHandles(1,1,[0.08 0.9 0.01 0.01]);
-textH{2} = getPlotHandles(1,1,[0.08 0.36 0.01 0.01]);
+textH{1} = getPlotHandles(1,1,[0.1 0.9 0.01 0.01]);
+textH{2} = getPlotHandles(1,1,[0.1 0.36 0.01 0.01]);
 textH{3} = getPlotHandles(1,1,[0.38 0.36 0.01 0.01]);
 textH{4} = getPlotHandles(1,1,[0.65 0.36 0.01 0.01]);
 
@@ -127,11 +149,11 @@ for i = 1:4
     set(textH{i},'Visible','Off')
     text(0.35,1.15,textString{i},'unit','normalized','fontsize',20,'fontweight','bold','parent',textH{i});
 end
-% % Figure 5: Comparison of NI,fitted parameters (alpha, sigma), percentage explained variance for spikeRate, gamma, high
+% % Figure 6: Comparison of NI,fitted parameters (alpha, sigma), percentage explained variance for spikeRate, gamma, high
 % % gamma, SSVEP
-hFigure5 = figure(5);
-set(hFigure5,'units','normalized','outerposition',[0 0 1 1])
-hPlotsFig5.hPlot1 = getPlotHandles(2,2,[0.2 0.05 0.6 0.9],0.05,0.1,1);
+hFigure6 = figure(6);
+set(hFigure6,'units','normalized','outerposition',[0 0 1 1])
+hPlotsFig6.hPlot1 = getPlotHandles(2,2,[0.2 0.05 0.6 0.9],0.05,0.1,1);
 
 textH{1} = getPlotHandles(1,1,[0.15 0.95 0.01 0.01]);
 textH{2} = getPlotHandles(1,1,[0.15 0.45 0.01 0.01]);
@@ -144,77 +166,49 @@ for i = 1:4
     text(0.35,1.15,textString{i},'unit','normalized','fontsize',20,'fontweight','bold','parent',textH{i});
 end
 
-% % % Figure 6: Example Single electrode PSTH data for a single session:
-% hFigure6 = figure(6);
-% set(hFigure6,'units','normalized','outerposition',[0 0 1 1])
-% hPlotsFig6.hPlot1 = getPlotHandles(5,5,[0.2 0.07 0.6 0.85],0.01,0.01,1); linkaxes(hPlotsFig6.hPlot1);
-%
-%
-% % % Figure 7: Example Single electrode TF data for a single session:
-% hFigure7 = figure(7);
-% set(hFigure7,'units','normalized','outerposition',[0 0 1 1])
-% hPlotsFig7.hPlot1 = getPlotHandles(5,5,[0.2 0.07 0.6 0.9],0.01,0.01,1); linkaxes(hPlotsFig7.hPlot1);
 
 %%%%%%%%%%%%%%%%%%%%% Get Session Details for Monkey(s) %%%%%%%%%%%%%%%%%%%
 fileNameStringListAll = getFileNameStringList(monkeyName,gridType);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURES 1-4 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %%%%%%%%%%%%%%%%%%%%% Get data for all Good Electrodes %%%%%%%%%%%%%%%%%%%%
 disp('all Electrodes:')
-spikeElecParams.spikeCutoff = 15;
-spikeElecParams.snrCutoff = 2;
-spikeElecParams.dRange = [0 0.75];
-spikeElecParams.unitID = 0;
-spikeElecParams.oriSelectiveFlag = 0;
-spikeElecParams.getSpikeElectrodesFlag = 1;
-
-timeRangeForComputation_spikes = [0.15 0.4];
-timeRangeParameters_Spikes.blRange = -0.05+[-diff(timeRangeForComputation_spikes) 0];
-timeRangeParameters_Spikes.stRange = timeRangeForComputation_spikes;
-timeRangeParameters_Spikes.erpRange = [0.05 0.2];
-
-[electrodeList_All,elecIDs,electrodeListString_All,NList_All,SNRList_All,dList_All,numElecs] = getElectrodesList(fileNameStringListAll,spikeElecParams,timeRangeForComputation_spikes,folderSourceString);
-elecInfo.elecs = electrodeList_All;
-elecInfo.elecIDs = elecIDs;
-elecInfo.N = NList_All;
-elecInfo.SNR = SNRList_All;
-elecInfo.d = dList_All; 
-
+[electrodeList_All,elecIDs,electrodeListString_All,elecInfo,numElecs] = getElectrodesList(fileNameStringListAll,spikeElecParams,timeRangeForComputation_spikes,folderSourceString);
 disp([num2str(numElecs) ' Good Electrodes'])
 
-% [electrodeList_All2,numElecs2] = getElectrodesList(fileNameStringListAll,spikeElecParams,timeRangeForComputation,folderSourceString);
-
-% disp([num2str(numElecs2) ' Good Electrodes'])
-
-fileSave1 = fullfile(folderSave,[monkeyName '_N' num2str(spikeElecParams.spikeCutoff) '_S' num2str(spikeElecParams.snrCutoff) ...
+cne = 0;
+fileSave = fullfile(folderSave,[monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) ...
     '_allElecs_T' num2str(round(1000*timeRangeForComputation_spikes(1))) '_' num2str(round(1000*timeRangeForComputation_spikes(2))) ...
-    '_d' num2str(spikeElecParams.dRange(1)) '_' num2str(spikeElecParams.dRange(2))...
-    '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
-    '_gse' num2str(spikeElecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(spikeElecParams.unitID) '.mat']);
+    '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
+    '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(cne) ...
+    '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID) '.mat']);
 
-if exist(fileSave1,'file')
-    disp(['Loading file ' fileSave1]);
-    load(fileSave1);
-%     firingRateData1 = firingRateData; %#ok<NODEF>
+if exist(fileSave,'file')
+    disp(['Loading file ' fileSave]);
+    load(fileSave);
 else
     % get Data all Session for monkey(s) for all Electrodes
     [erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,NI_Data,~,N]  = ...
-        getData(folderSourceString,fileNameStringListAll,electrodeList_All,timeRangeParameters_Spikes,tapers_MT,freqRanges,spikeElecParams,removeERPFlag);
-    save(fileSave1,'elecInfo','erpData','firingRateData','fftData','energyData','energyDataTF','oriTuningData','NI_Data','N')
-    
+        getData(folderSourceString,fileNameStringListAll,electrodeList_All,timeRangeParameters,tapers_MT,freqRanges,elecParams,removeERPFlag);
+    save(fileSave,'elecInfo','erpData','firingRateData','fftData','energyData','energyDataTF','oriTuningData','NI_Data','N')
 end
 
-% NI_Data_allElecsInduced = NI_Data;
+%%%%%%%%%%%%%%%%%%%%%% Process Dataset for plots %%%%%%%%%%%%%%%%%%%%%%%%%%
+fileSave2 = fullfile(folderSave,[monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) ...
+    '_allElecs_T' num2str(round(1000*timeRangeForComputation_spikes(1))) '_' num2str(round(1000*timeRangeForComputation_spikes(2))) ...
+    '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
+    '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
+    '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID) '.mat']);
 
-% Put plot Functions for figures 1
-combineUniqueElectrodeData = 1;
-plotData_spikes(hPlotsFig1,firingRateData,timeRangeForComputation_spikes,elecInfo,normalizateSpikeDataFlag,combineUniqueElectrodeData,colorScheme) % spikes for static gratings, Fig 1
-% rescaleData(hPlotsFig1.hPlot1,-0.1,0.5,getYLims(hPlotsFig1.hPlot1),14);
-% rescaleData(hPlotsFig1.hPlot2(3),0,50,getYLims(hPlotsFig1.hPlot2(3)),14);
+if exist(fileSave,'file')
+    disp(['Loading file ' fileSave]);
+    load(fileSave);
+else
+[erpData_combined,firingRateData_combined,fftData_combined,energyData_combined,energyDataTF_combined,oriTuningData,N,elecIDs]  = ...
+    combineData(erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,N,elecParams);
+    save(fileSave2,'elecIDs','erpData','firingRateData','fftData','energyData','energyDataTF','oriTuningData','NI_Data','N')
+end
 
+% Figures
 if strcmp(colorScheme,'greyscale')||strcmp(colorScheme,'grayscale')
     folderSave_Figs = fullfile(folderSourceString_Project,'Projects\Aritra_PlaidNormalizationProject\Figures\Grayscale\FitV2');
 elseif strcmp(colorScheme,'color')
@@ -225,136 +219,55 @@ if ~exist(folderSave_Figs,'dir')
     mkdir(folderSave_Figs)
 end
 
-FigName1 = fullfile(folderSave_Figs,['Figure 3_' monkeyName '_N' num2str(spikeElecParams.spikeCutoff) '_S' num2str(spikeElecParams.snrCutoff) '_allElecs'...
+FigName1 = fullfile(folderSaveFigs,['Figure 1_' monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) '_elec' num2str(elecNum)...
+    '_T' num2str(round(1000*timeRangeParameters(1).stRange(1))) '_' num2str(round(1000*timeRangeParameters(1).stRange(2))) ...
+    '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
+    '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
+    '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID) ]);
+
+
+FigName2 = fullfile(folderSaveFigs,['Figure 2_' monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) '_elec' num2str(elecNum)...
+    '_T' num2str(round(1000*timeRangeParameters(2).stRange(1))) '_' num2str(round(1000*timeRangeParameters(2).stRange(2))) ...
+    '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
+    '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
+    '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID) ]);
+
+elecNum = 29;
+plotExampleElectrodeData(hPlotsFig1,hPlotsFig2,elecNum,elecInfo,firingRateData,energyData,energyDataTF,colorScheme)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURES 3 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+combineUniqueElectrodeData = 1;
+plotData_spikes(hPlotsFig3,firingRateData,timeRangeForComputation_spikes,elecInfo,normalizateSpikeDataFlag,combineUniqueElectrodeData,colorScheme) % spikes for static gratings, Fig 1
+
+FigName3 = fullfile(folderSave_Figs,['Figure 3_' monkeyName '_N' num2str(spikeElecParams.spikeCutoff) '_S' num2str(spikeElecParams.snrCutoff) '_allElecs'...
     '_T' num2str(round(1000*timeRangeForComputation_spikes(1))) '_' num2str(round(1000*timeRangeForComputation_spikes(2))) ...
     '_d' num2str(spikeElecParams.dRange(1)) '_' num2str(spikeElecParams.dRange(2))...
     '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
     '_gse' num2str(spikeElecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(spikeElecParams.unitID)]);
 
-
-
-
-
-% elecNum = 2;
-% plotExampleElectrodeData(hPlotsFig6,hPlotsFig7,elecNum,firingRateData,energyDataTF)
-% % Figure 6
-% rescaleData(hPlotsFig6.hPlot1,-0.1,0.5,getYLims(hPlotsFig6.hPlot1),14);
-% FigName6 = fullfile(folderSave_Figs,['Figure 1_' monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) '_elec' num2str(elecNum)...
-%     '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
-%     '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
-%     '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
-%     '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID) ]);
-% saveas(hFigure6,[FigName6 '.fig'])
-% saveas(hFigure6,[FigName6,'.tif'])
-%
-%
-% % Figure 7
-% rescaleData(hPlotsFig7.hPlot1,-0.1,0.5,getYLims(hPlotsFig7.hPlot1),14);
-% FigName7 = fullfile(folderSave_Figs,['Figure 2_' monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) '_elec' num2str(elecNum)...
-%     '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
-%     '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
-%     '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
-%     '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID) ]);
-% saveas(hFigure7,[FigName7 '.fig'])
-% saveas(hFigure7,[FigName7,'.tif'])
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURE 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% %%%%%%%%%%%% Get data for Orientation selective Good Electrodes %%%%%%%%%%%
-% disp('Orientation-Tuned Electrodes:')
-% elecParams.oriSelectiveFlag = 1; % Fig 2 spike data for orientation selective elecs
-% [electrodeList_OriTuned,numElecs] = getElectrodesList(fileNameStringListAll,elecParams,timeRangeForComputation,folderSourceString);
-% disp([num2str(numElecs) ' Good Electrodes'])
-%
-% clear erpData firingRateData fftData energyData NI_Data % clear data for all Elecs
-%
-% % Orientation-tuned electrode data (only required for Figure 2)
-% fileSave2 = fullfile(folderSave,[monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) '_NI' num2str(elecParams.NICutOff) '_oriTunedElecs'...
-%     '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
-%     '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
-%     '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
-%     '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID) '.mat']);
-%
-% if exist(fileSave2,'file')
-%     disp(['Loading file ' fileSave2]);
-%     load(fileSave2);
-% else
-%     % get Data all Session for particular monkey or both combined for
-%     % ori-tuned Electrodes
-%     [erpData,firingRateData2,fftData,energyData,energyDataTF,oriTuningData,NI_Data,~] = ...
-%         getData(folderSourceString,fileNameStringListAll,electrodeList_OriTuned,timeRangeParameters,tapers_MT,freqRanges,elecParams,removeERPFlag);
-%     save(fileSave2,'erpData','firingRateData','fftData','energyData','energyDataTF','oriTuningData','NI_Data')
-% end
-%
-% NI_Data_OriTunedElecs = NI_Data;
-%
-%
-% % Plotting Functions
-% plotData_spikes(hPlotsFig2,firingRateData2,timeRangeForComputation,normalizateSpikeDataFlag) % spikes for static gratings from ori-selective electrodes, Fig 1
-% rescaleData(hPlotsFig2.hPlot1,-0.1,0.5,getYLims(hPlotsFig2.hPlot1),14);
-% rescaleData(hPlotsFig2.hPlot2(3),0,50,getYLims(hPlotsFig2.hPlot2(3)),14);
-% FigName2 = fullfile(folderSave_Figs,['Figure 4_' monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) '_NI' num2str(elecParams.NICutOff) '_oriTunedElecs'...
-%     '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
-%     '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
-%     '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
-%     '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID)] );
-%
-% % rescaleData(hPlotsFig3.hPlot1,0,250,getYLims(hPlotsFig3.hPlot1),12);
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURES 3 & 4 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURES 4 & 5 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-removeERPFlag = 0; % Evoked Response
+plotData_energy(hPlotsFig4,energyData,elecInfo,combineUniqueElectrodeData,colorScheme) % alpha, gamma, hi-gamma for static gratings, Fig 3;
 
-[electrodeList_All,elecIDs,electrodeListString_All,NList_All,SNRList_All,dList_All,numElecs] = getElectrodesList(fileNameStringListAll,elecParams,timeRangeForComputation,folderSourceString);
-elecInfo.elecs = electrodeList_All;
-elecInfo.elecIDs = elecIDs;
-elecInfo.N = NList_All;
-elecInfo.SNR = SNRList_All;
-elecInfo.d = dList_All; 
-disp([num2str(numElecs) ' Good Electrodes'])
-combineUniqueElectrodeData =0;
-fileSave3 = fullfile(folderSave,[monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) '_allElecs'...
-    '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
-    '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
-    '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
-    '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID) '.mat']);
-if exist(fileSave3,'file')
-    disp(['Loading file ' fileSave3]);
-    load(fileSave3);
-else
-    elecParams.oriSelectiveFlag = 0;
-    % get Data all Session for particular monkey or both combined for all
-    % Electrodes
-    [erpData,firingRateData2,fftData,energyData,energyDataTF,oriTuningData,NI_Data,~,N] = ...
-        getData(folderSourceString,fileNameStringListAll,electrodeList_All,timeRangeParameters,tapers_MT,freqRanges,elecParams,removeERPFlag);
-    save(fileSave3,'elecInfo','erpData','firingRateData2','fftData','energyData','energyDataTF','oriTuningData','NI_Data','N')
-end
-% NI_Data_allElecsEvoked = NI_Data;
-combineUniqueElectrodeData =1;
-plotData_energy(hPlotsFig3,energyData,elecInfo,combineUniqueElectrodeData,colorScheme) % alpha, gamma, hi-gamma for static gratings, Fig 3;
-% rescaleData(hPlotsFig3.hPlot1,0,250,getYLims(hPlotsFig3.hPlot1),12);
-% rescaleData(hPlotsFig3.hPlot1(1,:),0,250,[-1.5 3.5],12);
-% rescaleData(hPlotsFig3.hPlot1(2,:),0,250,[-4 10],12);
-set(findall(hFigure3,'-property','FontSize'),'FontSize',13);
-FigName3 = fullfile(folderSave_Figs,['Figure 4_' monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) '_allElecs'...
+set(findall(hFigure4,'-property','FontSize'),'FontSize',13);
+FigName4 = fullfile(folderSave_Figs,['Figure 4_' monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) '_allElecs'...
     '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
     '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
     '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
     '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID) ]);
 
 
-combineUniqueElectrodeData =1;
-plotData_SSVEP(hPlotsFig4,energyData,elecInfo,combineUniqueElectrodeData,colorScheme) % SSVEP Evoked, Fig 4;
-% rescaleData(hPlotsFig4.hPlot1,0,24,getYLims(hPlotsFig4.hPlot1),14);
-% rescaleData(hPlotsFig4.hPlot1(1,:),0,24,getYLims(hPlotsFig4.hPlot1(1,:)),14);
-% rescaleData(hPlotsFig4.hPlot1(2,:),0,24,getYLims(hPlotsFig4.hPlot1(2,:)),14);
-% rescaleData(hPlotsFig4.hPlot2(3),0,50,getYLims(hPlotsFig4.hPlot2(3)),14);
-FigName4 = fullfile(folderSave_Figs,['Figure 5_' monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) '_allElecs'...
+plotData_SSVEP(hPlotsFig5,energyData,elecInfo,combineUniqueElectrodeData,colorScheme) % SSVEP Evoked, Fig 4;
+rescaleData(hPlotsFig5.hPlot1,0,24,getYLims(hPlotsFig5.hPlot1),14);
+rescaleData(hPlotsFig5.hPlot1(1,:),0,24,getYLims(hPlotsFig5.hPlot1(1,:)),14);
+rescaleData(hPlotsFig5.hPlot1(2,:),0,24,getYLims(hPlotsFig5.hPlot1(2,:)),14);
+rescaleData(hPlotsFig5.hPlot2(3),0,50,getYLims(hPlotsFig5.hPlot2(3)),14);
+FigName5 = fullfile(folderSave_Figs,['Figure 5_' monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff) '_allElecs'...
     '_T' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
     '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
     '_tapers' num2str(tapers_MT(2)) '_removeERP' num2str(removeERPFlag) '_cne' num2str(combineUniqueElectrodeData) ...
@@ -364,13 +277,13 @@ FigName4 = fullfile(folderSave_Figs,['Figure 5_' monkeyName '_N' num2str(elecPar
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURE 5 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURE 6 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % plotData_histogram(hPlotsFig5,NI_Data_allElecsEvoked,fittingParams)
 Criterion = 'none';
-plotBars(hPlotsFig5,fileSave1,fileSave3,colorScheme,Criterion)
-FigName5 = fullfile(folderSave_Figs,['Figure 6_' monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff)...
+plotBars(hPlotsFig6,fileSave1,fileSave3,colorScheme,Criterion)
+FigName6 = fullfile(folderSave_Figs,['Figure 6_' monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff)...
     '_spikesT' num2str(round(1000*timeRangeForComputation_spikes(1))) '_' num2str(round(1000*timeRangeForComputation_spikes(2))) ...
     '_lfpT' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
     '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
@@ -379,15 +292,16 @@ FigName5 = fullfile(folderSave_Figs,['Figure 6_' monkeyName '_N' num2str(elecPar
 
 saveas(hFigure1,[FigName1 '.fig'])
 saveas(hFigure1,[FigName1,'.tif'])
-% saveas(hFigure2,[FigName2 '.fig'])
-% saveas(hFigure2,[FigName2,'.tif'])
+saveas(hFigure2,[FigName2 '.fig'])
+saveas(hFigure2,[FigName2,'.tif'])
 saveas(hFigure3,[FigName3 '.fig'])
 saveas(hFigure3,[FigName3,'.tif'])
 saveas(hFigure4,[FigName4 '.fig'])
 saveas(hFigure4,[FigName4,'.tif'])
 saveas(hFigure5,[FigName5 '.fig'])
 saveas(hFigure5,[FigName5,'.tif'])
-
+saveas(hFigure6,[FigName6 '.fig'])
+saveas(hFigure6,[FigName6,'.tif'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -428,17 +342,17 @@ end
 
 % dSpikeRateData_elecwise = allDataTMP;
 
-% m_dSpikeRateData =  squeeze(mean(dSpikeRateData_elecwise,1));
-% sem_dspikeRate = squeeze(std(dSpikeRateData_elecwise,[],1)./sqrt(size(dSpikeRateData_elecwise,1)));
+m_dSpikeRateData =  squeeze(mean(dSpikeRateData_elecwise,1));
+sem_dspikeRate = squeeze(std(dSpikeRateData_elecwise,[],1)./sqrt(size(dSpikeRateData_elecwise,1)));
 median_dSpikeRateData = squeeze(median(dSpikeRateData_elecwise,1));
 
 % computing N.I. population
 NI_dSpikeData_Cohen =  (dSpikeRateData_elecwise(:,1,1) + dSpikeRateData_elecwise(:,5,5))./squeeze(dSpikeRateData_elecwise(:,1,5));
-% NI_dSpikeData_Ray =  (2*dSpikeRateData_elecwise(:,1,5)./squeeze((dSpikeRateData_elecwise(:,1,1))+ (dSpikeRateData_elecwise(:,5,5))))-1;
-% mNI_dSpikeData_Cohen = mean(NI_dSpikeData_Cohen,1);
+NI_dSpikeData_Ray =  (2*dSpikeRateData_elecwise(:,1,5)./squeeze((dSpikeRateData_elecwise(:,1,1))+ (dSpikeRateData_elecwise(:,5,5))))-1;
+mNI_dSpikeData_Cohen = mean(NI_dSpikeData_Cohen,1);
 median_dSpikeData_Cohen = median(NI_dSpikeData_Cohen,1);
-% mNI_dSpikeData_Ray = mean(NI_dSpikeData_Ray,1);
-% median_dSpikeData_Ray = median(NI_dSpikeData_Ray,1);
+mNI_dSpikeData_Ray = mean(NI_dSpikeData_Ray,1);
+median_dSpikeData_Ray = median(NI_dSpikeData_Ray,1);
 % PSTH plots
 if strcmp(colorScheme,'color')
     colors = jet(length(cValsUnique));
@@ -456,45 +370,41 @@ for c_Ori2 = 1: length(cValsUnique2)
     end
 end
 
-fontSize = 16;
-tickLengthPlot = 2*get(hPlot.hPlot1(1),'TickLength');
-for i = 1:length(cValsUnique)
-    set(hPlot.hPlot1(i),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-end
-
-% set(hPlot.hPlot1(1),'fontSize',fontSize)
 set(hPlot.hPlot1(1),'XLim',[-0.1 0.5]);
 set(hPlot.hPlot1(1),'YLim',[0 90]);
-
-xlabel(hPlot.hPlot1(1),'Time (s)','fontSize',fontSize)
-ylabel(hPlot.hPlot1(1),'Spike rate(spike/s)','fontSize',fontSize)
+tickLengthPlot = 2*get(hPlot.hPlot1(1),'TickLength');
+xlabel(hPlot.hPlot1(1),'Time (s)')
+ylabel(hPlot.hPlot1(1),'Spike rate(spike/s)')
 displayRange(hPlot.hPlot1,[timeRangeForComputation(1) timeRangeForComputation(2)],getYLims(hPlot.hPlot1),'k');
 
+
+for i = 1:length(cValsUnique)
+    set(hPlot.hPlot1(i),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+end
 
 % color-coded plots of change in Spike Rates
 imagesc(median_dSpikeRateData,'parent',hPlot.hPlot2(1));
 colorBar_rlvSpikeRate = colorbar(hPlot.hPlot2(1));
 colorYlabelHandle = get(colorBar_rlvSpikeRate,'Ylabel');
-set(colorYlabelHandle,'String','Change in Spike Rate (spikes/s)','fontSize',fontSize);
+set(colorYlabelHandle,'String','Change in Spike Rate (spikes/s)','fontSize',14);
 plotPos = get(hPlot.hPlot2(1),'Position');
 set(hPlot.hPlot2(1),'Position',[plotPos(1) plotPos(2) plotPos(3)+0.02 plotPos(4)]);
 % title(hPlot.hPlot2(1),['Median NI_C_o_h_e_n: ',num2str(median_dSpikeData_Cohen) ', Median NI_R_a_y: ',num2str(median_dSpikeData_Ray)],'fontWeight','bold');
-set(hPlot.hPlot2(1),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-set(hPlot.hPlot2(1),'XTick',1:length(cValsUnique),'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique),'fontSize',fontSize);
-xlabel(hPlot.hPlot2(1),'Contrast of Grating 1(%)','fontSize',fontSize);ylabel(hPlot.hPlot2(1),'Contrast of Grating 2(%)','fontSize',fontSize);
+set(hPlot.hPlot2(1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+set(hPlot.hPlot2(1),'XTick',1:length(cValsUnique),'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
+xlabel(hPlot.hPlot2(1),'Contrast of Ori 1(%)');ylabel(hPlot.hPlot2(2),'Contrast of Ori 2(%)');
 
 % NI population histogram
 edges = [-inf -0.1:0.1:1.6 inf];
 edgeCenters = [-0.1 0:0.1:1.6 1.7];
-xlim(hPlot.hPlot2(2),[0 3]);
+xlim(hPlot.hPlot2(2),[-0.1 3]);
 n = histcounts(NI_dSpikeData_Cohen,edges);
 barHandle = bar(hPlot.hPlot2(2),edgeCenters,n);
-set(hPlot.hPlot2(2),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-title(hPlot.hPlot2(2),['Median NI: ',num2str(round(median_dSpikeData_Cohen,2))],'fontWeight','bold','fontSize',fontSize);
+set(hPlot.hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+title(hPlot.hPlot2(2),['Median NI: ',num2str(round(median_dSpikeData_Cohen,2))],'fontWeight','bold');
 xlabel(hPlot.hPlot2(2),'Normalization Index');ylabel(hPlot.hPlot2(2),'Number of electrodes');
-displayRange(hPlot.hPlot2(2),[1 2],getYLims(hPlot.hPlot2(2)),'k','solid-dash')
-text(0.7,0.8,'N = 50','color','k','fontWeight','bold','fontSize',fontSize-2,'unit','normalized','parent',hPlot.hPlot2(2))
-rescaleData(hPlot.hPlot2(2),0,2.5,getYLims(hPlot.hPlot2(2)),fontSize-1);
+displayRange(hPlot.hPlot2(2),[1 2],getYLims(hPlot.hPlot2(2)),'k')
+rescaleData(hPlot.hPlot2(2),-0.5,2.3,getYLims(hPlot.hPlot2(2)),14);
 
 
 
@@ -514,25 +424,25 @@ parMP = getParametersPlaid(mp,versionNum);
 [dp,pmp] = getResponseMatrixPlaid(parMP,mp,versionNum);
 expVar = 1 - (dp/sum((mp(:)-mean(mp(:))).^2));
 
-plot(hPlot.hPlot2(3),cList,mp(5,:),'color',[0.4 0.4 0.4],'marker','o','linestyle','none','LineWidth',1.5);
+plot(hPlot.hPlot2(3),cList,mp(5,:),'color',[0.5 0.5 0.5],'marker','o','linestyle','none');
 hold (hPlot.hPlot2(3),'on');
 
-plot(hPlot.hPlot2(3),cList,flip(mp(:,1)),'color',[0.6 0.6 0.6],'marker','s','linestyle','none','LineWidth',1.5);
+plot(hPlot.hPlot2(3),cList,flip(mp(:,1)),'color',[0.8 0.8 0.8],'marker','s','linestyle','none');
 
 hold (hPlot.hPlot2(3),'on');
-plot(hPlot.hPlot2(3),cList,[mp(5,1) mp(4,2) mp(3,3) mp(2,4) mp(1,5)],'color','k','marker','v','linestyle','none','LineWidth',1.5);
-plot(hPlot.hPlot2(3),cList,pmp(5,:),'color',[0.4 0.4 0.4],'LineWidth',1.5);
-plot(hPlot.hPlot2(3),cList,flip(pmp(:,1),1),'color',[0.6 0.6 0.6],'LineWidth',1.5);
+plot(hPlot.hPlot2(3),cList,[mp(5,1) mp(4,2) mp(3,3) mp(2,4) mp(1,5)],'color','k','marker','v','linestyle','none');
+plot(hPlot.hPlot2(3),cList,pmp(5,:),'color',[0.5 0.5 0.5]);
+plot(hPlot.hPlot2(3),cList,flip(pmp(:,1),1),'color',[0.8 0.8 0.8]);
 
-plot(hPlot.hPlot2(3),cList,[pmp(5,1) pmp(4,2) pmp(3,3) pmp(2,4) pmp(1,5)],'color','k','LineWidth',1.5);
+plot(hPlot.hPlot2(3),cList,[pmp(5,1) pmp(4,2) pmp(3,3) pmp(2,4) pmp(1,5)],'color','k');
 title(hPlot.hPlot2(3),[{['\alpha = ' num2str(parMP(3),3) ', \sigma = ' num2str(parMP(4),3)]} {['ExpVar = ' num2str(round(100*expVar)) '%']}]);
 hold(hPlot.hPlot2(3),'off');
-text(0.6,0.3,'Grating 1','color',[0.4 0.4 0.4],'fontWeight','bold','fontSize',fontSize-2,'unit','normalized','parent',hPlot.hPlot2(3))
-text(0.6,0.2,'Grating 2','color',[0.6 0.6 0.6],'fontWeight','bold','fontSize',fontSize-2,'unit','normalized','parent',hPlot.hPlot2(3))
-text(0.6,0.1,'Plaid','color','k','fontWeight','bold','fontSize',fontSize-2,'unit','normalized','parent',hPlot.hPlot2(3))
-set(hPlot.hPlot2(3),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+text(0.7,0.25,'Grating 1','color',[0.5 0.5 0.5],'fontWeight','bold','fontSize',10,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.7,0.2,'Grating 2','color',[0.8 0.8 0.8],'fontWeight','bold','fontSize',10,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.7,0.15,'Plaid','color','k','fontWeight','bold','fontSize',10,'unit','normalized','parent',hPlot.hPlot2(3))
+set(hPlot.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(3),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
-xlabel(hPlot.hPlot2(3),'Contrast of Ori 1(%)','fontSize',fontSize);ylabel(hPlot.hPlot2(3),'Change in  Spike Rate (spike/s)','fontSize',fontSize);
+xlabel(hPlot.hPlot2(3),'Contrast of Ori 1(%)');ylabel(hPlot.hPlot2(3),'Change in  Spike Rate (spike/s)');
 
 % fix symmetry of axes boundary
 plotPos = get(hPlot.hPlot1(3),'Position');
@@ -543,21 +453,17 @@ plotPos = get(hPlot.hPlot1(5),'Position');
 plotPos2 = get(hPlot.hPlot2(3),'Position');
 set(hPlot.hPlot2(3),'Position',[plotPos(1) plotPos2(2) plotPos2(3)-(plotPos(1)-plotPos2(1)) plotPos2(4)]);
 
-rescaleData(hPlot.hPlot1,-0.1,0.5,getYLims(hPlot.hPlot1),fontSize-1);
-rescaleData(hPlot.hPlot2(3),0,50,getYLims(hPlot.hPlot2(3)),fontSize-1);
+rescaleData(hPlot.hPlot1,-0.1,0.5,getYLims(hPlot.hPlot1),14);
+rescaleData(hPlot.hPlot2(3),0,50,getYLims(hPlot.hPlot2(3)),14);
 
 end
 
 function plotData_energy(hPlot,data,elecInfo,combineUniqueElectrodeData,colorScheme)
 
-fontSize = 13;
 cValsUnique = [0 12.5 25 50 100]/2;
 cValsUnique2 = [0 12.5 25 50 100]/2;
 num_freqRanges = length(data.analysisDataST); % gamma, hi-gamma Induced power is being plotted; alpha and SSVEP power ignored
-freqRanges{1} = [8 12]; % alpha
-freqRanges{2} = [32 80]; % gamma
-freqRanges{3} = [104 248]; % hi-gamma
-freqRanges{4} = [16 16];  % SSVEP
+
 % mean energy data across electrodes: con_Ori2 (rows) x con_Ori2 (columns) x freqVals
 % energyVsFrequencyDataST = squeeze(mean(data.dataST(:,1,:,:,:),1));
 % energyVsFrequencyDataBL = squeeze(mean(data.data_cBL(:,1,:,:,:),1));
@@ -616,15 +522,13 @@ tickLengthPlot = 2*get(hPlot.hPlot1(1),'TickLength');
 % displayRange(hPlot.hPlot1,[0.2 0.4],getYLims(hPlot.hPlot1),'k');
 
 for i = 1:length(cValsUnique)
-    set(hPlot.hPlot1(1,i),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-
-    set(hPlot.hPlot1(2,i),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-
+    set(hPlot.hPlot1(1,i),'fontSize',12,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+    set(hPlot.hPlot1(2,i),'fontSize',12,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 end
 
-xlabel(hPlot.hPlot1(2,1),'Frequency (Hz)','fontSize',fontSize)
-ylabel(hPlot.hPlot1(1,1),{'log_1_0','(Power)'},'fontSize',fontSize)
-ylabel(hPlot.hPlot1(2,1),{'Change in','Power (dB)'},'fontSize',fontSize)
+xlabel(hPlot.hPlot1(2,1),'Frequency (Hz)','fontSize',12)
+ylabel(hPlot.hPlot1(1,1),'log_1_0 (Power)','fontSize',12)
+ylabel(hPlot.hPlot1(2,1),{'Change in','Power (dB)'},'fontSize',12)
 
 % energy data: con_Ori2 (rows) x con_Ori2 (columns)
 for i = 2: num_freqRanges-1
@@ -643,14 +547,14 @@ for i = 2: num_freqRanges-1
         dEnergyData = dEnergyData1;
     end
     
-%     m_dEnergyData = squeeze(mean(dEnergyData,1));
+    m_dEnergyData = squeeze(mean(dEnergyData,1));
     median_dEnergyData = squeeze(median(dEnergyData,1));
     
     % computing N.I. population data
     NI_dEnergyData_Cohen =  (dEnergyData(:,1,1)+dEnergyData(:,5,5))./squeeze(dEnergyData(:,1,5));
     %     NI_dEnergyData_Ray =  (2*dEnergyData(:,1,5)./squeeze((dEnergyData(:,1,1))+ (dEnergyData(:,5,5))))-1;
     
-%     mNI_dEnergyData_Cohen = mean(NI_dEnergyData_Cohen,1);
+    mNI_dEnergyData_Cohen = mean(NI_dEnergyData_Cohen,1);
     median_dEnergyData_Cohen = median(NI_dEnergyData_Cohen,1);
     %     mNI_dEnergyData_Ray = mean(NI_dEnergyData_Ray,1);
     %     median_dEnergyData_Ray = median(NI_dEnergyData_Ray,1);
@@ -660,16 +564,16 @@ for i = 2: num_freqRanges-1
     imagesc(median_dEnergyData,'parent',hPlot.hPlot2(i-1,1));
     colorBar_rlvPSD = colorbar(hPlot.hPlot2(i-1,1));
     colorYlabelHandle = get(colorBar_rlvPSD,'Ylabel');
-    set(colorYlabelHandle,'String',{'\Delta Power (dB)'},'fontSize',fontSize);
+    set(colorYlabelHandle,'String',{'\Delta Power (dB)'},'fontSize',12);
     plotPos = get(hPlot.hPlot2(i-1,1),'Position');
     set(hPlot.hPlot2(i-1,1),'Position',[plotPos(1) plotPos(2) plotPos(3)+0.028 plotPos(4)]);
     % caxis(hPlot.hPlot2(2),[0 4]);
-    set(hPlot.hPlot2(i-1,1),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+    set(hPlot.hPlot2(i-1,1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 %     title(hPlot.hPlot2(i-1,1),['Median NI: ',num2str((median_dEnergyData_Ray))],'fontSize',14,'fontWeight','bold');
     
     if i==3
-        set(hPlot.hPlot2(i-1,1),'XTick',1:length(cValsUnique),'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique),'fontSize',fontSize);
-        xlabel(hPlot.hPlot2(i-1,1),'Contrast of Grating 1 (%)','fontSize',fontSize);ylabel(hPlot.hPlot2(i-1,1),'Contrast of Grating 2 (%)','fontSize',fontSize);
+        set(hPlot.hPlot2(i-1,1),'XTick',1:length(cValsUnique),'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
+        xlabel(hPlot.hPlot2(i-1,1),'Contrast of Ori 1(%)','fontSize',12);ylabel(hPlot.hPlot2(i-1,1),'Contrast of Ori 2(%)','fontSize',12);
         
     else
         set(hPlot.hPlot2(i-1,1),'XTick',1:length(cValsUnique),'XTickLabelRotation',90,'XTickLabel',[],'YTickLabel',[]);
@@ -677,7 +581,7 @@ for i = 2: num_freqRanges-1
     
     
     % NI population histogram
-    if i == 2 % 
+    if i == 2 % gamma
         edges = [-inf 1.6:0.2:5.6 inf];
         edgeCenters = [1.5 1.7:0.2:5.6 5.7];
         n = histcounts(NI_dEnergyData_Cohen,edges);
@@ -693,15 +597,15 @@ for i = 2: num_freqRanges-1
         xlim(hPlot.hPlot2(i-1,2),[0 3]);
     end
     
-    set(hPlot.hPlot2(i-1,2),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-    title(hPlot.hPlot2(i-1,2),['Median NI: ',num2str(round(median_dEnergyData_Cohen,2))],'fontSize',fontSize,'fontWeight','bold');
+    set(hPlot.hPlot2(i-1,2),'fontSize',12,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+    title(hPlot.hPlot2(i-1,2),['Median NI: ',num2str(round(median_dEnergyData_Cohen,2))],'fontSize',12,'fontWeight','bold');
     if i==3
-        xlabel(hPlot.hPlot2(i-1,2),'Normalization Index','fontSize',fontSize);ylabel(hPlot.hPlot2(i-1,2),'Number of electrodes','fontSize',fontSize);
+        xlabel(hPlot.hPlot2(i-1,2),'Normalization Index','fontSize',12);ylabel(hPlot.hPlot2(i-1,2),'Number of electrodes','fontSize',12);
     else
     end
     
     xlim()
-    displayRange(hPlot.hPlot2(i-1,2),[1 2],getYLims(hPlot.hPlot2(i-1,2)),'k','solid-dash');
+    displayRange(hPlot.hPlot2(i-1,2),[1 2],getYLims(hPlot.hPlot2(i-1,2)),'k');
     
 
     % color scheme of medianChangeinFR and population histogram
@@ -723,24 +627,24 @@ for i = 2: num_freqRanges-1
     [dp,pmp] = getResponseMatrixPlaid(parMP,mp,versionNum);
     expVar = 1 - (dp/sum((mp(:)-mean(mp(:))).^2));
     
-    plot(hPlot.hPlot2(i-1,3),cList,mp(5,:),'color',[0.4 0.4 0.4],'marker','o','linestyle','none','LineWidth',1.5);
+    plot(hPlot.hPlot2(i-1,3),cList,mp(5,:),'color',[0.5 0.5 0.5],'marker','o','linestyle','none');
     hold (hPlot.hPlot2(i-1,3),'on');
-    plot(hPlot.hPlot2(i-1,3),cList,flip(mp(:,1)),'color',[0.6 0.6 0.6],'marker','s','linestyle','none','LineWidth',1.5);
-    plot(hPlot.hPlot2(i-1,3),cList,[mp(5,1) mp(4,2) mp(3,3) mp(2,4) mp(1,5)],'color','k','marker','v','linestyle','none','LineWidth',1.5);
-    plot(hPlot.hPlot2(i-1,3),cList,pmp(5,:),'color',[0.4 0.4 0.4],'LineWidth',1.5);
-    plot(hPlot.hPlot2(i-1,3),cList,flip(pmp(:,1)),'color',[0.6 0.6 0.6],'LineWidth',1.5);
+    plot(hPlot.hPlot2(i-1,3),cList,flip(mp(:,1)),'color',[0.8 0.8 0.8],'marker','s','linestyle','none');
+    plot(hPlot.hPlot2(i-1,3),cList,[mp(5,1) mp(4,2) mp(3,3) mp(2,4) mp(1,5)],'color','k','marker','v','linestyle','none');
+    plot(hPlot.hPlot2(i-1,3),cList,pmp(5,:),'color',[0.5 0.5 0.5]);
+    plot(hPlot.hPlot2(i-1,3),cList,flip(pmp(:,1)),'color',[0.8 0.8 0.8]);
         
-    plot(hPlot.hPlot2(i-1,3),cList,[pmp(5,1) pmp(4,2) pmp(3,3) pmp(2,4) pmp(1,5)],'color','k','LineWidth',1.5);
+    plot(hPlot.hPlot2(i-1,3),cList,[pmp(5,1) pmp(4,2) pmp(3,3) pmp(2,4) pmp(1,5)],'color','k');
     title(hPlot.hPlot2(i-1,3),['\alpha=' num2str(parMP(3),3) ', \sigma=' num2str(parMP(4),3) ',ExpVar=' num2str(round(100*expVar)) '%']);
     hold(hPlot.hPlot2(i-1,3),'off');
     
     % % CRF
     if i == 3
-        text(0.5,0.8,'Grating 1','color',[0.4 0.4 0.4],'fontWeight','bold','fontSize',12,'unit','normalized','parent',hPlot.hPlot2(i-1,3))
-        text(0.5,0.7,'Grating 2','color',[0.6 0.6 0.6],'fontWeight','bold','fontSize',12,'unit','normalized','parent',hPlot.hPlot2(i-1,3))
-        text(0.5,0.6,'Plaid','color','k','fontWeight','bold','fontSize',12,'unit','normalized','parent',hPlot.hPlot2(i-1,3))
+        text(0.5,0.8,'Grating 1','color',[0.5 0.5 0.5],'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(i-1,3))
+        text(0.5,0.7,'Grating 2','color',[0.8 0.8 0.8],'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(i-1,3))
+        text(0.5,0.6,'Plaid','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(i-1,3))
     end
-    set(hPlot.hPlot2(i-1,3),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+    set(hPlot.hPlot2(i-1,3),'fontSize',12,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
     if i==3
         set(hPlot.hPlot2(i-1,3),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
     else
@@ -748,7 +652,7 @@ for i = 2: num_freqRanges-1
     end
     
     if i == 3
-        xlabel(hPlot.hPlot2(i-1,3),'Contrast of Grating 1(%)');ylabel(hPlot.hPlot2(i-1,3),'Change in Power(dB)');
+        xlabel(hPlot.hPlot2(i-1,3),'Contrast of Ori 1(%)');ylabel(hPlot.hPlot2(i-1,3),'Change in Power(dB)');
     end
     
     plotPos = get(hPlot.hPlot2(i-1,2),'Position');
@@ -757,24 +661,11 @@ for i = 2: num_freqRanges-1
     
 end
 
-rescaleData(hPlot.hPlot1,0,250,getYLims(hPlot.hPlot1),fontSize-1);
-yTicks1 = [-1 1 3]; yTicks2 = [-3 0 3 6];
-for i = 1:5
-    set(hPlot.hPlot1(1,i),'YTick',yTicks1)
-    set(hPlot.hPlot1(2,i),'YTick',yTicks2)
-end
-% rescaleData(hPlot.hPlot1(1,:),0,250,[-1.5 3.5],12);
-% rescaleData(hPlot.hPlot1(2,:),0,250,[-4 10],12);
-rescaleData(hPlot.hPlot2(:,3),0,50,[-0.2 6],13);
-rescaleData(hPlot.hPlot2(1,2),0,6,getYLims(hPlot.hPlot2(2)),fontSize-1);
-rescaleData(hPlot.hPlot2(2,2),0,3,getYLims(hPlot.hPlot2(2)),fontSize-1);
-
-% for i = 1:length(cValsUnique)
-    displayRange(hPlot.hPlot1(1,:),[freqRanges{2}(1) freqRanges{2}(2)],getYLims(hPlot.hPlot1(1,:)),'k')
-    displayRange(hPlot.hPlot1(1,:),[freqRanges{3}(1) freqRanges{3}(2)],getYLims(hPlot.hPlot1(1,:)),[0.5 0.5 0.5])
-    displayRange(hPlot.hPlot1(2,:),[freqRanges{2}(1) freqRanges{2}(2)],getYLims(hPlot.hPlot1(2,:)),'k')
-    displayRange(hPlot.hPlot1(2,:),[freqRanges{3}(1) freqRanges{3}(2)],getYLims(hPlot.hPlot1(2,:)),[0.5 0.5 0.5])
-% end
+rescaleData(hPlot.hPlot1,0,250,getYLims(hPlot.hPlot1),12);
+rescaleData(hPlot.hPlot1(1,:),0,250,[-1.5 3.5],12);
+rescaleData(hPlot.hPlot1(2,:),0,250,[-4 10],12);
+rescaleData(hPlot.hPlot2(:,3),-0.5,50,[-0.2 6],12);
+rescaleData(hPlot.hPlot2(1,2),-0.5,5.6,getYLims(hPlot.hPlot2(2)),12);
 
 end
 function plotData_SSVEP(hPlot,data,elecInfo,combineUniqueElectrodeData,colorScheme)
@@ -824,7 +715,7 @@ end
 % Seeting axes properties
 tickLengthPlot = 2*get(hPlot.hPlot1(1),'TickLength');
 xlabel(hPlot.hPlot1(2,1),'Frequency (Hz)')
-ylabel(hPlot.hPlot1(1,1),{'log_1_0','(Power)'})
+ylabel(hPlot.hPlot1(1,1),'log_1_0(Power)')
 ylabel(hPlot.hPlot1(2,1),{'Change in','Power(dB)'})
 displayRange(hPlot.hPlot1(1,:),[16 16],getYLims(hPlot.hPlot1(1,:)),'k');
 displayRange(hPlot.hPlot1(2,:),[16 16],getYLims(hPlot.hPlot1(2,:)),'k');
@@ -845,13 +736,13 @@ else
     dEnergyData = dEnergyData1;
 end
 
-% m_dEnergyData = squeeze(mean(dEnergyData,1));
+m_dEnergyData = squeeze(mean(dEnergyData,1));
 median_dEnergyData = squeeze(median(dEnergyData,1));
 
 
 % computing N.I. population
 NI_dEnergyData_Cohen = (dEnergyData(:,1,1) + dEnergyData(:,5,5))./squeeze(dEnergyData(:,1,5));
-% mNI_dEnergyData_Cohen = mean(NI_dEnergyData_Cohen,1);
+mNI_dEnergyData_Cohen = mean(NI_dEnergyData_Cohen,1);
 median_dEnergyData_Cohen = median(NI_dEnergyData_Cohen,1);
 % NI_dEnergyData_Ray =  (2*dEnergyData(:,1,5)./squeeze((dEnergyData(:,1,1))+ (dEnergyData(:,5,5))))-1;
 % mNI_dEnergyData_Ray = mean(NI_dEnergyData_Ray,1);
@@ -868,7 +759,7 @@ set(hPlot.hPlot2(1),'Position',[plotPos(1) plotPos(2) plotPos(3)+0.02 plotPos(4)
 % title(hPlot.hPlot2(1),['Median NI: ',num2str(median_dEnergyData_Cohen)],'fontWeight','bold');
 set(hPlot.hPlot2(1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(1),'XTick',1:length(cValsUnique),'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
-xlabel(hPlot.hPlot2(1),'Contrast of Grating 1(%)');ylabel(hPlot.hPlot2(1),'Contrast of Grating 2(%)');
+xlabel(hPlot.hPlot2(1),'Contrast of Ori 1(%)');ylabel(hPlot.hPlot2(1),'Contrast of Ori 2(%)');
 
 % NI population histogram
 edges = [-inf 0:0.2:2.6 inf];
@@ -876,21 +767,21 @@ edgeCenters = [-0.2 0.2:0.2:2.6 2.8];
 n = histcounts(NI_dEnergyData_Cohen,edges);
 barHandle = bar(hPlot.hPlot2(2),edgeCenters,n);
 set(hPlot.hPlot2(2),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-title(hPlot.hPlot2(2),['Median NI: ',num2str(round(median_dEnergyData_Cohen,2))],'fontSize',15,'fontWeight','bold');
-
+title(hPlot.hPlot2(2),['Median NI: ',num2str(round(median_dEnergyData_Cohen,2))],'fontSize',14,'fontWeight','bold');
+if i==3
     %         set(hPlot.hPlot2(i-1,2),'XTick',1:length(cValsUnique),'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
-xlabel(hPlot.hPlot2(2),'Normalization Index','fontSize',14);ylabel(hPlot.hPlot2(2),'Number of electrodes','fontSize',14);
+    xlabel(hPlot.hPlot2(2),'Normalization Index','fontSize',12);ylabel(hPlot.hPlot2(2),'Number of electrodes','fontSize',12);
     
-
+else
     %         set(hPlot.hPlot2(i-1,2),'XTickLabel',[],'YTickLabel',[]);
-
+end
 if strcmp(colorScheme,'grayscale')
     colormap(hPlot.hPlot2(1),'gray');
     set(barHandle,'facecolor',[0.5 0.5 0.5]);
 end
+xlim(hPlot.hPlot2(2),[-1 4]);
+displayRange(hPlot.hPlot2(2),[1 2],getYLims(hPlot.hPlot2(2)),'k');
 
-displayRange(hPlot.hPlot2(2),[1 2],getYLims(hPlot.hPlot2(2)),'k','solid-dash');
-xlim(hPlot.hPlot2(2),[0 3]);
 
 % CRF
 % errorbar(cValsUnique,dEnergyData(end,:),sem_dEnergyData(end,:),...
@@ -914,15 +805,15 @@ parMP = getParametersPlaid(mp,versionNum);
 [dp,pmp] = getResponseMatrixPlaid(parMP,mp,versionNum);
 expVar = 1 - (dp/sum((mp(:)-mean(mp(:))).^2));
 
-plot(hPlot.hPlot2(3),cList,mp(5,:),'color',[0.4 0.4 0.4],'marker','o','linestyle','none');
+plot(hPlot.hPlot2(3),cList,mp(5,:),'color',[0.5 0.5 0.5],'marker','o','linestyle','none');
 hold (hPlot.hPlot2(3),'on');
-plot(hPlot.hPlot2(3),cList,flip(mp(:,1)),'color',[0.6 0.6 0.6],'marker','s','linestyle','none');
+plot(hPlot.hPlot2(3),cList,flip(mp(:,1)),'color',[0.8 0.8 0.8],'marker','s','linestyle','none');
 plot(hPlot.hPlot2(3),cList,[mp(5,1) mp(4,2) mp(3,3) mp(2,4) mp(1,5)],'color','k','marker','v','linestyle','none');
-plot(hPlot.hPlot2(3),cList,pmp(5,:),'color',[0.4 0.4 0.4],'linewidth',2);
-plot(hPlot.hPlot2(3),cList,flip(pmp(:,1)),'color',[0.6 0.6 0.6],'linewidth',2);
+plot(hPlot.hPlot2(3),cList,pmp(5,:),'color',[0.5 0.5 0.5]);
+plot(hPlot.hPlot2(3),cList,flip(pmp(:,1)),'color',[0.8 0.8 0.8]);
 
-plot(hPlot.hPlot2(3),cList,[pmp(5,1) pmp(4,2) pmp(3,3) pmp(2,4) pmp(1,5)],'color','k','linewidth',2);
-title(hPlot.hPlot2(3),[{['\alpha=' num2str(parMP(3),3) ', \sigma=' num2str(parMP(4),3)]} {['ExpVar=' num2str(round(100*expVar)) '%']}],'fontSize',14);
+plot(hPlot.hPlot2(3),cList,[pmp(5,1) pmp(4,2) pmp(3,3) pmp(2,4) pmp(1,5)],'color','k');
+title(hPlot.hPlot2(3),[{['\alpha=' num2str(parMP(3),3) ', \sigma=' num2str(parMP(4),3)]} {['ExpVar=' num2str(round(100*expVar)) '%']}]);
 % hold(hPlot.hPlot2(3),'off');
 
 
@@ -931,9 +822,9 @@ title(hPlot.hPlot2(3),[{['\alpha=' num2str(parMP(3),3) ', \sigma=' num2str(parMP
 % % CRF
 % text(0.5,0.05,'cOri 2: 0%','color',colors(end,:,:),'fontWeight','bold','fontSize',8,'unit','normalized','parent',hPlot.hPlot2(3))
 % text(0.5,0.1,'cOri 1: 0%','color',colors(1,:,:),'fontWeight','bold','fontSize',8,'unit','normalized','parent',hPlot.hPlot2(3))
-text(0.5,0.35,'Grating 1','color',[0.4 0.4 0.4],'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(3))
-text(0.5,0.25,'Grating 2','color',[0.6 0.6 0.6],'fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(3))
-text(0.5,0.15,'Plaid','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.5,0.25,'Grating 1','color',[0.5 0.5 0.5],'fontWeight','bold','fontSize',10,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.5,0.2,'Grating 2','color',[0.8 0.8 0.8],'fontWeight','bold','fontSize',10,'unit','normalized','parent',hPlot.hPlot2(3))
+text(0.5,0.15,'Plaid','color','k','fontWeight','bold','fontSize',10,'unit','normalized','parent',hPlot.hPlot2(3))
 set(hPlot.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(3),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
 xlabel(hPlot.hPlot2(3),'Contrast of Ori 1(%)');ylabel(hPlot.hPlot2(3),'Change in Power(dB)');
@@ -949,11 +840,240 @@ plotPos2 = get(hPlot.hPlot2(3),'Position');
 set(hPlot.hPlot2(3),'Position',[plotPos(1) plotPos2(2) plotPos2(3)-(plotPos(1)-plotPos2(1)) plotPos2(4)]);
 hold(hPlot.hPlot2(3),'off');
 
-rescaleData(hPlot.hPlot1,0,24,getYLims(hPlot.hPlot1),14);
-rescaleData(hPlot.hPlot1(1,:),0,24,getYLims(hPlot.hPlot1(1,:)),14);
-rescaleData(hPlot.hPlot1(2,:),0,24,getYLims(hPlot.hPlot1(2,:)),14);
-rescaleData(hPlot.hPlot2(3),0,50,getYLims(hPlot.hPlot2(3)),14);
 end
+
+function plotExampleElectrodeData(hPlotsFig1,hPlotsFig2,elecNum,elecInfo,firingRateData,energyData,energyDataTF,colorScheme)
+cValsUnique = [0 6.25 12.5 25 50];
+cValsUnique2 = cValsUnique;
+if strcmp(colorScheme,'color')
+    colors = jet(length(cValsUnique));
+elseif strcmp(colorScheme,'grayscale')
+    colors = repmat(0.85:-0.1:0.45,[3 1])';
+end
+cFlipped_Indices = flip(1:length(cValsUnique2));
+psthData = squeeze(firingRateData.data(elecNum,:,:,:,:));
+spikeRasterData = firingRateData.spikeRasterData(elecNum,1,:,:);
+
+tickLengthPlot = 2*get(hPlotsFig1.hPlot1(1),'TickLength');
+
+combinedData = combineData(firingRateData,energyData,energyDataTF,elecInfo,elecNum);
+
+psthData2 = psthData;
+spikeRasterData2 = spikeRasterData;
+if elecNum == 29 || elecNum == 40 || elecNum == 169
+    psthData2 = flip(flip(permute(psthData,[2 1 3]),1),2);
+    spikeRasterData2 = flip(flip(permute(firingRateData.spikeRasterData(elecNum,1,:,:),[1 2 4 3]),4),3);
+    combinedData{1} = flip(flip(permute(combinedData{1},[2 1 3]),1),2);
+    combinedData{2} = flip(flip(permute(combinedData{2},[2 1 3 4]),1),2);
+    combinedData{3} = flip(flip(permute(combinedData{3},[2 1 3]),1),2);
+    combinedData{4} = flip(flip(permute(combinedData{4},[2 1 3]),1),2);
+
+end
+for c_Ori2 = 1:5
+    for c_Ori1 = 1:5
+        X = spikeRasterData2{1,1,c_Ori2,c_Ori1};
+        axes(hPlotsFig1.hPlot1(c_Ori2,c_Ori1)); %#ok<LAXES>
+        hold(hPlotsFig1.hPlot1(c_Ori2,c_Ori1),'on');
+        rasterplot(X,1:length(X),'k',2);
+        plot(hPlotsFig1.hPlot1(c_Ori2,c_Ori1),firingRateData.timeVals,squeeze(psthData2(c_Ori2,c_Ori1 ,:)),'color',colors(cFlipped_Indices(c_Ori2),:,:),'LineWidth',2)
+        set(hPlotsFig1.hPlot1(c_Ori2,c_Ori1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+
+    end
+end
+xlabel(hPlotsFig1.hPlot1(5,1),'Time (s)'); ylabel(hPlotsFig1.hPlot1(5,1),[{'Firing Rate'} {'(spikes/s)'}]);
+rescaleData(hPlotsFig1.hPlot1,-0.1,0.5,[-5 0]+ getYLims(hPlotsFig1.hPlot1),14);
+
+
+for c_Ori2 = 1: length(cValsUnique2)
+    for c_Ori1 = 1:length(cValsUnique)
+        plot(hPlotsFig1.hPlot2(1,c_Ori1),firingRateData.timeVals,squeeze(psthData2(cFlipped_Indices(c_Ori2),c_Ori1,:)),'color',colors(c_Ori2,:,:),'LineWidth',2);
+        hold(hPlotsFig1.hPlot2(1,c_Ori1),'on');
+        plot(hPlotsFig1.hPlot2(2,c_Ori1),firingRateData.timeVals,squeeze(combinedData{1}(cFlipped_Indices(c_Ori2),c_Ori1,:)),'color',colors(c_Ori2,:,:),'LineWidth',2);
+        hold(hPlotsFig1.hPlot2(2,c_Ori1),'on');
+    end
+end
+
+for i = 1:length(cValsUnique)
+    set(hPlotsFig1.hPlot2(i),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+end
+xlabel(hPlotsFig1.hPlot2(1,1),'Time (s)'); ylabel(hPlotsFig1.hPlot2(1,1),[{'Firing Rate'} {'(spikes/s)'}]);
+rescaleData(hPlotsFig1.hPlot2,-0.1,0.5,[-5 0]+getYLims(hPlotsFig1.hPlot2),14);
+
+
+% Figure 2
+
+
+% dEnergyTF = 10*(energyDataTF.data - energyDataTF.data_cBL);
+% energyVsFrequencyDataST = squeeze(mean(energyData.dataST(elecNum,1,:,:,:),1));
+% energyVsFrequencyDataBL = squeeze(mean(energyData.data_cBL(elecNum,1,:,:,:),1));
+% dEnergyVsFrequencyData = 10*(energyVsFrequencyDataST-energyVsFrequencyDataBL);
+dEnergyTF = 10*combinedData{2};
+% energyVsFrequencyDataST = squeeze(mean(energyData.dataST(elecNum,1,:,:,:),1));
+% energyVsFrequencyDataBL = squeeze(mean(energyData.data_cBL(elecNum,1,:,:,:),1));
+energyVsFrequencyDataBL = combinedData{4};
+dEnergyVsFrequencyData = 10*combinedData{3};
+
+
+
+dEnergyTF2 = dEnergyTF;
+dEnergyVsFrequencyData2 = dEnergyVsFrequencyData;
+% if elecNum == 29 || elecNum == 40 || elecNum == 169
+%     dEnergyTF2 = flip(flip(permute(dEnergyTF,[1 2 4 3 5 6]),4),3);
+%     dEnergyVsFrequencyData2 = flip(flip(permute(dEnergyVsFrequencyData,[2 1 3]),2),1);
+% end
+
+for c_Ori2 = 1:5
+    for c_Ori1 = 1:5
+        pcolor(hPlotsFig2.hPlot1(c_Ori2,c_Ori1),energyDataTF.timeVals,energyDataTF.freqVals,squeeze(dEnergyTF2(c_Ori2,c_Ori1 ,:,:)));
+        caxis(hPlotsFig2.hPlot1(c_Ori2,c_Ori1),[-2 10]);
+        shading(hPlotsFig2.hPlot1(c_Ori2,c_Ori1),'interp'); %caxis([-5 10]);
+        if strcmp(colorScheme,'color')
+            colormap(hPlotsFig2.hPlot1(c_Ori2,c_Ori1),'jet');
+        elseif strcmp(colorScheme,'greyscale')||strcmp(colorScheme,'grayscale')
+            colormap(hPlotsFig2.hPlot1(c_Ori2,c_Ori1),flipud(gray));
+        end
+        set(hPlotsFig2.hPlot1(c_Ori2,c_Ori1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+
+        if c_Ori2 == 5 && c_Ori1 == 5
+            colorBar_tf = colorbar(hPlotsFig2.hPlot1(c_Ori2,c_Ori1));
+            colorBar_YLabelHandle = get(colorBar_tf,'Ylabel');
+            set(colorBar_YLabelHandle,'String',{'\Delta Power (dB)'},'fontsize',14);
+            plotPos = get(hPlotsFig2.hPlot1(c_Ori2,c_Ori1),'Position');
+            set(hPlotsFig2.hPlot1(c_Ori2,c_Ori1),'Position',[plotPos(1) plotPos(2) plotPos(3)+0.042 plotPos(4)]);
+        end
+    end
+end
+xlabel(hPlotsFig2.hPlot1(5,1),'Time (s)'); ylabel(hPlotsFig2.hPlot1(5,1),'Frequency (Hz)');
+
+rescaleData(hPlotsFig2.hPlot1,-0.1,0.5,getYLims(hPlotsFig2.hPlot1),14);
+
+
+for c_Ori1 = 1:length(cValsUnique)
+    plot(hPlotsFig2.hPlot2(1,c_Ori1),energyData.freqVals,squeeze(energyVsFrequencyDataBL(cFlipped_Indices(c_Ori1),c_Ori1,:)-energyVsFrequencyDataBL(cFlipped_Indices(c_Ori1),c_Ori1,:)),'color','k','LineWidth',2);
+    hold(hPlotsFig2.hPlot2(1,c_Ori1),'on');
+end
+
+for c_Ori2 = 1: length(cValsUnique2)
+    for c_Ori1 = 1:length(cValsUnique)
+        plot(hPlotsFig2.hPlot2(1,c_Ori1),energyData.freqVals,squeeze(dEnergyVsFrequencyData2(cFlipped_Indices(c_Ori2),c_Ori1,:)),'color',colors(c_Ori2,:,:),'LineWidth',2);
+        hold(hPlotsFig2.hPlot2(1,c_Ori1),'on');
+    end
+end
+for i = 1:length(cValsUnique)
+    set(hPlotsFig2.hPlot2(i),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+end
+xlabel(hPlotsFig2.hPlot2(1,1),'Frequency (Hz)'); ylabel(hPlotsFig2.hPlot2(1,1),{'Change in','Power (dB)'});
+rescaleData(hPlotsFig2.hPlot2,0,250,getYLims(hPlotsFig2.hPlot2),14);
+
+end
+
+% combineData
+% function xAll = combineData(firingRateData,energyData,energyDataTF,elecInfo,elecNum)
+% combineUniqueElectrodes=1;
+% N=15; snr=2; d=0.75;
+% 
+% %%%%%%%%%%%%%%%% Subselect electrodes based on N, snr and d %%%%%%%%%%%%%%%
+% goodN = (max([elecInfo.N(1,:);elecInfo.N(2,:)])>N);
+% goodSNR = (elecInfo.SNR>snr);
+% goodD = (elecInfo.d <= d);
+% goodElectrodeIDs = (goodN & goodSNR & goodD);
+% 
+% %%%%%%%%%%%%%%%%%%% Get information about the electrodes %%%%%%%%%%%%%%%%%%
+% allElectrodes = [];
+% for i=1:length(elecInfo.elecs)
+%     x = elecInfo.elecs{i}{end};
+%     if i<=13
+%         allElectrodes = cat(2,allElectrodes,x);
+%     else
+%         allElectrodes = cat(2,allElectrodes,x+100); % We add 100 to each electrode ID in Monkey 2 so that electrode numbers are different from monkey 1
+%     end
+% end
+% 
+% %%%%%% For each electrode, find the IDs that need to be averaged %%%%%%%%%%
+% clear goodIDList
+% if combineUniqueElectrodes
+%     
+%     uniqueGoodElectrodeList = unique(allElectrodes(goodElectrodeIDs));
+%     numGoodElectrodes = length(uniqueGoodElectrodeList);
+%     
+%     goodIDList = cell(1,numGoodElectrodes);
+%     for i=1:numGoodElectrodes
+%         goodIDList{i} = find(allElectrodes==uniqueGoodElectrodeList(i));
+%     end
+% else
+%     goodIDs = find(goodElectrodeIDs==1); %#ok<*UNRCH>
+%     numGoodElectrodes = length(goodIDs);
+%     
+%     goodIDList = cell(1,numGoodElectrodes);
+%     for i=1:numGoodElectrodes
+%         goodIDList{i} = goodIDs(i);
+%     end
+% end
+% 
+% %%%%%%%%%%%%%%%%%%%%%%% Combine data if necessary %%%%%%%%%%%%%%%%%%%%%%%%%
+% % allData = cell(1,4);
+% for i= 1:size(goodIDList,2)
+%     a = find(elecNum==goodIDList{i}); %#ok<*EFIND>
+%     if ~isempty(a)
+%         UniqueElecID = i;
+%     end
+% end
+% 
+% clear allDataTMP
+% % allDataTMP = zeros(numGoodElectrodes,5,5);
+% 
+% x = squeeze(firingRateData.data(goodIDList{UniqueElecID},1,:,:,:));
+% y = squeeze(energyDataTF.data(goodIDList{UniqueElecID},1,:,:,:,:))-squeeze(energyDataTF.data_cBL(goodIDList{UniqueElecID},1,:,:,:,:));
+% z = squeeze(energyData.dataST(goodIDList{UniqueElecID},1,:,:,:))-squeeze(energyData.data_cBL(goodIDList{UniqueElecID},1,:,:,:));
+% 
+% b = squeeze(energyData.data_cBL(goodIDList{UniqueElecID},1,:,:,:));
+% 
+% if length(goodIDList{UniqueElecID})==1
+%     allDataTMP = x;
+%     alldTFDataTMP = y;
+%     alldPSDDataTMP = z;
+%     allblPSDDataTMP = b;
+% else
+%     xs = zeros(size(x));
+%     ys = zeros(size(y));
+%     zs = zeros(size(z));
+%     bs = zeros(size(b));
+%     for j=1:length(goodIDList{UniqueElecID})
+%         xs(j,:,:,:) = squeeze(x(j,:,:,:));
+%         ys(j,:,:,:,:) = squeeze(y(j,:,:,:,:));
+%         zs(j,:,:,:) = squeeze(z(j,:,:,:));
+%         bs(j,:,:,:) = squeeze(b(j,:,:,:));
+%     end
+%     allDataTMP = squeeze(mean(xs,1));
+%     alldTFDataTMP = squeeze(mean(ys,1));
+%     alldPSDDataTMP = squeeze(mean(zs,1));
+%     allblPSDDataTMP = squeeze(mean(bs,1));
+% end
+% 
+% xAll{1} = allDataTMP; xAll{2} = alldTFDataTMP; xAll{3} = alldPSDDataTMP; xAll{4} = allblPSDDataTMP;
+% type{1} = 'PSTH';type{2} = 'dTF'; type{3} = 'dPSD';type{3} = 'blPSD'; %#ok<*NASGU>
+% 
+% % for i=2:4
+% %     eDataTMP = squeeze(energyData.dataST{i}) - squeeze(energyData.data_cBL{i});
+% %     
+% %     allDataTMP = zeros(numGoodElectrodes,5,5);
+% %     for j=1:numGoodElectrodes
+% %         clear x
+% %         x = eDataTMP(goodIDList{j},:,:);
+% %         
+% %         xs = zeros(size(x));
+% %         for k=1:length(goodIDList{j})
+% % %             y = squeeze(x(k,:,:));
+% % %             z = flip(y,1); z = (z+z')/2; z = flip(z,1); % Make symmetric
+% %             xs(k,:,:) = squeeze(x(k,:,:));
+% %         end
+% % 
+% %         allDataTMP(j,:,:) = squeeze(mean(xs,1));
+% %     end
+% %     xAll{i} = allDataTMP;
+% % end
+% end
+
 
 % function plotExampleElectrodeData(hPlotsFig6,hPlotsFig7,elecNum,firingRateData,energyDataTF)
 %
@@ -1094,8 +1214,6 @@ else
 end
 
 %%%%%%%%%%%%%%%%%%%%%%% Combine data if necessary %%%%%%%%%%%%%%%%%%%%%%%%%
-% allData = cell(1,4);
-% clear allDataTMP
 allDataTMP = zeros(numGoodElectrodes,5,5);
 for i=1:numGoodElectrodes
     clear x
@@ -1217,7 +1335,7 @@ end
 end
 
 % Get ElectrodesList
-function [ElectrodeArrayListAll,allGoodElectrodesStrArray,ElectrodeStringListAll,allGoodNs,allGoodSNRs,alld_elecs,numElecs] = getElectrodesList(fileNameStringTMP,elecParams,timeRangeForComputation,folderSourceString)
+function [ElectrodeArrayListAll,allGoodElectrodesStrArray,ElectrodeStringListAll,elecInfo,numElecs] = getElectrodesList(fileNameStringTMP,elecParams,timeRangeForComputation,folderSourceString)
 
 % [~,tmpElectrodeArrayList,~] = getGoodElectrodesDetails(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
 
@@ -1262,6 +1380,13 @@ end
 allGoodElectrodesStrArray = tmpElectrodeStringArrayList;
 ElectrodeStringListAll = tmpElectrodeStringList;
 ElectrodeArrayListAll = tmpElectrodeArrayList;
+
+elecInfo.elecs = ElectrodeArrayListAll;
+elecInfo.elecIDs = allGoodElectrodesStrArray;
+elecInfo.N = allGoodNs;
+elecInfo.SNR = allGoodSNRs;
+elecInfo.d = alld_elecs; 
+
 end
 
 % Normalize data for ERP and Spike data
@@ -1279,12 +1404,10 @@ end
 end
 
 % Draw lines for timeTange or FreqRange
-function displayRange(plotHandles,range,yLims,colorName,lineStyle)
+function displayRange(plotHandles,range,yLims,colorName)
 [nX,nY] = size(plotHandles);
 %yLims = getYLims(plotHandles);
-if ~exist('lineStyle','var')
-    lineStyle = 'solid-solid';
-end
+
 yVals = yLims(1):(yLims(2)-yLims(1))/100:yLims(2);
 xVals1 = range(1) + zeros(1,length(yVals));
 xVals2 = range(2) + zeros(1,length(yVals));
@@ -1292,15 +1415,11 @@ xVals2 = range(2) + zeros(1,length(yVals));
 for i=1:nX
     for j=1:nY
         hold(plotHandles(i,j),'on');
-        if strcmp(lineStyle,'solid-solid')
-            plot(plotHandles(i,j),xVals1,yVals,'color',colorName,'LineWidth',1.5);
-            plot(plotHandles(i,j),xVals2,yVals,'color',colorName,'LineWidth',1.5);
-        elseif strcmp(lineStyle,'solid-dash')
-            plot(plotHandles(i,j),xVals1,yVals,'color',colorName,'LineWidth',1.5);
-            plot(plotHandles(i,j),xVals2,yVals,'color',colorName,'LineStyle','--','LineWidth',1.5);
-        end
+        plot(plotHandles(i,j),xVals1,yVals,'color',colorName);
+        plot(plotHandles(i,j),xVals2,yVals,'color',colorName);
     end
 end
+
 end
 
 % get Y limits for an axis

@@ -1,4 +1,4 @@
-function[erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,NI_Data,electrodeArray] = ...
+function[erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,NI_Data,electrodeArray,N] = ...
     getData(folderSourceString,fileNameStringTMP,ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,elecParams,removeERPFlag)
 
 numDatasets = length(fileNameStringTMP);
@@ -12,7 +12,9 @@ disp(['Working on dataset ' num2str(dataset_init) 'of ' num2str(numDatasets)]);
 [erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,NI_Data,electrodeArray]...
     = getDataSingleSession(folderSourceString,fileNameStringTMP{dataset_init},...
     ElectrodeListTMP{dataset_init},dataParameters,tapers_MT,freqRanges,elecParams,removeERPFlag);
-
+for j=1:2
+    N{1,j} = squeeze(firingRateData.N(1,j,:,:));
+end
 
 if length(fileNameStringTMP)>1
     for i= dataset_init+1:numDatasets
@@ -81,8 +83,13 @@ if length(fileNameStringTMP)>1
         oriTuningData.OriPairFR = cat(1,oriTuningData.OriPairFR,oriTuningDataTMP.OriPairFR);
         
         electrodeArray = cat(2,electrodeArray,electrodeArrayTMP);
+        
+        for j=1:2
+            N{i,j} = squeeze(firingRateDataTMP.N(1,j,:,:)); 
+        end
     end
 end
+N = N';
 end
 
 function [erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,NI_Data,electrodeArray] = ...

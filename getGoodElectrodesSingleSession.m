@@ -64,7 +64,7 @@ for j=1:length(electrodeList)
 end
 usefulElectrodes = setdiff(electrodeList(intersect(find(d>=dRange(1)),find(d<dRange(2)))),badElectrodeList);
 
-[goodElecs,Ns,SNRs] = getRateAndSNRInfo(monkeyName,expDate,protocolName,folderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList,versionNum);
+[goodElecs,Ns,SNRs,neuralChannelsStored] = getRateAndSNRInfo(monkeyName,expDate,protocolName,folderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList,versionNum);
 
 % If spikes are required, check which electrodes have enough spikes
 if getSpikeElectrodesFlag
@@ -106,14 +106,17 @@ else
 end
 
 goodElectrodes = usefulElectrodes;
-goodNs = Ns(:,usefulElectrodes);
-goodSNRs = SNRs(usefulElectrodes);
+
 if ~isempty(usefulElectrodes)
     for i= 1:length(usefulElectrodes)
         d_elecs(i) = d(usefulElectrodes(i)==electrodeList);
+        goodNs(:,i) = Ns(:,usefulElectrodes(i)==neuralChannelsStored);
+        goodSNRs(i) = SNRs(usefulElectrodes(i)==neuralChannelsStored);
     end
 else
     d_elecs = [];
+    goodNs = [];
+    goodSNRs = [];
 end
 
 pos = 1;
@@ -144,7 +147,7 @@ else
 end
 
 end
-function [goodElectrodes,Ns,SNRs] = getRateAndSNRInfo(monkeyName,expDate,protocolName,folderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList,versionNum)
+function [goodElectrodes,Ns,SNRs,NeuralChannelsStored] = getRateAndSNRInfo(monkeyName,expDate,protocolName,folderSourceString,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList,versionNum)
 
 % Good electrodes: spikes>spikeCutoff between 150-400 ms for individual gratings at 50% contrast & SNR>snrCutoff
 % Returns all electrodes that meet these criteria
@@ -174,6 +177,8 @@ spikeCountCriterion = ((x.nStim(:,contrastIndexList{1}(1),contrastIndexList{1}(2
 goodPos = (x.SourceUnitID == unitID)& spikeCountCriterion & (y.snr>snrCutoff == 1);
 
 goodElectrodes = x.neuralChannelsStored(goodPos);
+
+NeuralChannelsStored = x.neuralChannelsStored;
 Ns(1,:) = x.nStim(:,contrastIndexList{1}(1),contrastIndexList{1}(2))';
 Ns(2,:) = x.nStim(:,contrastIndexList{2}(1),contrastIndexList{2}(2))';
 Ns(3,:) = x.nStim(:,contrastIndexList{1}(1),contrastIndexList{2}(2))';
