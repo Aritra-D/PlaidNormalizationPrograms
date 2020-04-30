@@ -13,12 +13,11 @@ if versionNum==1
         c2=c2List(i);
         for j=1:length(c1List)
             c1 = c1List(j);
-            predictedResponseMatrix(i,j) = (c1*L)/(c1+alpha*c2+sigma) + (c2*L)/(c2+alpha*c1+sigma); %#ok<AGROW>
+            predictedResponseMatrix(i,j) = (c1*L)/(c1+alpha*c2+sigma) + (c2*L)/(c2+alpha*c1+sigma); 
         end
     end
-end
 
-if versionNum==2
+elseif versionNum==2
     
     L1=params(1);
     L2=params(2);
@@ -29,7 +28,7 @@ if versionNum==2
         c2=c2List(i);
         for j=1:length(c2List)
             c1 = c1List(j);
-            predictedResponseMatrix(i,j) = (c2*L2)/(c2+alpha*c1+sigma)+(c1*L1)/(c1+alpha*c2+sigma); 
+            predictedResponseMatrix(i,j) = (c2*L2)/(c2+alpha*c1+sigma)+(c1*L1)/(c1+alpha*c2+sigma);  %#ok<*AGROW>
         end
     end
 end

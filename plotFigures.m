@@ -20,8 +20,6 @@ elecParams.dRange = [0 0.75];
 elecParams.unitID = 0;
 elecParams.oriSelectiveFlag = 0;
 elecParams.getSpikeElectrodesFlag = 1;
-% elecParams.NICutOff = 1;
-
 
 tapers_MT = [1 1]; % parameters for MT analysis
 removeERPFlag = 0;
@@ -37,10 +35,9 @@ end
 gridType = 'Microelectrode';
 combineUniqueElectrodeData = 0;
 
-
 freqRanges{1} = [8 12]; % alpha
-freqRanges{2} = [30 80]; % gamma
-freqRanges{3} = [104 250]; % hi-gamma
+freqRanges{2} = [32 80]; % gamma
+freqRanges{3} = [104 248]; % hi-gamma
 freqRanges{4} = [16 16];  % SSVEP
 
 timeRangeParameters.blRange = timeRangeForComputationBL;
@@ -505,13 +502,13 @@ if strcmp(colorScheme,'grayscale')
 end
 
 % CRF plots
-versionNum = 2;
+versionNum = 3;
 fittingParams = normalizationModelFit(dSpikeRateData_elecwise,versionNum);
 cList = [0 6.25 12.5 25 50]; %[0 1 2 4 8]/16;
 mp = squeeze(mean(fittingParams.dataP,1));
 
-parMP = getParametersPlaid(mp,versionNum);
-[dp,pmp] = getResponseMatrixPlaid(parMP,mp,versionNum);
+parMP = getParametersPlaidV2(mp,versionNum);
+[dp,pmp] = getResponseMatrixPlaidV2(parMP,mp,versionNum);
 expVar = 1 - (dp/sum((mp(:)-mean(mp(:))).^2));
 
 plot(hPlot.hPlot2(3),cList,mp(5,:),'color',[0.4 0.4 0.4],'marker','o','linestyle','none','LineWidth',1.5);
@@ -532,7 +529,7 @@ text(0.6,0.2,'Grating 2','color',[0.6 0.6 0.6],'fontWeight','bold','fontSize',fo
 text(0.6,0.1,'Plaid','color','k','fontWeight','bold','fontSize',fontSize-2,'unit','normalized','parent',hPlot.hPlot2(3))
 set(hPlot.hPlot2(3),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(3),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
-xlabel(hPlot.hPlot2(3),'Contrast of Ori 1(%)','fontSize',fontSize);ylabel(hPlot.hPlot2(3),'Change in  Spike Rate (spike/s)','fontSize',fontSize);
+xlabel(hPlot.hPlot2(3),'Contrast(%)','fontSize',fontSize);ylabel(hPlot.hPlot2(3),'Change in  Spike Rate (spike/s)','fontSize',fontSize);
 
 % fix symmetry of axes boundary
 plotPos = get(hPlot.hPlot1(3),'Position');
@@ -712,15 +709,15 @@ for i = 2: num_freqRanges-1
     
     % CRF
     %     % Grating
-    versionNum = 2;
+    versionNum = 3;
     fittingParams = normalizationModelFit(dEnergyData,versionNum);
     cList = [0 6.25 12.5 25 50];%[0 1 2 4 8]/16;
     
     mp = squeeze(mean(fittingParams.dataP,1));
     
     %     mp = squeeze(meanP(i,:,:));
-    parMP = getParametersPlaid(mp,versionNum);
-    [dp,pmp] = getResponseMatrixPlaid(parMP,mp,versionNum);
+    parMP = getParametersPlaidV2(mp,versionNum);
+    [dp,pmp] = getResponseMatrixPlaidV2(parMP,mp,versionNum);
     expVar = 1 - (dp/sum((mp(:)-mean(mp(:))).^2));
     
     plot(hPlot.hPlot2(i-1,3),cList,mp(5,:),'color',[0.4 0.4 0.4],'marker','o','linestyle','none','LineWidth',1.5);
@@ -748,7 +745,7 @@ for i = 2: num_freqRanges-1
     end
     
     if i == 3
-        xlabel(hPlot.hPlot2(i-1,3),'Contrast of Grating 1(%)');ylabel(hPlot.hPlot2(i-1,3),'Change in Power(dB)');
+        xlabel(hPlot.hPlot2(i-1,3),'Contrast(%)');ylabel(hPlot.hPlot2(i-1,3),'Change in Power(dB)');
     end
     
     plotPos = get(hPlot.hPlot2(i-1,2),'Position');
@@ -766,8 +763,8 @@ end
 % rescaleData(hPlot.hPlot1(1,:),0,250,[-1.5 3.5],12);
 % rescaleData(hPlot.hPlot1(2,:),0,250,[-4 10],12);
 rescaleData(hPlot.hPlot2(:,3),0,50,[-0.2 6],13);
-rescaleData(hPlot.hPlot2(1,2),0,6,getYLims(hPlot.hPlot2(2)),fontSize-1);
-rescaleData(hPlot.hPlot2(2,2),0,3,getYLims(hPlot.hPlot2(2)),fontSize-1);
+rescaleData(hPlot.hPlot2(1,2),0,6,getYLims(hPlot.hPlot2(1,2)),fontSize-1);
+rescaleData(hPlot.hPlot2(2,2),0,3,getYLims(hPlot.hPlot2(2,2)),fontSize-1);
 
 % for i = 1:length(cValsUnique)
     displayRange(hPlot.hPlot1(1,:),[freqRanges{2}(1) freqRanges{2}(2)],getYLims(hPlot.hPlot1(1,:)),'k')
@@ -903,21 +900,21 @@ xlim(hPlot.hPlot2(2),[0 3]);
 % errorbar(cValsUnique,avg_dEnergyData,sem_avg_dEnergyData,'Marker','o','LineStyle','none','LineWidth',2,'color',[0.5 0.5 0.5],'parent',hPlot.hPlot2(3));
 % % errorbar(cValsUnique,sum_dEnergyData,sem_sum_dEnergyData,'Marker','o','LineStyle','--','LineWidth',2,'color',[0.8 0.8 0.8],'parent',hPlot.hPlot2(3));
 %
-versionNum = 2;
+versionNum = 3;
 fittingParams = normalizationModelFit(dEnergyData,versionNum);
 cList = [0 6.25 12.5 25 50];%[0 1 2 4 8]/16;
 
 mp = squeeze(mean(fittingParams.dataP,1));
 
 %     mp = squeeze(meanP(i,:,:));
-parMP = getParametersPlaid(mp,versionNum);
-[dp,pmp] = getResponseMatrixPlaid(parMP,mp,versionNum);
+parMP = getParametersPlaidV2(mp,versionNum);
+[dp,pmp] = getResponseMatrixPlaidV2(parMP,mp,versionNum);
 expVar = 1 - (dp/sum((mp(:)-mean(mp(:))).^2));
 
-plot(hPlot.hPlot2(3),cList,mp(5,:),'color',[0.4 0.4 0.4],'marker','o','linestyle','none');
+plot(hPlot.hPlot2(3),cList,mp(5,:),'color',[0.4 0.4 0.4],'marker','o','linestyle','none','linewidth',1.5);
 hold (hPlot.hPlot2(3),'on');
-plot(hPlot.hPlot2(3),cList,flip(mp(:,1)),'color',[0.6 0.6 0.6],'marker','s','linestyle','none');
-plot(hPlot.hPlot2(3),cList,[mp(5,1) mp(4,2) mp(3,3) mp(2,4) mp(1,5)],'color','k','marker','v','linestyle','none');
+plot(hPlot.hPlot2(3),cList,flip(mp(:,1)),'color',[0.6 0.6 0.6],'marker','s','linestyle','none','linewidth',1.5);
+plot(hPlot.hPlot2(3),cList,[mp(5,1) mp(4,2) mp(3,3) mp(2,4) mp(1,5)],'color','k','marker','v','linestyle','none','linewidth',1.5);
 plot(hPlot.hPlot2(3),cList,pmp(5,:),'color',[0.4 0.4 0.4],'linewidth',2);
 plot(hPlot.hPlot2(3),cList,flip(pmp(:,1)),'color',[0.6 0.6 0.6],'linewidth',2);
 
@@ -936,7 +933,7 @@ text(0.5,0.25,'Grating 2','color',[0.6 0.6 0.6],'fontWeight','bold','fontSize',1
 text(0.5,0.15,'Plaid','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(3))
 set(hPlot.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(3),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
-xlabel(hPlot.hPlot2(3),'Contrast of Ori 1(%)');ylabel(hPlot.hPlot2(3),'Change in Power(dB)');
+xlabel(hPlot.hPlot2(3),'Contrast(%)');ylabel(hPlot.hPlot2(3),'Change in Power(dB)');
 
 % axis(hPlot.hPlot2,'square');
 % fix symmetry of axes boundary
@@ -1136,8 +1133,8 @@ for j=1:numElectrodes
     %Plaid
     z = squeeze(data(j,:,:));
 %     z = flip(y,1); z = (z+z')/2; z = flip(z,1); % Make symmetric
-    parP = getParametersPlaid(z,versionNum);
-    [dp,pz] = getResponseMatrixPlaid(parP,z,versionNum); %#ok<*ASGLU>
+    parP = getParametersPlaidV2(z,versionNum);
+    [dp,pz] = getResponseMatrixPlaidV2(parP,z,versionNum); %#ok<*ASGLU>
     eP(j) = 1 - (dp/sum((z(:)-mean(z(:))).^2));
     aP(j) = parP(2);
     sP(j) = parP(3);

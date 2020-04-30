@@ -1,5 +1,5 @@
 clear;
-load('M:\data\test\Microelectrode\240120\GRF_001\extractedData\parameterCombinations.mat')
+load('M:\data\coco\EEG\280120\GRF_002\extractedData\parameterCombinations.mat')
  
 for a = 1: length(aValsUnique)
     for e = 1: length(eValsUnique)

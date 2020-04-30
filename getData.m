@@ -324,17 +324,17 @@ else
                             
                             if t == 1
                                 for i=1:numFreqs-1
-                                    fftAmpBL{i}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{i}));
-                                    fftAmpST{i}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{i}));
-                                    energyValsBL{i}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{i}));
-                                    energyValsST{i}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{i}));
+                                    fftAmpBL{i}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{i}));
+                                    fftAmpST{i}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{i}));
+                                    energyValsBL{i}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{i}));
+                                    energyValsST{i}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{i}));
                                 end
                                 
                             elseif t == 2 %% fft and energy data for only SSVEP frequency
-                                fftAmpBL{numFreqs}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{numFreqs}));
-                                fftAmpST{numFreqs}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{numFreqs}));
-                                energyValsBL{numFreqs}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{numFreqs}));
-                                energyValsST{numFreqs}(iElec,c_Ori2,c_Ori1,:) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{numFreqs}));
+                                fftAmpBL{numFreqs}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{numFreqs}));
+                                fftAmpST{numFreqs}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{numFreqs}));
+                                energyValsBL{numFreqs}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{numFreqs}));
+                                energyValsST{numFreqs}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{numFreqs}));
                             end
                             
                             
@@ -505,21 +505,19 @@ function data_BL = getCommonBaseline(data_BL)
 
 if iscell(data_BL)
     size_data_BL = size(data_BL,2);
-    num_con_Ori2 = size(data_BL{1},3);
-    num_con_Ori1 = size(data_BL{1},4);
+    num_con_Ori2 = size(data_BL{1},2);
+    num_con_Ori1 = size(data_BL{1},3);
 else
     size_data_BL = numel(size(data_BL));
     num_con_Ori2 = size(data_BL,3);
     num_con_Ori1 = size(data_BL,4);
 end
 
-if size_data_BL == 4 % baseline for analysis data (elec x TF x Num_Contrast_Ori2 x Num_Contrast_Ori1 x (analysisDataBL))
+if size_data_BL == 4 % baseline for analysis data (elec x Num_Contrast_Ori2 x Num_Contrast_Ori1 x (analysisDataBL))
     if iscell(data_BL)
         for iElec = 1:size(data_BL{1},1)
-            for iTF = 1:size(data_BL{1},2)
-                for k = 1:length(data_BL)
-                    data_BL{k}(iElec,iTF,:,:) = repmat(mean(mean(squeeze(data_BL{k}(iElec,iTF,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
-                end
+            for k = 1:length(data_BL)
+                data_BL{k}(iElec,:,:) = repmat(mean(mean(squeeze(data_BL{k}(iElec,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
             end
         end
     else

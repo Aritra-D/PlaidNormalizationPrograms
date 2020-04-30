@@ -1,9 +1,9 @@
 % Saves Impedance Values for each of the protocols
-monkeyName = 'kesariH';
+monkeyName = 'alpaH';
 gridType = 'Microelectrode';
 
 
-[expDates, protocolNames,positionList,folderSourceString] = dataInformationPlaidNorm(monkeyName,gridType);
+[expDates, protocolNames,oriList,folderSourceString] = dataInformationPlaidProtocolsEEG(monkeyName);
 
 numDays = length(expDates);
 

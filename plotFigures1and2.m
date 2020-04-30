@@ -1,4 +1,4 @@
-function plotFigures1and2(monkeyName,folderSourceString,timeRangeForComputation_spikes,timeRangeForComputation_lfp,colorScheme)
+function plotFigures1and2(monkeyName,folderSourceString,elecNum,timeRangeForComputation_spikes,timeRangeForComputation_lfp,colorScheme)
 if ~exist('folderSourceString','var')
     if strcmp(getenv('username'),'Aritra') || strcmp(getenv('username'),'Lab Computer-Aritra')
         folderSourceString = 'E:\data\PlaidNorm\';
@@ -123,7 +123,9 @@ else
     
 end
 
-elecNum = 29;
+% elecNum = 29;
+
+
 plotExampleElectrodeData(hPlotsFig1,hPlotsFig2,elecNum,elecInfo,firingRateData,energyData,energyDataTF,colorScheme)
 if strcmp(colorScheme,'color')
     folderSaveFigs = fullfile(folderSourceString_Project,'Projects\Aritra_PlaidNormalizationProject\Figures\Color');
@@ -153,8 +155,8 @@ end
 function plotExampleElectrodeData(hPlotsFig1,hPlotsFig2,elecNum,elecInfo,firingRateData,energyData,energyDataTF,colorScheme)
 
 freqRanges{1} = [8 12]; % alpha
-freqRanges{2} = [30 80]; % gamma
-freqRanges{3} = [104 250]; % hi-gamma
+freqRanges{2} = [32 80]; % gamma
+freqRanges{3} = [104 248]; % hi-gamma
 freqRanges{4} = [16 16];  % SSVEP
 
 cValsUnique = [0 6.25 12.5 25 50];
@@ -165,76 +167,91 @@ elseif strcmp(colorScheme,'grayscale')
     colors = repmat(0.85:-0.1:0.45,[3 1])';
 end
 cFlipped_Indices = flip(1:length(cValsUnique2));
-psthData = squeeze(firingRateData.data(elecNum,:,:,:,:));
-spikeRasterData = firingRateData.spikeRasterData(elecNum,1,:,:);
 
 tickLengthPlot = 2*get(hPlotsFig1.hPlot1(1),'TickLength');
 
 combinedData = combineData(firingRateData,energyData,energyDataTF,elecInfo,elecNum);
 
-psthData2 = psthData;
-spikeRasterData2 = spikeRasterData;
-if elecNum == 29 || elecNum == 40 || elecNum == 169
-    psthData2 = flip(flip(permute(psthData,[2 1 3]),1),2);
-    spikeRasterData2 = flip(flip(permute(firingRateData.spikeRasterData(elecNum,1,:,:),[1 2 4 3]),4),3);
-    combinedData{1} = flip(flip(permute(combinedData{1},[2 1 3]),1),2);
-    combinedData{2} = flip(flip(permute(combinedData{2},[2 1 3 4]),1),2);
-    combinedData{3} = flip(flip(permute(combinedData{3},[2 1 3]),1),2);
-    combinedData{4} = flip(flip(permute(combinedData{4},[2 1 3]),1),2);
-
-end
-
-rasterScale = round(max(psthData2(:)))+1;
-for c_Ori2 = 1:5
-    for c_Ori1 = 1:5
-        clear X
-        X = spikeRasterData2{1,1,c_Ori2,c_Ori1};
-        axes(hPlotsFig1.hPlot1(c_Ori2,c_Ori1)); %#ok<LAXES>
-        hold(hPlotsFig1.hPlot1(c_Ori2,c_Ori1),'on');
-        subplot(hPlotsFig1.hPlot1(c_Ori2,c_Ori1))
-        tickLen = rasterScale/length(X);
-        rasterplot(X,(tickLen:tickLen:rasterScale)-tickLen/2,'k',tickLen);
-        plot(hPlotsFig1.hPlot1(c_Ori2,c_Ori1),firingRateData.timeVals,squeeze(psthData2(c_Ori2,c_Ori1 ,:)),'color',colors(cFlipped_Indices(c_Ori2),:,:),'LineWidth',2)
-        set(hPlotsFig1.hPlot1(c_Ori2,c_Ori1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+if ~isempty(elecNum)
+    psthData = squeeze(firingRateData.data(elecNum,:,:,:,:));
+    spikeRasterData = firingRateData.spikeRasterData(elecNum,1,:,:);
+    if elecNum == 29 || elecNum == 40 || elecNum == 169
+        psthData2 = flip(flip(permute(psthData,[2 1 3]),1),2);
+        spikeRasterData2 = flip(flip(permute(firingRateData.spikeRasterData(elecNum,1,:,:),[1 2 4 3]),4),3);
+        combinedData{1} = flip(flip(permute(combinedData{1},[2 1 3]),1),2);
+        combinedData{2} = flip(flip(permute(combinedData{2},[2 1 3 4]),1),2);
+        combinedData{3} = flip(flip(permute(combinedData{3},[2 1 3]),1),2);
+        combinedData{4} = flip(flip(permute(combinedData{4},[2 1 3]),1),2);
+        
+    end
+    
+    rasterScale = round(max(psthData2(:)))+1;
+    for c_Ori2 = 1:5
+        for c_Ori1 = 1:5
+            clear X
+            X = spikeRasterData2{1,1,c_Ori2,c_Ori1};
+            axes(hPlotsFig1.hPlot1(c_Ori2,c_Ori1)); %#ok<LAXES>
+            hold(hPlotsFig1.hPlot1(c_Ori2,c_Ori1),'on');
+            subplot(hPlotsFig1.hPlot1(c_Ori2,c_Ori1))
+            tickLen = rasterScale/length(X);
+            rasterplot(X,(tickLen:tickLen:rasterScale)-tickLen/2,'k',tickLen);
+            plot(hPlotsFig1.hPlot1(c_Ori2,c_Ori1),firingRateData.timeVals,squeeze(psthData2(c_Ori2,c_Ori1,:)),'color',colors(cFlipped_Indices(c_Ori2),:,:),'LineWidth',2)
+            set(hPlotsFig1.hPlot1(c_Ori2,c_Ori1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+        end
+    end
+    
+else
+    psthData = squeeze(mean(firingRateData.data,1));
+    for c_Ori2 = 1:5
+        for c_Ori1 = 1:5
+            plot(hPlotsFig1.hPlot1(c_Ori2,c_Ori1),firingRateData.timeVals,squeeze(psthData(c_Ori2,c_Ori1 ,:)),'color',colors(cFlipped_Indices(c_Ori2),:,:),'LineWidth',2)
+            set(hPlotsFig1.hPlot1(c_Ori2,c_Ori1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+        end
     end
 end
 for cOri1 = 1:5
-title(hPlotsFig1.hPlot1(1,cOri1),[num2str(cValsUnique(cOri1)) ' %'])
+    title(hPlotsFig1.hPlot1(1,cOri1),[num2str(cValsUnique(cOri1)) ' %'])
 end
 cValsUniqueFlipped = flip(cValsUnique);
+figure(1)
 for cOri2 = 1:5
-textH{cOri2} = getPlotHandles(1,1,[0.81 0.82-(cOri2-1)*0.115 0.01 0.01]);
+    textH{cOri2} = getPlotHandles(1,1,[0.81 0.82-(cOri2-1)*0.115 0.01 0.01]);
 end
 
 textString = {'50 %','25 %','12.5 %','6.25 %','0 %'};
+
 for cOri2 = 1:5
     set(textH{cOri2},'Visible','Off')
     text(0.35,1.15,textString{cOri2},'unit','normalized','fontsize',16,'fontweight','bold','parent',textH{cOri2});
 end
-
-textString1 =['Contrast of Grating 1 (Orientation: 112.5 ' char(176) ')'];  textString2 = ['Contrast of Grating 2 (Orientation: 22.5 ' char(176) ')']; 
-textH1 = getPlotHandles(1,1,[0.36 0.97 0.01 0.01]);
-textH2 = getPlotHandles(1,1,[0.88 0.85 0.01 0.01]);
-set(textH1,'Visible','Off');set(textH2,'Visible','Off');
-text(0.35,1.15,textString1,'unit','normalized','fontsize',16,'fontweight','bold','parent',textH1);
-text(0.35,1.15,textString2,'unit','normalized','fontsize',16,'fontweight','bold','rotation',270,'parent',textH2);
-
+if ~isempty(elecNum)
+    textString1 =['Contrast of Grating 1 (Orientation: 112.5 ' char(176) ')'];  textString2 = ['Contrast of Grating 2 (Orientation: 22.5 ' char(176) ')'];
+    textH1 = getPlotHandles(1,1,[0.36 0.97 0.01 0.01]);
+    textH2 = getPlotHandles(1,1,[0.88 0.85 0.01 0.01]);
+    set(textH1,'Visible','Off');set(textH2,'Visible','Off');
+    text(0.35,1.15,textString1,'unit','normalized','fontsize',16,'fontweight','bold','parent',textH1);
+    text(0.35,1.15,textString2,'unit','normalized','fontsize',16,'fontweight','bold','rotation',270,'parent',textH2);
+end
 rescaleData(hPlotsFig1.hPlot1,-0.1,0.5,[-5 0]+ getYLims(hPlotsFig1.hPlot1),14);
 
 
 for c_Ori2 = 1: length(cValsUnique2)
     for c_Ori1 = 1:length(cValsUnique)
-        plot(hPlotsFig1.hPlot2(1,c_Ori1),firingRateData.timeVals,squeeze(psthData2(cFlipped_Indices(c_Ori2),c_Ori1,:)),'color',colors(c_Ori2,:,:),'LineWidth',2);
+        if ~isempty(elecNum)
+            plot(hPlotsFig1.hPlot2(1,c_Ori1),firingRateData.timeVals,squeeze(psthData2(cFlipped_Indices(c_Ori2),c_Ori1,:)),'color',colors(c_Ori2,:,:),'LineWidth',2);
+        else
+            plot(hPlotsFig1.hPlot2(1,c_Ori1),firingRateData.timeVals,squeeze(psthData(cFlipped_Indices(c_Ori2),c_Ori1,:)),'color',colors(c_Ori2,:,:),'LineWidth',2);
+        end
         hold(hPlotsFig1.hPlot2(1,c_Ori1),'on');
-%         plot(hPlotsFig1.hPlot2(2,c_Ori1),firingRateData.timeVals,squeeze(combinedData{1}(cFlipped_Indices(c_Ori2),c_Ori1,:)),'color',colors(c_Ori2,:,:),'LineWidth',2);
-%         hold(hPlotsFig1.hPlot2(2,c_Ori1),'on');
+        %         plot(hPlotsFig1.hPlot2(2,c_Ori1),firingRateData.timeVals,squeeze(combinedData{1}(cFlipped_Indices(c_Ori2),c_Ori1,:)),'color',colors(c_Ori2,:,:),'LineWidth',2);
+        %         hold(hPlotsFig1.hPlot2(2,c_Ori1),'on');
     end
 end
 
 for i = 1:length(cValsUnique)
     set(hPlotsFig1.hPlot2(1,i),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-%     set(hPlotsFig1.hPlot2(2,i),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-
+    %     set(hPlotsFig1.hPlot2(2,i),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
+    
 end
 xlabel(hPlotsFig1.hPlot1(5,1),'Time (s)'); ylabel(hPlotsFig1.hPlot2(1,1),[{'Firing Rate'} {'(spikes/s)'}]);
 
@@ -257,9 +274,16 @@ energyVsFrequencyDataBL = combinedData{4};
 dEnergyVsFrequencyData = 10*combinedData{3};
 
 
-
-dEnergyTF2 = dEnergyTF;
-dEnergyVsFrequencyData2 = dEnergyVsFrequencyData;
+if ~isempty(elecNum)
+    dEnergyTF2 = dEnergyTF;
+    dEnergyVsFrequencyData2 = dEnergyVsFrequencyData;
+    energyVsFrequencyDataBL2 = energyVsFrequencyDataBL;
+else
+    dEnergyTF2 = squeeze(mean(dEnergyTF,1));
+    dEnergyVsFrequencyData2 = squeeze(mean(dEnergyVsFrequencyData,1));
+    energyVsFrequencyDataBL2 = squeeze(mean(energyVsFrequencyDataBL,1));
+    
+end
 % if elecNum == 29 || elecNum == 40 || elecNum == 169
 %     dEnergyTF2 = flip(flip(permute(dEnergyTF,[1 2 4 3 5 6]),4),3);
 %     dEnergyVsFrequencyData2 = flip(flip(permute(dEnergyVsFrequencyData,[2 1 3]),2),1);
@@ -287,7 +311,7 @@ for c_Ori2 = 1:5
             colormap(hPlotsFig2.hPlot1(c_Ori2,c_Ori1),flipud(gray));
         end
         set(hPlotsFig2.hPlot1(c_Ori2,c_Ori1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
-
+        
         if c_Ori2 == 5 && c_Ori1 == 5
             colorBar_tf = colorbar(hPlotsFig2.hPlot1(c_Ori2,c_Ori1));
             colorBar_YLabelHandle = get(colorBar_tf,'Ylabel');
@@ -303,7 +327,7 @@ rescaleData(hPlotsFig2.hPlot1,-0.1,0.5,getYLims(hPlotsFig2.hPlot1),14);
 
 
 for c_Ori1 = 1:length(cValsUnique)
-    plot(hPlotsFig2.hPlot2(1,c_Ori1),energyData.freqVals,squeeze(energyVsFrequencyDataBL(cFlipped_Indices(c_Ori1),c_Ori1,:)-energyVsFrequencyDataBL(cFlipped_Indices(c_Ori1),c_Ori1,:)),'color','k','LineWidth',2);
+    plot(hPlotsFig2.hPlot2(1,c_Ori1),energyData.freqVals,squeeze(energyVsFrequencyDataBL2(cFlipped_Indices(c_Ori1),c_Ori1,:)-energyVsFrequencyDataBL2(cFlipped_Indices(c_Ori1),c_Ori1,:)),'color','k','LineWidth',2);
     hold(hPlotsFig2.hPlot2(1,c_Ori1),'on');
 end
 
@@ -319,13 +343,13 @@ end
 xlabel(hPlotsFig2.hPlot2(1,1),'Frequency (Hz)'); ylabel(hPlotsFig2.hPlot2(1,1),{'Change in','Power (dB)'});
 
 for cOri1 = 1:5
-title(hPlotsFig2.hPlot1(1,cOri1),[num2str(cValsUnique(cOri1)) ' %'])
+    title(hPlotsFig2.hPlot1(1,cOri1),[num2str(cValsUnique(cOri1)) ' %'])
 end
 cValsUniqueFlipped = flip(cValsUnique);
 
 figure(2)
 for cOri2 = 1:5
-textH{cOri2} = getPlotHandles(1,1,[0.88 0.83-(cOri2-1)*0.115 0.01 0.01]);
+    textH{cOri2} = getPlotHandles(1,1,[0.88 0.83-(cOri2-1)*0.115 0.01 0.01]);
 end
 
 textString = {'50 %','25 %','12.5 %','6.25 %','0 %'};
@@ -334,22 +358,22 @@ for cOri2 = 1:5
     set(textH{cOri2},'Visible','Off')
     text(0.35,1.15,textString{cOri2},'unit','normalized','fontsize',16,'fontweight','bold','parent',textH{cOri2});
 end
-
-textString1 =['Contrast of Grating 1 (Orientation: 112.5 ' char(176) ')'];  textString2 = ['Contrast of Grating 2 (Orientation: 22.5 ' char(176) ')']; 
-figure(2)
-textH1 = getPlotHandles(1,1,[0.38 0.97 0.01 0.01]);
-textH2 = getPlotHandles(1,1,[0.95 0.83 0.01 0.01]);
-set(textH1,'Visible','Off');set(textH2,'Visible','Off');
-text(0.35,1.15,textString1,'unit','normalized','fontsize',16,'fontweight','bold','parent',textH1);
-text(0.35,1.15,textString2,'unit','normalized','fontsize',16,'fontweight','bold','rotation',270,'parent',textH2);
-
+if ~isempty(elecNum)
+    textString1 =['Contrast of Grating 1 (Orientation: 112.5 ' char(176) ')'];  textString2 = ['Contrast of Grating 2 (Orientation: 22.5 ' char(176) ')'];
+    figure(2)
+    textH1 = getPlotHandles(1,1,[0.38 0.97 0.01 0.01]);
+    textH2 = getPlotHandles(1,1,[0.95 0.83 0.01 0.01]);
+    set(textH1,'Visible','Off');set(textH2,'Visible','Off');
+    text(0.35,1.15,textString1,'unit','normalized','fontsize',16,'fontweight','bold','parent',textH1);
+    text(0.35,1.15,textString2,'unit','normalized','fontsize',16,'fontweight','bold','rotation',270,'parent',textH2);
+end
 % xLims = get(hPlotsFig2.hPlot(1,1),'XLim');
 
 
 rescaleData(hPlotsFig2.hPlot2,0,250,getYLims(hPlotsFig2.hPlot2),14);
 for i=1:5
-displayRange(hPlotsFig2.hPlot2(1,i),[freqRanges{2}(1) freqRanges{2}(2)],getYLims(hPlotsFig2.hPlot2),'k');
-displayRange(hPlotsFig2.hPlot2(1,i),[freqRanges{3}(1) freqRanges{3}(2)],getYLims(hPlotsFig2.hPlot2),[0.5 0.5 0.5]);
+    displayRange(hPlotsFig2.hPlot2(1,i),[freqRanges{2}(1) freqRanges{2}(2)],getYLims(hPlotsFig2.hPlot2),'k');
+    displayRange(hPlotsFig2.hPlot2(1,i),[freqRanges{3}(1) freqRanges{3}(2)],getYLims(hPlotsFig2.hPlot2),[0.5 0.5 0.5]);
 end
 
 end
@@ -398,43 +422,79 @@ else
 end
 
 %%%%%%%%%%%%%%%%%%%%%%% Combine data if necessary %%%%%%%%%%%%%%%%%%%%%%%%%
-% allData = cell(1,4);
-for i= 1:size(goodIDList,2)
-    a = find(elecNum==goodIDList{i}); %#ok<*EFIND>
-    if ~isempty(a)
-        UniqueElecID = i;
+
+if ~isempty(elecNum)
+    % allData = cell(1,4);
+    for i= 1:size(goodIDList,2)
+        a = find(elecNum==goodIDList{i}); %#ok<*EFIND>
+        if ~isempty(a)
+            UniqueElecID = i;
+        end
     end
-end
-
-clear allDataTMP
-% allDataTMP = zeros(numGoodElectrodes,5,5);
-
-x = squeeze(firingRateData.data(goodIDList{UniqueElecID},1,:,:,:));
-y = squeeze(energyDataTF.data(goodIDList{UniqueElecID},1,:,:,:,:))-squeeze(energyDataTF.data_cBL(goodIDList{UniqueElecID},1,:,:,:,:));
-z = squeeze(energyData.dataST(goodIDList{UniqueElecID},1,:,:,:))-squeeze(energyData.data_cBL(goodIDList{UniqueElecID},1,:,:,:));
-
-b = squeeze(energyData.data_cBL(goodIDList{UniqueElecID},1,:,:,:));
-
-if length(goodIDList{UniqueElecID})==1
-    allDataTMP = x;
-    alldTFDataTMP = y;
-    alldPSDDataTMP = z;
-    allblPSDDataTMP = b;
+    
+    clear allDataTMP alldTFDataTMP alldPSDDataTMP allblPSDDataTMP
+    % allDataTMP = zeros(numGoodElectrodes,5,5);
+    
+    x = squeeze(firingRateData.data(goodIDList{UniqueElecID},1,:,:,:));
+    y = squeeze(energyDataTF.data(goodIDList{UniqueElecID},1,:,:,:,:))-squeeze(energyDataTF.data_cBL(goodIDList{UniqueElecID},1,:,:,:,:));
+    z = squeeze(energyData.dataST(goodIDList{UniqueElecID},1,:,:,:))-squeeze(energyData.data_cBL(goodIDList{UniqueElecID},1,:,:,:));
+    
+    b = squeeze(energyData.data_cBL(goodIDList{UniqueElecID},1,:,:,:));
+    
+    if length(goodIDList{UniqueElecID})==1
+        allDataTMP = x;
+        alldTFDataTMP = y;
+        alldPSDDataTMP = z;
+        allblPSDDataTMP = b;
+    else
+        xs = zeros(size(x));
+        ys = zeros(size(y));
+        zs = zeros(size(z));
+        bs = zeros(size(b));
+        for j=1:length(goodIDList{UniqueElecID})
+            xs(j,:,:,:) = squeeze(x(j,:,:,:));
+            ys(j,:,:,:,:) = squeeze(y(j,:,:,:,:));
+            zs(j,:,:,:) = squeeze(z(j,:,:,:));
+            bs(j,:,:,:) = squeeze(b(j,:,:,:));
+        end
+        allDataTMP = squeeze(mean(xs,1));
+        alldTFDataTMP = squeeze(mean(ys,1));
+        alldPSDDataTMP = squeeze(mean(zs,1));
+        allblPSDDataTMP = squeeze(mean(bs,1));
+    end
+    
 else
-    xs = zeros(size(x));
-    ys = zeros(size(y));
-    zs = zeros(size(z));
-    bs = zeros(size(b));
-    for j=1:length(goodIDList{UniqueElecID})
-        xs(j,:,:,:) = squeeze(x(j,:,:,:));
-        ys(j,:,:,:,:) = squeeze(y(j,:,:,:,:));
-        zs(j,:,:,:) = squeeze(z(j,:,:,:));
-        bs(j,:,:,:) = squeeze(b(j,:,:,:));
+    clear allDataTMP alldTFDataTMP alldPSDDataTMP allblPSDDataTMP
+    
+    for i=1:numGoodElectrodes
+        x = squeeze(firingRateData.data(goodIDList{i},1,:,:,:));
+        y = squeeze(energyDataTF.data(goodIDList{i},1,:,:,:,:))-squeeze(energyDataTF.data_cBL(goodIDList{i},1,:,:,:,:));
+        z = squeeze(energyData.dataST(goodIDList{i},1,:,:,:))-squeeze(energyData.data_cBL(goodIDList{i},1,:,:,:));
+        
+        b = squeeze(energyData.data_cBL(goodIDList{i},1,:,:,:));
+        
+        if length(goodIDList{i})==1
+            allDataTMP(i,:,:,:) = x;
+            alldTFDataTMP(i,:,:,:,:) = y;
+            alldPSDDataTMP(i,:,:,:) = z;
+            allblPSDDataTMP(i,:,:,:) = b;
+        else
+            xs = zeros(size(x));
+            ys = zeros(size(y));
+            zs = zeros(size(z));
+            bs = zeros(size(b));
+            for j=1:length(goodIDList{i})
+                xs(j,:,:,:) = squeeze(x(j,:,:,:));
+                ys(j,:,:,:,:) = squeeze(y(j,:,:,:,:));
+                zs(j,:,:,:) = squeeze(z(j,:,:,:));
+                bs(j,:,:,:) = squeeze(b(j,:,:,:));
+            end
+            allDataTMP(i,:,:,:) = squeeze(mean(xs,1));
+            alldTFDataTMP(i,:,:,:,:) = squeeze(mean(ys,1));
+            alldPSDDataTMP(i,:,:,:) = squeeze(mean(zs,1));
+            allblPSDDataTMP(i,:,:,:) = squeeze(mean(bs,1));
+        end
     end
-    allDataTMP = squeeze(mean(xs,1));
-    alldTFDataTMP = squeeze(mean(ys,1));
-    alldPSDDataTMP = squeeze(mean(zs,1));
-    allblPSDDataTMP = squeeze(mean(bs,1));
 end
 
 xAll{1} = allDataTMP; xAll{2} = alldTFDataTMP; xAll{3} = alldPSDDataTMP; xAll{4} = allblPSDDataTMP;
@@ -442,19 +502,19 @@ type{1} = 'PSTH';type{2} = 'dTF'; type{3} = 'dPSD';type{3} = 'blPSD'; %#ok<*NASG
 
 % for i=2:4
 %     eDataTMP = squeeze(energyData.dataST{i}) - squeeze(energyData.data_cBL{i});
-%     
+%
 %     allDataTMP = zeros(numGoodElectrodes,5,5);
 %     for j=1:numGoodElectrodes
 %         clear x
 %         x = eDataTMP(goodIDList{j},:,:);
-%         
+%
 %         xs = zeros(size(x));
 %         for k=1:length(goodIDList{j})
 % %             y = squeeze(x(k,:,:));
 % %             z = flip(y,1); z = (z+z')/2; z = flip(z,1); % Make symmetric
 %             xs(k,:,:) = squeeze(x(k,:,:));
 %         end
-% 
+%
 %         allDataTMP(j,:,:) = squeeze(mean(xs,1));
 %     end
 %     xAll{i} = allDataTMP;
@@ -541,21 +601,21 @@ ElectrodeArrayListAll = tmpElectrodeArrayList;
 end
 
 % function [ElectrodeArrayListAll,numElecs] = getElectrodesList(fileNameStringTMP,elecParams,timeRangeForComputation,folderSourceString)
-% 
+%
 % % [~,tmpElectrodeArrayList,~] = getGoodElectrodesDetails(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
-% 
+%
 % gridType = 'microelectrode';
-% 
+%
 % numSessions = length(fileNameStringTMP);
 % tmpElectrodeStringList = cell(1,numSessions);
 % tmpElectrodeArrayList = cell(1,numSessions);
 % numElecs = 0;
-% 
+%
 % Monkey1_ExpDates = dataInformationPlaidNorm('alpaH',gridType,0);
 % Monkey1_SessionNum = length(Monkey1_ExpDates);
 % % Monkey2_ExpDates = dataInformationPlaidNorm('kesariH',gridType,0);
 % % Monkey2_SessionNum = length(Monkey2_ExpDates);
-% 
+%
 % for i = 1:numSessions
 %     clear monkeyName
 %     if strcmp(fileNameStringTMP{i}(1:5),'alpaH')
@@ -576,7 +636,7 @@ end
 %     [tmpElectrodeStringList{i},tmpElectrodeArrayList{i},goodElectrodes] = getGoodElectrodesSingleSession(monkeyName,expDate,protocolName,gridType,elecParams,timeRangeForComputation,folderSourceString,versionNum);
 %     numElecs = numElecs+length(goodElectrodes);
 % end
-% 
+%
 % ElectrodeArrayListAll = tmpElectrodeArrayList;
 % end
 

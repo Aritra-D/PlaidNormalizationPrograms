@@ -102,7 +102,7 @@ for i=2:4
 end
 
 type{2} = 'G'; type{3} = 'HG'; type{4} = 'S';
-versionNum = 2;
+versionNum = 3;
 
 for i=1:4
     x = xAll{i};
@@ -124,8 +124,8 @@ for i=1:4
         %Plaid
         z = squeeze(x(j,:,:));
 %         z = flip(y,1); z = (z+z')/2; z = flip(z,1); % Make symmetric
-        parP = getParametersPlaid(z,versionNum);
-        [dp,pz] = getResponseMatrixPlaid(parP,z,versionNum); %#ok<*ASGLU>
+        parP = getParametersPlaidV2(z,versionNum);
+        [dp,pz] = getResponseMatrixPlaidV2(parP,z,versionNum); %#ok<*ASGLU>
         eP(j) = 1 - (dp/sum((z(:)-mean(z(:))).^2)); %#ok<*AGROW>
         aP(j) = parP(3);
         sP(j) = parP(4);
