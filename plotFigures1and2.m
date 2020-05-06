@@ -150,6 +150,9 @@ FigName2 = fullfile(folderSaveFigs,['Figure 2_' monkeyName '_N' num2str(elecPara
     '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID) ]);
 saveas(hFigure2,[FigName2 '.fig'])
 saveas(hFigure2,[FigName2,'.tif'])
+
+print(hFigure1,[FigName1,'HQ.tif'],'-dtiff','-r300')
+print(hFigure2,[FigName2,'HQ.tif'],'-dtiff','-r300')
 end
 
 function plotExampleElectrodeData(hPlotsFig1,hPlotsFig2,elecNum,elecInfo,firingRateData,energyData,energyDataTF,colorScheme)

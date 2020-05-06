@@ -520,6 +520,7 @@ if size_data_BL == 4 % baseline for analysis data (elec x Num_Contrast_Ori2 x Nu
                 data_BL{k}(iElec,:,:) = repmat(mean(mean(squeeze(data_BL{k}(iElec,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
             end
         end
+       
     else
         for iElec = 1:size(data_BL,1)
             for iTF = 1:size(data_BL,2)
@@ -527,18 +528,21 @@ if size_data_BL == 4 % baseline for analysis data (elec x Num_Contrast_Ori2 x Nu
             end
         end
     end
+    
 elseif size_data_BL == 5 % baseline for timeSeries/PSD data (elec x TF x Num_Contrast_Ori2 x Num_Contrast_Ori1 x time/FreqVals x (dataBL))
     for iElec = 1:size(data_BL,1)
         for iTF = 1:size(data_BL,2)
             data_BL(iElec,iTF,:,:,:) = reshape(repmat(squeeze(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:)),2),1))',[num_con_Ori2*num_con_Ori1 1]),[num_con_Ori2 num_con_Ori1 size(data_BL,5)]);
         end
     end
+    
 elseif size_data_BL == 6 % baseline for time-Frequency data (elec x TF x Num_Contrast_Ori2 x Num_Contrast_Ori1 x time/FreqVals x (dataBL_tf))
     for iElec = 1:size(data_BL,1)
         for iTF = 1:size(data_BL,2)
             data_BL(iElec,iTF,:,:,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:,:)),2),1),num_con_Ori2);
         end
-    end    
+    end
+    
 end
 end
 

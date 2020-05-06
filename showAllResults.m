@@ -267,7 +267,7 @@ for iModel =1:3
         disp('Statistical tests for NI- Kruskal-Wallis test')
         for i=1:size(pairs,1)
             clear statData3
-            statData3 = [sP(pairs(i,1),:)',sP(pairs(i,2),:)'];
+            statData3 = [NI(pairs(i,1),:)',NI(pairs(i,2),:)'];
             p_NI(i) = kruskalwallis(statData3,[],'off');
 %             statData3 = NI(pairs(i,1),:)';
 %             statData4 = NI(pairs(i,2),:)';
@@ -424,12 +424,12 @@ for i=1:4
 end
 
 % Break axis for subplot (2,2,3)
-breakInfo = breakyaxis(subplot(2,2,3),[4 7]);
-set(breakInfo.lowAxes,'YLim',[0 1.3]);
-set(breakInfo.highAxes,'YLim',[5 10]);
-legend(breakInfo.highAxes,{'Tuned','Population'},'color','w','fontSize',14,'Location','best')
-line('yData',breakInfo.yPoints1(1:10),'xdata',breakInfo.xPoints(1:10),'Parent',breakInfo.breakAxes,'Color','k','LineWidth',1);
-line('yData',breakInfo.yPoints2(1:10),'xdata',breakInfo.xPoints(1:10),'Parent',breakInfo.breakAxes,'Color','k','LineWidth',1);
+% breakInfo = breakyaxis(subplot(2,2,3),[4 7]);
+% set(breakInfo.lowAxes,'YLim',[0 1.3]);
+% set(breakInfo.highAxes,'YLim',[5 10]);
+% legend(breakInfo.highAxes,{'Tuned','Population'},'color','w','fontSize',14,'Location','best')
+% line('yData',breakInfo.yPoints1(1:10),'xdata',breakInfo.xPoints(1:10),'Parent',breakInfo.breakAxes,'Color','k','LineWidth',1);
+% line('yData',breakInfo.yPoints2(1:10),'xdata',breakInfo.xPoints(1:10),'Parent',breakInfo.breakAxes,'Color','k','LineWidth',1);
 
 textH{1} = getPlotHandles(1,1,[0.07 0.95 0.01 0.01]);
 textH{2} = getPlotHandles(1,1,[0.07 0.45 0.01 0.01]);
@@ -517,14 +517,14 @@ for i=1:3
     ylabel(subplot(1,3,i),'Population Median')
     set(subplot(1,3,i),'xticklabel',titleString,'XTickLabelRotation',45,'fontSize',14)
 end
-breakInfo2 = breakyaxis(subplot(1,3,1),[4 7]);
-set(breakInfo2.lowAxes,'YLim',[0 1.3]);
-set(breakInfo2.highAxes,'YLim',[6 10]);
-set(breakInfo2.highAxes,'YTick',7:10);
-legend(breakInfo2.highAxes,{'Tuned','Population'},'color','w','fontSize',14,'Location','best')
-line('yData',breakInfo2.yPoints1(1:16),'xdata',breakInfo2.xPoints(1:16),'Parent',breakInfo2.breakAxes,'Color','k','LineWidth',1);
-line('yData',breakInfo2.yPoints2(1:16),'xdata',breakInfo2.xPoints(1:16),'Parent',breakInfo2.breakAxes,'Color','k','LineWidth',1);
-
+% breakInfo2 = breakyaxis(subplot(1,3,1),[4 7]);
+% set(breakInfo2.lowAxes,'YLim',[0 1.3]);
+% set(breakInfo2.highAxes,'YLim',[6 10]);
+% set(breakInfo2.highAxes,'YTick',7:10);
+% legend(breakInfo2.highAxes,{'Tuned','Population'},'color','w','fontSize',14,'Location','best')
+% line('yData',breakInfo2.yPoints1(1:16),'xdata',breakInfo2.xPoints(1:16),'Parent',breakInfo2.breakAxes,'Color','k','LineWidth',1);
+% line('yData',breakInfo2.yPoints2(1:16),'xdata',breakInfo2.xPoints(1:16),'Parent',breakInfo2.breakAxes,'Color','k','LineWidth',1);
+% 
 
 textH{1} = getPlotHandles(1,1,[0.07 0.95 0.01 0.01]);
 textH{2} = getPlotHandles(1,1,[0.36 0.95 0.01 0.01]);

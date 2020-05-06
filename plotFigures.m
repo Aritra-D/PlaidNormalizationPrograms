@@ -126,20 +126,20 @@ for i = 1:4
 end
 % % Figure 5: Comparison of NI,fitted parameters (alpha, sigma), percentage explained variance for spikeRate, gamma, high
 % % gamma, SSVEP
-hFigure5 = figure(5);
-set(hFigure5,'units','normalized','outerposition',[0 0 1 1])
-hPlotsFig5.hPlot1 = getPlotHandles(2,2,[0.2 0.05 0.6 0.9],0.05,0.1,1);
-
-textH{1} = getPlotHandles(1,1,[0.15 0.95 0.01 0.01]);
-textH{2} = getPlotHandles(1,1,[0.15 0.45 0.01 0.01]);
-textH{3} = getPlotHandles(1,1,[0.48 0.95 0.01 0.01]);
-textH{4} = getPlotHandles(1,1,[0.48 0.45 0.01 0.01]);
-
-textString = {'A','B','C','D'};
-for i = 1:4
-    set(textH{i},'Visible','Off')
-    text(0.35,1.15,textString{i},'unit','normalized','fontsize',20,'fontweight','bold','parent',textH{i});
-end
+% hFigure5 = figure(5);
+% set(hFigure5,'units','normalized','outerposition',[0 0 1 1])
+% hPlotsFig5.hPlot1 = subplot(1,3);
+% 
+% textH{1} = getPlotHandles(1,1,[0.15 0.95 0.01 0.01]);
+% textH{2} = getPlotHandles(1,1,[0.15 0.45 0.01 0.01]);
+% textH{3} = getPlotHandles(1,1,[0.48 0.95 0.01 0.01]);
+% textH{4} = getPlotHandles(1,1,[0.48 0.45 0.01 0.01]);
+% 
+% textString = {'A','B','C','D'};
+% for i = 1:4
+%     set(textH{i},'Visible','Off')
+%     text(0.35,1.15,textString{i},'unit','normalized','fontsize',20,'fontweight','bold','parent',textH{i});
+% end
 
 % % % Figure 6: Example Single electrode PSTH data for a single session:
 % hFigure6 = figure(6);
@@ -213,9 +213,9 @@ plotData_spikes(hPlotsFig1,firingRateData,timeRangeForComputation_spikes,elecInf
 % rescaleData(hPlotsFig1.hPlot2(3),0,50,getYLims(hPlotsFig1.hPlot2(3)),14);
 
 if strcmp(colorScheme,'greyscale')||strcmp(colorScheme,'grayscale')
-    folderSave_Figs = fullfile(folderSourceString_Project,'Projects\Aritra_PlaidNormalizationProject\Figures\Grayscale\FitV2');
+    folderSave_Figs = fullfile(folderSourceString_Project,'Projects\Aritra_PlaidNormalizationProject\Figures\Grayscale');
 elseif strcmp(colorScheme,'color')
-    folderSave_Figs = fullfile(folderSourceString_Project,'Projects\Aritra_PlaidNormalizationProject\Figures\Color\FitV2');
+    folderSave_Figs = fullfile(folderSourceString_Project,'Projects\Aritra_PlaidNormalizationProject\Figures\Color');
 end
 
 if ~exist(folderSave_Figs,'dir')
@@ -365,14 +365,16 @@ FigName4 = fullfile(folderSave_Figs,['Figure 5_' monkeyName '_N' num2str(elecPar
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % plotData_histogram(hPlotsFig5,NI_Data_allElecsEvoked,fittingParams)
-Criterion = 'none';
-plotBars(hPlotsFig5,fileSave1,fileSave3,colorScheme,Criterion)
+% Criterion = 'none';
+% plotBars(hPlotsFig5,fileSave3,colorScheme,Criterion)
+colorScheme = 'grayscale';
+hFigure5 = plotStatistics(fileSave3,colorScheme);
 FigName5 = fullfile(folderSave_Figs,['Figure 6_' monkeyName '_N' num2str(elecParams.spikeCutoff) '_S' num2str(elecParams.snrCutoff)...
     '_spikesT' num2str(round(1000*timeRangeForComputation_spikes(1))) '_' num2str(round(1000*timeRangeForComputation_spikes(2))) ...
     '_lfpT' num2str(round(1000*timeRangeForComputation(1))) '_' num2str(round(1000*timeRangeForComputation(2))) ...
     '_d' num2str(elecParams.dRange(1)) '_' num2str(elecParams.dRange(2))...
     '_tapers' num2str(tapers_MT(2)) '_cne' num2str(combineUniqueElectrodeData) ...
-    '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_Criterion_' Criterion '_' gridType '_UnitID' num2str(elecParams.unitID) ]);
+    '_gse' num2str(elecParams.getSpikeElectrodesFlag) '_' gridType '_UnitID' num2str(elecParams.unitID) ]);
 
 saveas(hFigure1,[FigName1 '.fig'])
 saveas(hFigure1,[FigName1,'.tif'])
@@ -385,6 +387,10 @@ saveas(hFigure4,[FigName4,'.tif'])
 saveas(hFigure5,[FigName5 '.fig'])
 saveas(hFigure5,[FigName5,'.tif'])
 
+print(hFigure1,[FigName1,'HQ.tif'],'-dtiff','-r300')
+print(hFigure3,[FigName3,'HQ.tif'],'-dtiff','-r300')
+print(hFigure4,[FigName4,'HQ.tif'],'-dtiff','-r300')
+print(hFigure5,[FigName5,'HQ.tif'],'-dtiff','-r300')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -404,7 +410,7 @@ end
 % psthData1 = squeeze(mean(data.data,1));
 psthData1 = data.data;
 
-% spike rate data: con_Ori2 (rows) x con_Ori2 (columns)
+% elecwise spike rate data: elecs x con_Ori2 (rows) x con_Ori2 (columns)
 spikeRateDataST_elecwise = squeeze(data.analysisDataST);
 spikeRateDataBL_elecwise = squeeze(data.analysisData_cBL);
 dSpikeRateData_elecwise1 = spikeRateDataST_elecwise - spikeRateDataBL_elecwise;
@@ -419,7 +425,7 @@ end
 if combineUniqueElectrodeData
     psthData = squeeze(mean(combineTimeSeriesData(psthData1,elecInfo),1));
 else
-    dSpikeRateData_elecwise = squeeze(mean(psthData1,1));
+    psthData = squeeze(mean(psthData1,1));
 end
 
 
@@ -490,7 +496,7 @@ set(hPlot.hPlot2(2),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthP
 title(hPlot.hPlot2(2),['Median NI: ',num2str(round(median_dSpikeData_Cohen,2))],'fontWeight','bold','fontSize',fontSize);
 xlabel(hPlot.hPlot2(2),'Normalization Index');ylabel(hPlot.hPlot2(2),'Number of electrodes');
 displayRange(hPlot.hPlot2(2),[1 2],getYLims(hPlot.hPlot2(2)),'k','solid-dash')
-text(0.7,0.8,'N = 50','color','k','fontWeight','bold','fontSize',fontSize-2,'unit','normalized','parent',hPlot.hPlot2(2))
+text(0.7,0.8,['N = ' num2str(size(NI_dSpikeData_Cohen,1))],'color','k','fontWeight','bold','fontSize',fontSize-2,'unit','normalized','parent',hPlot.hPlot2(2))
 rescaleData(hPlot.hPlot2(2),0,2.5,getYLims(hPlot.hPlot2(2)),fontSize-1);
 
 
@@ -505,7 +511,8 @@ end
 versionNum = 3;
 fittingParams = normalizationModelFit(dSpikeRateData_elecwise,versionNum);
 cList = [0 6.25 12.5 25 50]; %[0 1 2 4 8]/16;
-mp = squeeze(mean(fittingParams.dataP,1));
+mp = squeeze(median(fittingParams.dataP,1));
+% mp = squeeze(mean(fittingParams.dataP,1));
 
 parMP = getParametersPlaidV2(mp,versionNum);
 [dp,pmp] = getResponseMatrixPlaidV2(parMP,mp,versionNum);
@@ -522,7 +529,7 @@ plot(hPlot.hPlot2(3),cList,pmp(5,:),'color',[0.4 0.4 0.4],'LineWidth',1.5);
 plot(hPlot.hPlot2(3),cList,flip(pmp(:,1),1),'color',[0.6 0.6 0.6],'LineWidth',1.5);
 
 plot(hPlot.hPlot2(3),cList,[pmp(5,1) pmp(4,2) pmp(3,3) pmp(2,4) pmp(1,5)],'color','k','LineWidth',1.5);
-title(hPlot.hPlot2(3),[{['\alpha = ' num2str(parMP(3),3) ', \sigma = ' num2str(parMP(4),3)]} {['ExpVar = ' num2str(round(100*expVar)) '%']}]);
+title(hPlot.hPlot2(3),[{['\alpha = ' num2str(parMP(3),2) ', \sigma = ' num2str(parMP(4),2)]} {['ExpVar = ' num2str(round(100*expVar)) '%']}]);
 hold(hPlot.hPlot2(3),'off');
 text(0.6,0.3,'Grating 1','color',[0.4 0.4 0.4],'fontWeight','bold','fontSize',fontSize-2,'unit','normalized','parent',hPlot.hPlot2(3))
 text(0.6,0.2,'Grating 2','color',[0.6 0.6 0.6],'fontWeight','bold','fontSize',fontSize-2,'unit','normalized','parent',hPlot.hPlot2(3))
@@ -641,7 +648,7 @@ for i = 2: num_freqRanges-1
     end
     
 %     m_dEnergyData = squeeze(mean(dEnergyData,1));
-    median_dEnergyData = squeeze(median(dEnergyData,1));
+    median_dEnergyData = squeeze(median(dEnergyData,1)); 
     
     % computing N.I. population data
     NI_dEnergyData_Cohen =  (dEnergyData(:,1,1)+dEnergyData(:,5,5))./squeeze(dEnergyData(:,1,5));
@@ -697,7 +704,7 @@ for i = 2: num_freqRanges-1
     else
     end
     
-    xlim()
+%     xlim()
     displayRange(hPlot.hPlot2(i-1,2),[1 2],getYLims(hPlot.hPlot2(i-1,2)),'k','solid-dash');
     
 
@@ -710,10 +717,12 @@ for i = 2: num_freqRanges-1
     % CRF
     %     % Grating
     versionNum = 3;
-    fittingParams = normalizationModelFit(dEnergyData,versionNum);
+%     fittingParams = normalizationModelFit(dEnergyData,versionNum);
     cList = [0 6.25 12.5 25 50];%[0 1 2 4 8]/16;
     
-    mp = squeeze(mean(fittingParams.dataP,1));
+    %     mp = squeeze(mean(fittingParams.dataP,1));
+    %     mp = squeeze(median(fittingParams.dataP,1));
+    mp = squeeze(median(dEnergyData,1));
     
     %     mp = squeeze(meanP(i,:,:));
     parMP = getParametersPlaidV2(mp,versionNum);
@@ -728,7 +737,7 @@ for i = 2: num_freqRanges-1
     plot(hPlot.hPlot2(i-1,3),cList,flip(pmp(:,1)),'color',[0.6 0.6 0.6],'LineWidth',1.5);
         
     plot(hPlot.hPlot2(i-1,3),cList,[pmp(5,1) pmp(4,2) pmp(3,3) pmp(2,4) pmp(1,5)],'color','k','LineWidth',1.5);
-    title(hPlot.hPlot2(i-1,3),['\alpha=' num2str(parMP(3),3) ', \sigma=' num2str(parMP(4),3) ',ExpVar=' num2str(round(100*expVar)) '%']);
+    title(hPlot.hPlot2(i-1,3),['\alpha=' num2str(parMP(3),2) ', \sigma=' num2str(parMP(4),2) ',ExpVar=' num2str(round(100*expVar)) '%']);
     hold(hPlot.hPlot2(i-1,3),'off');
     
     % % CRF
@@ -904,7 +913,8 @@ versionNum = 3;
 fittingParams = normalizationModelFit(dEnergyData,versionNum);
 cList = [0 6.25 12.5 25 50];%[0 1 2 4 8]/16;
 
-mp = squeeze(mean(fittingParams.dataP,1));
+% mp = squeeze(mean(fittingParams.dataP,1));
+mp = squeeze(median(fittingParams.dataP,1));
 
 %     mp = squeeze(meanP(i,:,:));
 parMP = getParametersPlaidV2(mp,versionNum);
@@ -919,7 +929,7 @@ plot(hPlot.hPlot2(3),cList,pmp(5,:),'color',[0.4 0.4 0.4],'linewidth',2);
 plot(hPlot.hPlot2(3),cList,flip(pmp(:,1)),'color',[0.6 0.6 0.6],'linewidth',2);
 
 plot(hPlot.hPlot2(3),cList,[pmp(5,1) pmp(4,2) pmp(3,3) pmp(2,4) pmp(1,5)],'color','k','linewidth',2);
-title(hPlot.hPlot2(3),[{['\alpha=' num2str(parMP(3),3) ', \sigma=' num2str(parMP(4),3)]} {['ExpVar=' num2str(round(100*expVar)) '%']}],'fontSize',14);
+title(hPlot.hPlot2(3),[{['\alpha=' num2str(parMP(3),2) ', \sigma=' num2str(parMP(4),2)]} {['ExpVar=' num2str(round(100*expVar)) '%']}],'fontSize',14);
 % hold(hPlot.hPlot2(3),'off');
 
 
@@ -1148,39 +1158,6 @@ fittingParams.dataP = dataP;
 
 end
 
-function fittingParams = normalizationModelFitV2(data)
-
-numElectrodes = size(data,1);
-
-for j=1:numElectrodes
-%     % Grating
-%     g1 = squeeze(data(j,5,:))';
-%     g2 = flip(squeeze(data(j,:,1)),2);
-%     
-%     g = (g1+g2)/2; % Make symmetric
-%     parG = getParametersGrating(g);
-%     [dg,pg] = getResponseMatrixGrating(parG,g);
-%     eG(j) = 1 - (dg/sum((g-mean(g)).^2)); %#ok<*NASGU>
-%     sG(j) = parG(2);
-%     dataG(j,:) = g;
-    
-    %Plaid
-    z = squeeze(data(j,:,:));
-%     z = flip(y,1); z = (z+z')/2; z = flip(z,1); % Make symmetric
-    parP = getParametersPlaid(z);
-    [dp,pz] = getResponseMatrixPlaid(parP,z); %#ok<*ASGLU>
-    eP(j) = 1 - (dp/sum((z(:)-mean(z(:))).^2));
-    aP(j) = parP(2);
-    sP(j) = parP(3);
-    dataP(j,:,:) = z;
-end
-
-fittingParams.eP = eP;
-fittingParams.aP = aP;
-fittingParams.sP = sP;
-fittingParams.dataP = dataP;
-
-end
 
 % Get FileNamesList
 function fileNameStringListAll = getFileNameStringList(monkeyName,gridType)

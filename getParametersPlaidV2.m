@@ -14,6 +14,7 @@ elseif modelNum==2 % Free parameters L1, L2, alpha, and sigma; Stimulus tuned no
     sigmaStart = 0.1;
     L1Start = (1+2*sigmaStart)*actualResponseMatrix(5,5);
     L2Start = (1+2*sigmaStart)*actualResponseMatrix(1,1);
+%     L2Start = (actualResponseMatrix(1,1)*(L1Start-actualResponseMatrix(1,5)))/(actualResponseMatrix(1,5)-actualResponseMatrix(1,1));
     alphaStart = (L1Start+L2Start)/actualResponseMatrix(1,5) - (1+2*sigmaStart);
     
     startPt = [L1Start L2Start alphaStart sigmaStart];
