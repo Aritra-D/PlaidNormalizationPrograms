@@ -87,12 +87,12 @@ hFigure3 = figure(3);
 set(hFigure3,'units','normalized','outerposition',[0 0 1 1])
 hPlotsFig3.hPlot1 = getPlotHandles(2,5,[0.25 0.69 0.5 0.28],0.01,0.01,1);
 linkaxes(hPlotsFig3.hPlot1(1,:)); linkaxes(hPlotsFig3.hPlot1(2,:));
-hPlotsFig3.hPlot2 = getPlotHandles(2,3,[0.25 0.08 0.5 0.51],0.07,0.07,1);
+hPlotsFig3.hPlot2 = getPlotHandles(2,3,[0.25 0.09 0.5 0.51],0.07,0.07,1);
 
 textH{1} = getPlotHandles(1,1,[0.2 0.97 0.01 0.01]);
 textH{2} = getPlotHandles(1,1,[0.2 0.6 0.01 0.01]);
-textH{3} = getPlotHandles(1,1,[0.4 0.6 0.01 0.01]);
-textH{4} = getPlotHandles(1,1,[0.59 0.6 0.01 0.01]);
+textH{3} = getPlotHandles(1,1,[0.415 0.6 0.01 0.01]);
+textH{4} = getPlotHandles(1,1,[0.595 0.6 0.01 0.01]);
 
 textString = {'A','B','C','D'};
 for i = 1:4
@@ -484,7 +484,7 @@ set(hPlot.hPlot2(1),'Position',[plotPos(1) plotPos(2) plotPos(3)+0.02 plotPos(4)
 % title(hPlot.hPlot2(1),['Median NI_C_o_h_e_n: ',num2str(median_dSpikeData_Cohen) ', Median NI_R_a_y: ',num2str(median_dSpikeData_Ray)],'fontWeight','bold');
 set(hPlot.hPlot2(1),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(1),'XTick',1:length(cValsUnique),'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique),'fontSize',fontSize);
-xlabel(hPlot.hPlot2(1),'Contrast of Grating 1(%)','fontSize',fontSize);ylabel(hPlot.hPlot2(1),'Contrast of Grating 2(%)','fontSize',fontSize);
+xlabel(hPlot.hPlot2(1),'Contrast of Grating 1 (%)','fontSize',fontSize);ylabel(hPlot.hPlot2(1),'Contrast of Grating 2 (%)','fontSize',fontSize);
 
 % NI population histogram
 edges = [-inf -0.1:0.1:1.6 inf];
@@ -496,7 +496,7 @@ set(hPlot.hPlot2(2),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthP
 title(hPlot.hPlot2(2),['Median NI: ',num2str(round(median_dSpikeData_Cohen,2))],'fontWeight','bold','fontSize',fontSize);
 xlabel(hPlot.hPlot2(2),'Normalization Index');ylabel(hPlot.hPlot2(2),'Number of electrodes');
 displayRange(hPlot.hPlot2(2),[1 2],getYLims(hPlot.hPlot2(2)),'k','solid-dash')
-text(0.7,0.8,['N = ' num2str(size(NI_dSpikeData_Cohen,1))],'color','k','fontWeight','bold','fontSize',fontSize-2,'unit','normalized','parent',hPlot.hPlot2(2))
+text(0.72,0.8,['N = ' num2str(size(NI_dSpikeData_Cohen,1))],'color','k','fontWeight','bold','fontSize',fontSize-2,'unit','normalized','parent',hPlot.hPlot2(2))
 rescaleData(hPlot.hPlot2(2),0,2.5,getYLims(hPlot.hPlot2(2)),fontSize-1);
 
 
@@ -521,7 +521,7 @@ expVar = 1 - (dp/sum((mp(:)-mean(mp(:))).^2));
 plot(hPlot.hPlot2(3),cList,mp(5,:),'color',[0.4 0.4 0.4],'marker','o','linestyle','none','LineWidth',1.5);
 hold (hPlot.hPlot2(3),'on');
 
-plot(hPlot.hPlot2(3),cList,flip(mp(:,1)),'color',[0.6 0.6 0.6],'marker','s','linestyle','none','LineWidth',1.5);
+plot(hPlot.hPlot2(3),cList,flip(mp(:,1)),'color',[0.6 0.6 0.6],'marker','o','linestyle','none','LineWidth',1.5);
 
 hold (hPlot.hPlot2(3),'on');
 plot(hPlot.hPlot2(3),cList,[mp(5,1) mp(4,2) mp(3,3) mp(2,4) mp(1,5)],'color','k','marker','v','linestyle','none','LineWidth',1.5);
@@ -536,7 +536,7 @@ text(0.6,0.2,'Grating 2','color',[0.6 0.6 0.6],'fontWeight','bold','fontSize',fo
 text(0.6,0.1,'Plaid','color','k','fontWeight','bold','fontSize',fontSize-2,'unit','normalized','parent',hPlot.hPlot2(3))
 set(hPlot.hPlot2(3),'fontSize',fontSize,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(3),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
-xlabel(hPlot.hPlot2(3),'Contrast(%)','fontSize',fontSize);ylabel(hPlot.hPlot2(3),'Change in  Spike Rate (spike/s)','fontSize',fontSize);
+xlabel(hPlot.hPlot2(3),'Contrast (%)','fontSize',fontSize);ylabel(hPlot.hPlot2(3),'Change in  Spike Rate (spike/s)','fontSize',fontSize);
 
 % fix symmetry of axes boundary
 plotPos = get(hPlot.hPlot1(3),'Position');
@@ -731,7 +731,7 @@ for i = 2: num_freqRanges-1
     
     plot(hPlot.hPlot2(i-1,3),cList,mp(5,:),'color',[0.4 0.4 0.4],'marker','o','linestyle','none','LineWidth',1.5);
     hold (hPlot.hPlot2(i-1,3),'on');
-    plot(hPlot.hPlot2(i-1,3),cList,flip(mp(:,1)),'color',[0.6 0.6 0.6],'marker','s','linestyle','none','LineWidth',1.5);
+    plot(hPlot.hPlot2(i-1,3),cList,flip(mp(:,1)),'color',[0.6 0.6 0.6],'marker','o','linestyle','none','LineWidth',1.5);
     plot(hPlot.hPlot2(i-1,3),cList,[mp(5,1) mp(4,2) mp(3,3) mp(2,4) mp(1,5)],'color','k','marker','v','linestyle','none','LineWidth',1.5);
     plot(hPlot.hPlot2(i-1,3),cList,pmp(5,:),'color',[0.4 0.4 0.4],'LineWidth',1.5);
     plot(hPlot.hPlot2(i-1,3),cList,flip(pmp(:,1)),'color',[0.6 0.6 0.6],'LineWidth',1.5);
@@ -754,12 +754,13 @@ for i = 2: num_freqRanges-1
     end
     
     if i == 3
-        xlabel(hPlot.hPlot2(i-1,3),'Contrast(%)');ylabel(hPlot.hPlot2(i-1,3),'Change in Power(dB)');
+        xlabel(hPlot.hPlot2(i-1,3),'Contrast (%)');ylabel(hPlot.hPlot2(i-1,3),'Change in Power (dB)');
     end
     
-    plotPos = get(hPlot.hPlot2(i-1,2),'Position');
-    plotPos2 = get(hPlot.hPlot2(i-1,3),'Position');
-    set(hPlot.hPlot2(i-1,3),'Position',[plotPos2(1)-(plotPos(3)-plotPos2(3)) plotPos2(2) plotPos(3) plotPos2(4)]);
+    plotPos = get(hPlot.hPlot1(2,3),'Position');
+    plotPos2 = get(hPlot.hPlot2(i-1,2),'Position');
+    set(hPlot.hPlot2(i-1,2),'Position',[plotPos(1) plotPos2(2) plotPos2(3) plotPos2(4)]);
+%     set(hPlot.hPlot2(i-1,3),'Position',[plotPos2(1)-(plotPos(3)-plotPos2(3)) plotPos2(2) plotPos(3) plotPos2(4)]);
     
 end
 
@@ -771,7 +772,7 @@ for i = 1:5
 end
 % rescaleData(hPlot.hPlot1(1,:),0,250,[-1.5 3.5],12);
 % rescaleData(hPlot.hPlot1(2,:),0,250,[-4 10],12);
-rescaleData(hPlot.hPlot2(:,3),0,50,[-0.2 6],13);
+rescaleData(hPlot.hPlot2(:,3),0,50,[-0.2 6.5],13);
 rescaleData(hPlot.hPlot2(1,2),0,6,getYLims(hPlot.hPlot2(1,2)),fontSize-1);
 rescaleData(hPlot.hPlot2(2,2),0,3,getYLims(hPlot.hPlot2(2,2)),fontSize-1);
 
@@ -868,13 +869,13 @@ median_dEnergyData_Cohen = median(NI_dEnergyData_Cohen,1);
 imagesc(median_dEnergyData,'parent',hPlot.hPlot2(1));
 colorBar_rlvPSD = colorbar(hPlot.hPlot2(1));
 colorYlabelHandle = get(colorBar_rlvPSD,'Ylabel');
-set(colorYlabelHandle,'String','Change in Power(dB)','fontSize',14);
+set(colorYlabelHandle,'String','\Delta Power (dB)','fontSize',14);
 plotPos = get(hPlot.hPlot2(1),'Position');
 set(hPlot.hPlot2(1),'Position',[plotPos(1) plotPos(2) plotPos(3)+0.02 plotPos(4)]);
 % title(hPlot.hPlot2(1),['Median NI: ',num2str(median_dEnergyData_Cohen)],'fontWeight','bold');
 set(hPlot.hPlot2(1),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(1),'XTick',1:length(cValsUnique),'XTickLabelRotation',90,'XTickLabel',cValsUnique,'YTickLabel',flip(cValsUnique));
-xlabel(hPlot.hPlot2(1),'Contrast of Grating 1(%)');ylabel(hPlot.hPlot2(1),'Contrast of Grating 2(%)');
+xlabel(hPlot.hPlot2(1),'Contrast of Grating 1 (%)');ylabel(hPlot.hPlot2(1),'Contrast of Grating 2 (%)');
 
 % NI population histogram
 edges = [-inf 0:0.2:2.6 inf];
@@ -923,7 +924,7 @@ expVar = 1 - (dp/sum((mp(:)-mean(mp(:))).^2));
 
 plot(hPlot.hPlot2(3),cList,mp(5,:),'color',[0.4 0.4 0.4],'marker','o','linestyle','none','linewidth',1.5);
 hold (hPlot.hPlot2(3),'on');
-plot(hPlot.hPlot2(3),cList,flip(mp(:,1)),'color',[0.6 0.6 0.6],'marker','s','linestyle','none','linewidth',1.5);
+plot(hPlot.hPlot2(3),cList,flip(mp(:,1)),'color',[0.6 0.6 0.6],'marker','o','linestyle','none','linewidth',1.5);
 plot(hPlot.hPlot2(3),cList,[mp(5,1) mp(4,2) mp(3,3) mp(2,4) mp(1,5)],'color','k','marker','v','linestyle','none','linewidth',1.5);
 plot(hPlot.hPlot2(3),cList,pmp(5,:),'color',[0.4 0.4 0.4],'linewidth',2);
 plot(hPlot.hPlot2(3),cList,flip(pmp(:,1)),'color',[0.6 0.6 0.6],'linewidth',2);
@@ -943,7 +944,7 @@ text(0.5,0.25,'Grating 2','color',[0.6 0.6 0.6],'fontWeight','bold','fontSize',1
 text(0.5,0.15,'Plaid','color','k','fontWeight','bold','fontSize',14,'unit','normalized','parent',hPlot.hPlot2(3))
 set(hPlot.hPlot2(3),'fontSize',14,'TickDir','out','Ticklength',tickLengthPlot,'box','off')
 set(hPlot.hPlot2(3),'XTick',cValsUnique,'XTickLabelRotation',90,'XTickLabel',cValsUnique);
-xlabel(hPlot.hPlot2(3),'Contrast(%)');ylabel(hPlot.hPlot2(3),'Change in Power(dB)');
+xlabel(hPlot.hPlot2(3),'Contrast (%)');ylabel(hPlot.hPlot2(3),'Change in Power (dB)');
 
 % axis(hPlot.hPlot2,'square');
 % fix symmetry of axes boundary

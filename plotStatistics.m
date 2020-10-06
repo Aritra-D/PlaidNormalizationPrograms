@@ -129,13 +129,13 @@ for iModel =1:3
         end
     end
     
-    eP_allModels{iModel} = eP; %#ok<*SAGROW>
-    sP_allModels{iModel} = sP; %#ok<*AGROW>
-    
-    if modelNum==1
-    else
-        aP_allModels{iModel-1} = aP;
-    end
+%     eP_allModels{iModel} = eP; %#ok<*SAGROW>
+%     sP_allModels{iModel} = sP; %#ok<*AGROW>
+%     
+%     if modelNum==1
+%     else
+%         aP_allModels{iModel-1} = aP;
+%     end
     
     neuralMeasures = {'Spikes','Gamma','Hi-Gamma','SSVEP'};
     params = {'N.I.','aP','sP','eP'};
@@ -146,19 +146,35 @@ for iModel =1:3
     
     % Statistics
     for i = 1:4 % params
+        disp(['Model: ' iModel ' ' modelStringList{iModel}])
         disp([params{i},':'])
         disp('median +/- SEMedian')
         for j = 1:4 % Neural measures
+            clear aP_median_temp aP_seMedian_temp 
+            clear sP_median_temp sP_seMedian_temp
+            clear eP_median_temp eP_seMedian_temp
             if i==1
-                disp([neuralMeasures{j},':' num2str(round(median(NI(j,:)),2)),' +/- ' num2str(round(getSEMedian(NI(j,:)'),2))])
+                disp([neuralMeasures{j},':' num2str(round(median(NI(j,:)),2)),' +/- ' num2str(round(getSEMedian(NI(j,:)',1000),2))])
             elseif i==2
                 if modelNum==2 || modelNum==3
-                    disp([neuralMeasures{j},':' num2str(round(median(aP(j,:)),2)),' +/- ' num2str(round(getSEMedian(aP(j,:)'),2))])
+                    aP_median_temp = median(aP(j,:));
+                    aP_seMedian_temp = getSEMedian(aP(j,:)',1000);
+                    disp([neuralMeasures{j},':' num2str(round(aP_median_temp,2)),' +/- ' num2str(round(aP_seMedian_temp,2))])
+                    aP_median{modelNum-1}(j) = aP_median_temp;
+                    aP_seMedian{modelNum-1}(j)= aP_seMedian_temp;
                 end
             elseif i==3
-                disp([neuralMeasures{j},':' num2str(round(median(sP(j,:)),2)),' +/- ' num2str(round(getSEMedian(sP(j,:)'),2))])
+                sP_median_temp = median(sP(j,:));
+                sP_seMedian_temp = getSEMedian(sP(j,:)',1000);
+                disp([neuralMeasures{j},':' num2str(round(sP_median_temp,2)),' +/- ' num2str(round(sP_seMedian_temp,2))])
+                sP_median{iModel}(j) = sP_median_temp;
+                sP_seMedian{iModel}(j)= sP_seMedian_temp;
             elseif i==4
-                disp([neuralMeasures{j},':' num2str(round(median(eP(j,:)),2)),' +/- ' num2str(round(getSEMedian(eP(j,:)'),3))])
+                eP_median_temp = median(eP(j,:));
+                eP_seMedian_temp = getSEMedian(eP(j,:)',1000);
+                disp([neuralMeasures{j},':' num2str(round(eP_median_temp,2)),' +/- ' num2str(round(eP_seMedian_temp,3))])
+                eP_median{iModel}(j) = eP_median_temp;
+                eP_seMedian{iModel}(j)= eP_seMedian_temp;            
             end
         end
     end
@@ -200,29 +216,29 @@ for iModel =1:3
     end
 end
 
-% calculating aP_median and aP_seMedian for two normalization (tuned &
-% population models)
-for i=1:2 % models
-    aP_median{i} =  median(aP_allModels{i},2)';
-    for j = 1:4 % Neural measures
-        aP_seMedian{i}(j) = getSEMedian(aP_allModels{i}(j,:));
-    end
-end
-
-% calculating aP_median and aP_seMedian for all normalization (untuned,
-% tuned & population models)
-for i=1:3 % models
-    sP_median{i} =  median(sP_allModels{i},2)';
-    eP_median{i} =  median(eP_allModels{i},2)';
-    for j = 1:4 % Neural measures
-        sP_seMedian{i}(j) = getSEMedian(sP_allModels{i}(j,:));
-        eP_seMedian{i}(j) = getSEMedian(eP_allModels{i}(j,:));
-    end
-end
+% % calculating aP_median and aP_seMedian for two normalization (tuned &
+% % population models)
+% for i=1:2 % models
+%     aP_median{i} =  median(aP_allModels{i},2)';
+%     for j = 1:4 % Neural measures
+%         aP_seMedian{i}(j) = getSEMedian(aP_allModels{i}(j,:));
+%     end
+% end
+% 
+% % calculating eP/sP_median and eP/sP_seMedian for all normalization (untuned,
+% % tuned & population models)
+% for i=1:3 % models
+%     sP_median{i} =  median(sP_allModels{i},2)';
+%     eP_median{i} =  median(eP_allModels{i},2)';
+%     for j = 1:4 % Neural measures
+%         sP_seMedian{i}(j) = getSEMedian(sP_allModels{i}(j,:));
+%         eP_seMedian{i}(j) = getSEMedian(eP_allModels{i}(j,:));
+%     end
+% end
 
 % grouping parameter values according to neural measures
 for i=1:4 % Neural Measures
-    aPBar_median{i} = [aP_median{1}(i) aP_median{2}(i)];
+    aPBar_median{i} = [aP_median{1}(i) aP_median{2}(i)]; %#ok<*AGROW>
     aPBar_seMedian{i} = [aP_seMedian{1}(i) aP_seMedian{2}(i)];
     sPBar_median{i} = [sP_median{1}(i) sP_median{2}(i) sP_median{3}(i)];
     sPBar_seMedian{i} = [sP_seMedian{1}(i) sP_seMedian{2}(i) sP_seMedian{3}(i)];
@@ -278,7 +294,7 @@ end
 tickLengthPlot = 2*get(subplot(1,3,1),'TickLength');
 
 set(subplot(1,3,1),'TickDir','out','Ticklength',tickLengthPlot,'box','off','fontSize',14)
-legend(subplot(1,3,1),{'Untuned','Tuned','Population'},'fontSize',14,'Location','best')
+legend(subplot(1,3,1),{'Standard','Tuned','Population'},'fontSize',14,'Location','best')
 
 
 subplot(1,3,2)

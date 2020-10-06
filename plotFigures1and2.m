@@ -265,7 +265,9 @@ rescaleData(hPlotsFig1.hPlot1,-0.1,0.5,[-5 0]+ getYLims(hPlotsFig1.hPlot1),14);
 
 % Figure 2
 
-
+if strcmp(colorScheme,'color')
+    colors = repmat(0.85:-0.1:0.45,[3 1])';
+end
 % dEnergyTF = 10*(energyDataTF.data - energyDataTF.data_cBL);
 % energyVsFrequencyDataST = squeeze(mean(energyData.dataST(elecNum,1,:,:,:),1));
 % energyVsFrequencyDataBL = squeeze(mean(energyData.data_cBL(elecNum,1,:,:,:),1));

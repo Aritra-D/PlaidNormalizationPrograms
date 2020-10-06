@@ -8,7 +8,7 @@ if ~exist('OrientationTuningFlag','var');               OrientationTuningFlag = 
 %(grating placed on the grid centre with orientation varying from 0-157.5
 % in 8 steps of 22.5 degrees)
 
-if strcmp(getenv('computername'),'RAYLABPC-ARITRA') %|| strcmp(getenv('username'),'Aritra')
+if strcmp(getenv('computername'),'RAYLABPC-ARITRA') || strcmp(getenv('username'),'Aritra')
     dataFolderSourceString = 'E:\data\PlaidNorm';
 else
     dataFolderSourceString = 'M:\CommonData\Non_Standard\PlaidNorm';

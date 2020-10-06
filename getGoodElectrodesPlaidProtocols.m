@@ -3,7 +3,7 @@
 
 function [allGoodElectrodes,allDaysToCombine,allGoodElectrodesStr,allGoodElectrodesStrArray,goodElectrodes,goodDays,allGoodFRs,allGoodNs,allGoodSNRs] = getGoodElectrodesPlaidProtocols(monkeyName,versionNum,gridType,dRange,combineUniqueElectrodeData,getSpikeElectrodesFlag,unitID,spikeCutoff,snrCutoff,timeRangeFRComputation,contrastIndexList)
 
-% if ~exist('folderSourceString','var');               folderSourceString = 'E:\';            end
+if ~exist('folderSourceString','var');               folderSourceString = 'E:\';            end
 if ~exist('gridType','var');                         gridType = 'microelectrode';           end
 if ~exist('combineUniqueElectrodeData','var');       combineUniqueElectrodeData = 0;        end
 if ~exist('getSpikeElectrodesFlag', 'var');          getSpikeElectrodesFlag = 1;            end

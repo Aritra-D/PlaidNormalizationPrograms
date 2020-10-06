@@ -142,7 +142,7 @@ for iModel =1:3
     titleString = {'Spikes','Gamma','Hi-Gamma','SSVEP'};
     paramString = {'N.I.','eP','aP','sP'};
     
-    meanP = squeeze(mean(dataP,2));
+    medianP = squeeze(median(dataP,2));
     hFig=figure;
     set(hFig,'units','normalized','outerposition',[0 0 1 1])
     
@@ -150,13 +150,13 @@ for iModel =1:3
         %     meanP = mean(squeeze(dataP(i,:,:,:)),1);
         
         subplot(3,4,i);
-        imagesc(squeeze(meanP(i,:,:))); colorbar;
+        imagesc(squeeze(medianP(i,:,:))); colorbar;
         %     imagesc(squeeze(meanP)); colorbar;
         tickLengthPlot = 2*get(subplot(3,4,i),'TickLength');
         
         title(titleString{i});
         
-        mp = squeeze(meanP(i,:,:));
+        mp = squeeze(medianP(i,:,:));
         %       mp = squeeze(meanP);
         
         parMP = getParametersPlaidV2(mp,modelNum);

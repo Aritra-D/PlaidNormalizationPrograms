@@ -211,7 +211,7 @@ else
     params.trialave = 1;
     
     % Set up movingWindow parameters for time-frequency plot
-    winSize = 0.1;
+    winSize = 0.1; %0.1 (10Hz Resolution); 0.125 (8Hz Resolution)
     winStep = 0.025;
     movingwin = [winSize winStep];
     
