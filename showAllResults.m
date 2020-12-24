@@ -5,7 +5,7 @@ clear; close all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Get Data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Aritra - if you make one file for N=0, S=0 (all electrodes) you can
 % always sub-select based on N,snr and d.
-load('E:\Projects\Aritra_PlaidNormalizationProject\savedData_Figures\all_N15_S2_allElecs_T150_400_d0_0.75_tapers1_removeERP0_cne0_gse1_Microelectrode_UnitID0.mat');
+load('E:\Projects\Aritra_PlaidNormalizationProject\savedData_Figures\kesariH_N15_S2_allElecs_T150_400_d0_0.75_tapers1_removeERP0_cne0_gse1_Microelectrode_UnitID0.mat');
 
 N=15; snr=2; d=0.75;
 combineUniqueElectrodes=1;

@@ -17,7 +17,7 @@ if ~isempty(elecParams)
     getOriSelectiveFlag = elecParams.oriSelectiveFlag;
     
 else
-    if ~exist('spikeCutoff', 'var');                     spikeCutoff = 20;                      end
+    if ~exist('spikeCutoff', 'var');                     spikeCutoff = 15;                      end
     if ~exist('snrCutoff', 'var');                       snrCutoff = 2;                       end
     if ~exist('dRange', 'var');                          dRange = [0 0.75];                     end
     if ~exist('getSpikeElectrodesFlag', 'var');          getSpikeElectrodesFlag = 1;            end

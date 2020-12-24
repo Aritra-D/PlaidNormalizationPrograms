@@ -1,4 +1,4 @@
-% DaactualResponseMatrix is organized into Response for Grating 2 (Rows) x Response for
+% The actualResponseMatrix is organized into Response for Grating 2 (Rows) x Response for
 % Grating 1 (Columns); positive x-axis in rows indicate increase in
 % contrast of Grating 1, positivey-axis along columns inicate increase in
 % contrast of Grating 2

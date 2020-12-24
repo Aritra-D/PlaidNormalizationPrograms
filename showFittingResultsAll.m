@@ -1,13 +1,13 @@
 %load('C:\Users\Supratim Ray\OneDrive - Indian Institute of Science\Supratim\Projects\Aritra_PlaidNormalizationProject\savedData_Figures\all_N20_S2_allElecs_T150_400_d0_0.75_tapers1_removeERP0_cne0_gse1_gridType_Microelectrode_UnitID0.mat');
 
-if strcmp(getenv('username'),'Aritra') || strcmp(getenv('username'),'Lab Computer-Aritra')
+if strcmp(getenv('username'),'Aritra') || strcmp(getenv('username'),'RayLabPC-Aritra')
     folderSourceString_Project = 'E:\';
 elseif strcmp(getenv('username'),'Supratim Ray')
     folderSourceString_Project = 'M:\';
 end
 
 folderName = fullfile(folderSourceString_Project,'Projects\Aritra_PlaidNormalizationProject\savedData_Figures');
-fileName = fullfile(folderName,'all_N20_S2_allElecs_T150_400_d0_0.75_tapers1_removeERP0_cne0_gse1_Microelectrode_UnitID0.mat');
+fileName = fullfile(folderName,'kesariH_N15_S2_allElecs_T150_400_d0_0.75_tapers1_removeERP0_cne0_gse1_Microelectrode_UnitID0.mat');
 
 if exist(fileName,'file')
     load(fullfile(fileName));

@@ -1,9 +1,10 @@
-function [tmpElectrodeStringList,tmpElectrodeArrayList,allElecs] = getGoodElectrodesDetails(fileNameStringTMP,elecParams,timeRangeForComputation,folderSourceString,versionNum)
+function [tmpElectrodeStringList,tmpElectrodeArrayList,goodElectrodes,allElecs] = getGoodElectrodesDetails(fileNameStringTMP,elecParams,timeRangeForComputation,folderSourceString,versionNum)
 gridType = 'microelectrode';
 
 numSessions = length(fileNameStringTMP);
 tmpElectrodeStringList = cell(1,numSessions);
 tmpElectrodeArrayList = cell(1,numSessions);
+goodElectrodes = cell(1,numSessions);
 numElecs = 0;
 for i = 1:numSessions
     clear monkeyName
@@ -22,7 +23,7 @@ for i = 1:numSessions
         disp(['MonkeyName: ' ,monkeyName])
     end
     
-    [tmpElectrodeStringList{i},tmpElectrodeArrayList{i},goodElectrodes] = getGoodElectrodesSingleSession(monkeyName,expDate,protocolName,gridType,elecParams,timeRangeForComputation,folderSourceString,versionNum);
+    [tmpElectrodeStringList{i},tmpElectrodeArrayList{i},goodElectrodes{i}] = getGoodElectrodesSingleSession(monkeyName,expDate,protocolName,gridType,elecParams,timeRangeForComputation,folderSourceString,versionNum); %#ok<AGROW>
     numElecs = numElecs+length(goodElectrodes);
     allElecs = numElecs;
 end

@@ -1,4 +1,4 @@
-function[erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,NI_Data,electrodeArray] = ...
+function[erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,NI_Data,electrodeArray,N_Stim] = ...
     getDataFigures1and2(folderSourceString,fileNameStringTMP,ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,elecParams,removeERPFlag)
 
 numDatasets = length(fileNameStringTMP);
@@ -12,7 +12,9 @@ disp(['Working on dataset ' num2str(dataset_init) 'of ' num2str(numDatasets)]);
 [erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,NI_Data,electrodeArray]...
     = getDataSingleSession(folderSourceString,fileNameStringTMP{dataset_init},...
     ElectrodeListTMP{dataset_init},dataParameters,tapers_MT,freqRanges,elecParams,removeERPFlag);
-
+for j=1:2
+    N_Stim{1,j} = squeeze(firingRateData.N(1,j,:,:));
+end
 
 if length(fileNameStringTMP)>1
     for i= dataset_init+1:numDatasets
@@ -54,27 +56,50 @@ if length(fileNameStringTMP)>1
         
         energyDataTF.data = cat(1,energyDataTF.data,energyDataTFTMP.data);
         energyDataTF.data_cBL = cat(1,energyDataTF.data_cBL,energyDataTFTMP.data_cBL);
-
         
-        NI_Data.ERP_RMS_ST = cat(1, NI_Data.ERP_RMS_ST, NI_DataTMP.ERP_RMS_ST);
-        NI_Data.ERP_dRMS = cat(1, NI_Data.ERP_dRMS, NI_DataTMP.ERP_dRMS);
-        NI_Data.firingRate_ST = cat(1, NI_Data.firingRate_ST, NI_DataTMP.firingRate_ST);
-        NI_Data.dfiringRate = cat(1, NI_Data.dfiringRate, NI_DataTMP.dfiringRate);
-        for j =1:length(NI_Data.fft_ST)
-            NI_Data.fft_ST{j} = cat(2, NI_Data.fft_ST{j}, NI_DataTMP.fft_ST{j});
-            NI_Data.dfft{j} = cat(2, NI_Data.dfft{j}, NI_DataTMP.dfft{j});
-            NI_Data.energy_ST{j} = cat(2, NI_Data.energy_ST{j}, NI_DataTMP.energy_ST{j});
-            NI_Data.denergy{j} = cat(2, NI_Data.denergy{j}, NI_DataTMP.denergy{j});
+        
+        NI_Data.ERP_RMS_ST_Ray = cat(1, NI_Data.ERP_RMS_ST_Ray, NI_DataTMP.ERP_RMS_ST_Ray);
+        NI_Data.ERP_dRMS_Ray = cat(1, NI_Data.ERP_dRMS_Ray, NI_DataTMP.ERP_dRMS_Ray);
+        NI_Data.ERP_RMS_ST_Cohen = cat(1, NI_Data.ERP_RMS_ST_Cohen, NI_DataTMP.ERP_RMS_ST_Cohen);
+        NI_Data.ERP_dRMS_Cohen = cat(1, NI_Data.ERP_dRMS_Cohen, NI_DataTMP.ERP_dRMS_Cohen);
+        NI_Data.firingRate_ST_Ray = cat(1, NI_Data.firingRate_ST_Ray, NI_DataTMP.firingRate_ST_Ray);
+        NI_Data.dfiringRate_Ray = cat(1, NI_Data.dfiringRate_Ray, NI_DataTMP.dfiringRate_Ray);
+        NI_Data.firingRate_ST_Cohen = cat(1, NI_Data.firingRate_ST_Cohen, NI_DataTMP.firingRate_ST_Cohen);
+        NI_Data.dfiringRate_Cohen = cat(1, NI_Data.dfiringRate_Cohen, NI_DataTMP.dfiringRate_Cohen);
+        for j =1:length(NI_Data.fft_ST_Ray)
+            NI_Data.fft_ST_Ray{j} = cat(2, NI_Data.fft_ST_Ray{j}, NI_DataTMP.fft_ST_Ray{j});
+            NI_Data.dfft_Ray{j} = cat(2, NI_Data.dfft_Ray{j}, NI_DataTMP.dfft_Ray{j});
+            NI_Data.fft_ST_Cohen{j} = cat(2, NI_Data.fft_ST_Cohen{j}, NI_DataTMP.fft_ST_Cohen{j});
+            NI_Data.dfft_Cohen{j} = cat(2, NI_Data.dfft_Cohen{j}, NI_DataTMP.dfft_Cohen{j});
+            NI_Data.energy_ST_Ray{j} = cat(2, NI_Data.energy_ST_Ray{j}, NI_DataTMP.energy_ST_Ray{j});
+            NI_Data.denergy_Ray{j} = cat(2, NI_Data.denergy_Ray{j}, NI_DataTMP.denergy_Ray{j});
+            NI_Data.energy_ST_Cohen{j} = cat(2, NI_Data.energy_ST_Cohen{j}, NI_DataTMP.energy_ST_Cohen{j});
+            NI_Data.denergy_Cohen{j} = cat(2, NI_Data.denergy_Cohen{j}, NI_DataTMP.denergy_Cohen{j});
         end
         
-        oriTuningData.PO = cat(2,oriTuningData.PO,oriTuningDataTMP.PO);
-        oriTuningData.OS = cat(2,oriTuningData.OS,oriTuningDataTMP.OS);
-        oriTuningData.FR = cat(1,oriTuningData.FR,oriTuningDataTMP.FR);
-        oriTuningData.OriPairFR = cat(1,oriTuningData.OriPairFR,oriTuningDataTMP.OriPairFR);
+        %         oriTuningData.PO = cat(2,oriTuningData.PO,oriTuningDataTMP.PO);
+        %         oriTuningData.OS = cat(2,oriTuningData.OS,oriTuningDataTMP.OS);
+        %         oriTuningData.FR = cat(1,oriTuningData.FR,oriTuningDataTMP.FR);
+        %         oriTuningData.OriPairFR = cat(1,oriTuningData.OriPairFR,oriTuningDataTMP.OriPairFR);
+        for j =1:length(oriTuningData.data)
+            oriTuningData.data{j} = cat(1,oriTuningData.data{j},oriTuningDataTMP.data{j});
+            oriTuningData.OriPairData{j} = cat(1,oriTuningData.OriPairData{j},oriTuningDataTMP.OriPairData{j});
+            oriTuningData.PO{j} = cat(2,oriTuningData.PO{j},oriTuningDataTMP.PO{j});
+            oriTuningData.OS{j} = cat(2,oriTuningData.OS{j},oriTuningDataTMP.OS{j});
+        end
+        oriTuningData.oValsUnique_Plaid = cat(2,oriTuningData.oValsUnique_Plaid,oriTuningDataTMP.oValsUnique_Plaid);
+        oriTuningData.oValsUnique2_Plaid = cat(2,oriTuningData.oValsUnique2_Plaid,oriTuningDataTMP.oValsUnique2_Plaid);
+        oriTuningData.oValsUnique_Grating = cat(1,oriTuningData.oValsUnique_Grating,oriTuningDataTMP.oValsUnique_Grating);
         
         electrodeArray = cat(2,electrodeArray,electrodeArrayTMP);
+        
+        for j=1:2
+            N_Stim{i,j} = squeeze(firingRateDataTMP.N(1,j,:,:));
+        end
     end
 end
+N_Stim = N_Stim';
+
 end
 
 function [erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,NI_Data,electrodeArray] = ...
@@ -107,7 +132,7 @@ folderSegment = fullfile(folderName,'segmentedData');
 folderLFP = fullfile(folderSegment,'LFP');
 folderSpikes = fullfile(folderSegment,'Spikes');
 folderSave = fullfile(strtok(folderSourceString,'\'),'Projects\Aritra_PlaidNormalizationProject\savedDataV2\Figures1and2');
-folderSave_oriTuning = fullfile(tuningProtocol_folderName,'savedData');
+folderSave_oriTuning = fullfile(strtok(folderSourceString,'\'),'Projects\Aritra_PlaidNormalizationProject\oriTuningData');
 
 if ~exist(folderSave,'dir')
     mkdir(folderSave);
@@ -117,24 +142,43 @@ if ~exist(folderSave_oriTuning,'dir')
 end
 
 % Load Orientation Tuning dataFile for ori Tuning protocol for all elecs
-oriTuningDataFile = fullfile(folderSave_oriTuning,['oriTuningData_' num2str(1000*dataParameters(1).stRange(1)) 'ms_' num2str(1000*dataParameters(1).stRange(2)) 'ms.mat']);
+oriTuningDataFile = fullfile(folderSave_oriTuning,[monkeyName,'_',gridType,'_',expDate,'_',oriTuning_protocolName,'_oriTuningData_' num2str(1000*dataParameters(1).stRange(1)) 'ms_' num2str(1000*dataParameters(1).stRange(2)) 'ms.mat']);
 if exist(oriTuningDataFile,'file')
     disp(['Loading file ' oriTuningDataFile]);
-    load(oriTuningDataFile);
+    load(oriTuningDataFile); %#ok<*LOAD>
 else
     % Get OrientationTuning Data
-    [computationVals,PO,OS] = savePrefOriAndOriSelectivitySpikes(monkeyName,expDate,oriTuning_protocolName,folderSourceString,gridType,dataParameters(1).stRange);
+    [compVals,PO,OS] = savePrefOriAndOriSelectivitySpikesandLFP(monkeyName,expDate,oriTuning_protocolName,folderSourceString,gridType,dataParameters(1).stRange);
 end
 
-oriTuningData.PO = PO(ElectrodeListTMP{end});
-oriTuningData.OS = OS(ElectrodeListTMP{end});
-oriTuningData.FR = computationVals(ElectrodeListTMP{end},:);
+oriTuningData.PO = PO;
+oriTuningData.OS = OS;
+oriTuningData.data = compVals;
 
 [~,~,~,~,~,oValsUnique_Grating,~,~] = loadOriTuningParameterCombinations(folderExtract_oriTuning);
 [~,~,~,~,~,~,oValsUnique_Plaid,~,~,~,~,~,~,oValsUnique2_Plaid,~,~] = loadParameterCombinations(folderExtract);
+% Defining the orientation values; Lablib rounds of the 0.5 deg value in the oValsUnique.
+% Including them back to use in legends and axis labels.
+for i=1:length(oValsUnique_Grating)
+    if mod(i,2)==0
+        oValsUnique_Grating(i)=oValsUnique_Grating(i)+0.5;
+    else
+    end
+end
+
+oriStep = oValsUnique_Grating(2)-oValsUnique_Grating(1);
+if rem(oValsUnique_Plaid,oriStep)~=0
+   oValsUnique_Plaid =  oValsUnique_Plaid+0.5;
+   oValsUnique2_Plaid = oValsUnique2_Plaid+0.5;
+end
 
 oriPairIndex = [find(oValsUnique_Plaid == oValsUnique_Grating),find(oValsUnique2_Plaid == oValsUnique_Grating)];
-oriTuningData.OriPairFR = oriTuningData.FR(:,oriPairIndex);
+for j=1:length(oriTuningData.data)
+oriTuningData.OriPairData{j} = oriTuningData.data{j}(:,oriPairIndex);
+end
+oriTuningData.oValsUnique_Plaid = oValsUnique_Plaid*ones(1,length(ElectrodeListTMP{end}));
+oriTuningData.oValsUnique2_Plaid = oValsUnique2_Plaid*ones(1,length(ElectrodeListTMP{end}));
+oriTuningData.oValsUnique_Grating = repmat(oValsUnique_Grating,[length(ElectrodeListTMP{end}) 1]);
 
 if elecParams.oriSelectiveFlag
     fileToSave = fullfile(folderSave,[fileNameStringTMP ...
@@ -217,6 +261,18 @@ else
     
     cListFlipped_Ori2 = flip(1:length(cValsUnique2)); % helps in plotting the responses from low to high contrast
     
+    % Get bad trials
+    badTrialFile = fullfile(strtok(folderSourceString,'\'),'Projects\Aritra_PlaidNormalizationProject\badTrials',[monkeyName expDate protocolName '_badTrials.mat']);%fullfile(folderSegment,'badTrials.mat');
+    %         badTrialFile = fullfile(folderSegment,'badTrials.mat');
+    if ~exist(badTrialFile,'file')
+        disp('Bad trial file does not exist...');
+        badTrials=[];
+    else
+        disp(['Loading' badTrialFile])
+        badTrials = loadBadTrials(badTrialFile);
+            disp([num2str(length(badTrials)) ' bad trials']);
+    end
+    
     % Main Loop (Stores data in elec x tempFreq x Contrast of Ori 2 x
     % Contrast of Ori 1 x dataPoints)
     
@@ -227,18 +283,6 @@ else
         % Get Spike data
         clear spikeData
         load(fullfile(folderSpikes,['elec' num2str(ElectrodeList(iElec)) '_SID' num2str(unitID) '.mat']));
-        
-        % Get bad trials
-        badTrialFile = fullfile(folderSegment,'badTrials.mat');
-        if ~exist(badTrialFile,'file')
-            disp('Bad trial file does not exist...');
-            badTrials=[];
-        else
-            badTrials = loadBadTrials(badTrialFile);
-            if iElec == 1
-                disp([num2str(length(badTrials)) ' bad trials']);
-            end
-        end
         
         disp(['Processing electrode (' num2str(iElec) ') : ' num2str(ElectrodeList(iElec))]);
         
@@ -264,7 +308,7 @@ else
                             
                             if t == 1 % ERP and firing rate data processed only for static stimuli
                                 % Event-related potential
-                                erp = mean(analogData(goodPos,:),1); %#ok<NODEF>
+                                erp = mean(analogData(goodPos,:),1);  %#ok<*USENS>
                                 erpDataTMP(iElec,t,c_Ori2,c_Ori1,:) = erp;
                                 RMSvalsBL(iElec,t,c_Ori2,c_Ori1) = rms(erp(blPos));
                                 RMSvalsERP(iElec,t,c_Ori2,c_Ori1) = rms(erp(erpPos));
@@ -425,10 +469,10 @@ else
     
     
     % Get Normalization Indices
-    [NI_Data.ERP_RMS_ST, NI_Data.ERP_dRMS] = getNI(erpData);
-    [NI_Data.firingRate_ST,NI_Data.dfiringRate] = getNI(firingRateData);
-    [NI_Data.fft_ST,NI_Data.dfft] = getNI(fftData);
-    [NI_Data.energy_ST,NI_Data.denergy] = getNI(energyData);
+    [NI_Data.ERP_RMS_ST_Ray, NI_Data.ERP_dRMS_Ray,NI_Data.ERP_RMS_ST_Cohen, NI_Data.ERP_dRMS_Cohen] = getNI(erpData);
+    [NI_Data.firingRate_ST_Ray,NI_Data.dfiringRate_Ray,NI_Data.firingRate_ST_Cohen,NI_Data.dfiringRate_Cohen] = getNI(firingRateData);
+    [NI_Data.fft_ST_Ray,NI_Data.dfft_Ray,NI_Data.fft_ST_Cohen,NI_Data.dfft_Cohen] = getNI(fftData);
+    [NI_Data.energy_ST_Ray,NI_Data.denergy_Ray,NI_Data.energy_ST_Cohen,NI_Data.denergy_Cohen] = getNI(energyData);
     
     % Save Data for particular session
     save(fileToSave,'erpData','firingRateData','fftData','energyData','energyDataTF','oriTuningData','NI_Data','electrodeArray');
@@ -490,7 +534,7 @@ eValue   = mean(mEnergy(posToAverage));
 end
 
 % get Common Baseline across all 5 (Ori 2) x 5 (Ori 1) contrast conditions
-function data_BL = getCommonBaseline(data_BL)
+function data_cBL = getCommonBaseline(data_BL)
 
 if iscell(data_BL)
     size_data_BL = size(data_BL,2);
@@ -506,13 +550,13 @@ if size_data_BL == 4 % baseline for analysis data (elec x TF x Num_Contrast_Ori2
     if iscell(data_BL)
         for iElec = 1:size(data_BL{1},1)
             for k = 1:length(data_BL)
-                data_BL{k}(iElec,:,:) = repmat(mean(mean(squeeze(data_BL{k}(iElec,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
+                data_cBL{k}(iElec,:,:) = repmat(mean(mean(squeeze(data_BL{k}(iElec,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
             end
         end
     else
         for iElec = 1:size(data_BL,1)
             for iTF = 1:size(data_BL,2)
-                data_BL(iElec,iTF,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
+                data_cBL(iElec,iTF,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
             end
         end
     end
@@ -520,14 +564,15 @@ if size_data_BL == 4 % baseline for analysis data (elec x TF x Num_Contrast_Ori2
 elseif size_data_BL == 5 % baseline for timeSeries/PSD data (elec x TF x Num_Contrast_Ori2 x Num_Contrast_Ori1 x time/FreqVals x (dataBL))
     for iElec = 1:size(data_BL,1)
         for iTF = 1:size(data_BL,2)
-            data_BL(iElec,iTF,:,:,:) = reshape(repmat(squeeze(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:)),2),1))',[num_con_Ori2*num_con_Ori1 1]),[num_con_Ori2 num_con_Ori1 size(data_BL,5)]);
+%             data_BL(iElec,iTF,:,:,:) = reshape(repmat(squeeze(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:)),2),1))',[num_con_Ori2*num_con_Ori1 1]),[num_con_Ori2 num_con_Ori1 size(data_BL,5)]);
+            data_cBL(iElec,iTF,:,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
         end
     end
     
 elseif size_data_BL == 6 % baseline for time-Frequency data (elec x TF x Num_Contrast_Ori2 x Num_Contrast_Ori1 x time/FreqVals x (dataBL_tf))
     for iElec = 1:size(data_BL,1)
         for iTF = 1:size(data_BL,2)
-            data_BL(iElec,iTF,:,:,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:,:)),2),1),num_con_Ori2);
+            data_cBL(iElec,iTF,:,:,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:,:)),2),1),num_con_Ori2);
         end
     end    
 end
@@ -565,15 +610,17 @@ end
 end
 
 % computing NI for different neural measures
-function [NI_absolute,NI_relative] = getNI(data)
+function [NI_absolute_Ray,NI_relative_Ray,NI_absolute_Cohen,NI_relative_Cohen] = getNI(data)
 if iscell(data.analysisDataST)
     for iElec = 1:size(data.analysisDataST{1},1)
         for k = 1:length(data.analysisDataST)
             clear responseMatrix_elec
             responseMatrix_elec = squeeze(data.analysisDataST{k}(iElec,:,:));
             diff_responseMatrix_elec = squeeze(data.analysisDataST{k}(iElec,:,:))-squeeze(data.analysisData_cBL{k}(iElec,:,:));
-            NI_absolute{k}(iElec) = 2*responseMatrix_elec(1,5)/(responseMatrix_elec(1,1)+responseMatrix_elec(5,5))-1;
-            NI_relative{k}(iElec) = 2*diff_responseMatrix_elec(1,5)/(diff_responseMatrix_elec(1,1)+diff_responseMatrix_elec(5,5))-1;
+            NI_absolute_Ray{k}(iElec) = 2*responseMatrix_elec(1,5)/(responseMatrix_elec(1,1)+responseMatrix_elec(5,5))-1;
+            NI_relative_Ray{k}(iElec) = 2*diff_responseMatrix_elec(1,5)/(diff_responseMatrix_elec(1,1)+diff_responseMatrix_elec(5,5))-1;
+            NI_absolute_Cohen{k}(iElec) = (responseMatrix_elec(1,1)+ responseMatrix_elec(5,5))/responseMatrix_elec(1,5);
+            NI_relative_Cohen{k}(iElec) = (diff_responseMatrix_elec(1,1)+ diff_responseMatrix_elec(5,5))/diff_responseMatrix_elec(1,5);
         end
     end
 else
@@ -582,8 +629,10 @@ else
             clear responseMatrix_elec
             responseMatrix_elec = squeeze(data.analysisDataST(iElec,iTF,:,:));
             diff_responseMatrix_elec = squeeze(data.analysisDataST(iElec,iTF,:,:))-squeeze(data.analysisData_cBL(iElec,iTF,:,:));
-            NI_absolute(iElec,iTF) = 2*responseMatrix_elec(1,5)/(responseMatrix_elec(1,1)+responseMatrix_elec(5,5))-1;
-            NI_relative(iElec,iTF) = 2*diff_responseMatrix_elec(1,5)/(diff_responseMatrix_elec(1,1)+diff_responseMatrix_elec(5,5))-1;
+            NI_absolute_Ray(iElec,iTF) = 2*responseMatrix_elec(1,5)/(responseMatrix_elec(1,1)+responseMatrix_elec(5,5))-1;
+            NI_relative_Ray(iElec,iTF) = 2*diff_responseMatrix_elec(1,5)/(diff_responseMatrix_elec(1,1)+diff_responseMatrix_elec(5,5))-1;
+            NI_absolute_Cohen(iElec,iTF) = (responseMatrix_elec(1,1)+responseMatrix_elec(5,5))/responseMatrix_elec(1,5);
+            NI_relative_Cohen(iElec,iTF) = (diff_responseMatrix_elec(1,1)+diff_responseMatrix_elec(5,5))/diff_responseMatrix_elec(1,5);
         end
     end
 end

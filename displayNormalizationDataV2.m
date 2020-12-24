@@ -10,7 +10,7 @@
 function displayNormalizationDataV2(folderSourceString)
 
 if ~exist('folderSourceString','var')
-    if strcmp(getenv('username'),'Aritra') || strcmp(getenv('username'),'Lab Computer-Aritra')
+    if strcmp(getenv('username'),'RayLabPC-Aritra') || strcmp(getenv('username'),'Lab Computer-Aritra')
         folderSourceString = 'E:\data\PlaidNorm\';
     else
         folderSourceString = 'M:\CommonData\Non_Standard\PlaidNorm\';
@@ -196,7 +196,7 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
             end
             
             % Electrode parameters
-            elecParams.spikeCutoff = 20;
+            elecParams.spikeCutoff = 15;
             elecParams.snrCutoff = 2;
             elecParams.dRange = [0 0.75];
             elecParams.getSpikeElectrodesFlag = 1;
@@ -206,7 +206,7 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
             timeRangeForComputation = stRange;
             
             %%%%%%%%%%%%%%%%%%%%%%%%%% Find Good Electrodes %%%%%%%%%%%%%%%%%%%
-            [ElectrodeStringListAll,ElectrodeArrayListAll]= getElectrodesList(fileNameStringTMP,elecParams,timeRangeForComputation,folderSourceString);
+            [ElectrodeStringListAll,ElectrodeArrayListAll,electrodeList]= getElectrodesList(fileNameStringTMP,elecParams,timeRangeForComputation,folderSourceString);
             
             % Show electrodes on Grid
             electrodeGridPos = [0.05 panelStartHeight 0.22 panelHeight];
@@ -216,8 +216,8 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             freqRanges{1} = [8 12]; % alpha
-            freqRanges{2} = [30 80]; % gamma
-            freqRanges{3} = [104 250]; % hi-gamma
+            freqRanges{2} = [32 80]; % gamma
+            freqRanges{3} = [104 248]; % hi-gamma
             freqRanges{4} = [16 16];  % SSVEP
             
             dataParameters.blRange = blRange;
@@ -232,8 +232,8 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
             
             
             % get Data for Selected Session & Parameters
-            [erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,~,electrodeArray] = getData(folderSourceString,...
-                fileNameStringTMP,ElectrodeArrayListAll,dataParameters,tapers_MT,freqRanges,elecParams,removeERPFlag);
+            [erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,NI_Data,electrodeArray,~] = getData(folderSourceString,...
+                fileNameStringTMP,electrodeList,dataParameters,tapers_MT,freqRanges,elecParams,removeERPFlag); %#ok<*ASGLU>
             %             freqRangeStr = {'alpha','gamma','SSVEP'};
             %             numFreqRanges = length(freqRanges);
             
@@ -495,14 +495,16 @@ uicontrol('Parent',hLoadDataPanel,'Unit','Normalized',...
                 %%%%%%%%%%%%%%%%%%%%%%%% Read values %%%%%%%%%%%%%%%%%%%%%%%%%%
                 electrodeString = get(hElectrode,'val');
                 if length(ElectrodeArrayListAll)==1
-                    if isempty(ElectrodeArrayListAll{1}{electrodeString})
-                        error('No electrode found for analysis! Pease try another session!')
+                    if electrodeString == length(ElectrodeArrayListAll{1})+1
+                        disp('performing analysis on all electrodes for the selected single session')
+                        electrodeNum = 'all';
+                        
                     elseif length(ElectrodeArrayListAll{1}{electrodeString})==1
                         electrodeNum = electrodeString;
                         disp('performing analysis on the selected single electrode');
-                    elseif length(ElectrodeArrayListAll{1}{electrodeString})>1
-                        disp('performing analysis on all electrodes for the selected single session')
-                        electrodeNum = 'all';
+                        
+                    elseif isempty(ElectrodeArrayListAll{1}{electrodeString})
+                        error('No electrode found for analysis! Pease try another session!')
                     end
                 else
                     disp('performing analysis on all electrodes across sessions');
@@ -737,6 +739,7 @@ cValsUnique2 = [0 12.5 25 50 100]./2;
 if isnumeric(electrodeNum)
     data = getDataSingleElec(data,electrodeNum,analysisMeasure);
 elseif strcmp(electrodeNum,'all')
+%     mData = getMeanDataAcrossElectrodes(data,analysisMeasure);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -891,12 +894,12 @@ oValsUnique_Tuning = [0 22.5 45 67.5 90 112.5 135 157.5];
 
 if sessionNum <=22 % Single Session
     if num_Electrodes == 1
-        plot(hPlots_Fig1.hPlot8,oValsUnique_Tuning,oriTuningData.FR(electrodeNum,:),'Marker','o','color',colorNamesOriTuning);
-        text(0.7,0.5,['PO: ' num2str(oriTuningData.PO(electrodeNum)) ',OS: ' num2str(round(oriTuningData.OS(electrodeNum),2))],'color',colorNamesOriTuning,'unit','normalized','fontSize',6,'parent',hPlots_Fig1.hPlot8);
+        plot(hPlots_Fig1.hPlot8,oValsUnique_Tuning,oriTuningData.data{1}(electrodeNum,:),'Marker','o','color',colorNamesOriTuning);
+        text(0.7,0.5,['PO: ' num2str(oriTuningData.PO{1}(electrodeNum)) ',OS: ' num2str(round(oriTuningData.OS{1}(electrodeNum),2))],'color',colorNamesOriTuning,'unit','normalized','fontSize',6,'parent',hPlots_Fig1.hPlot8);
     else
         for iElec = 1:num_Electrodes
-            plot(hPlots_Fig1.hPlot8,oValsUnique_Tuning,oriTuningData.FR(iElec,:),'Marker','o','color',colorNamesOriTuning(iElec,:,:));
-            text(0.7,iElec*0.05+0.1,['PO: ' num2str(oriTuningData.PO(iElec)) ',OS: ' num2str(round(oriTuningData.OS(iElec),2))],'color',colorNamesOriTuning(iElec,:,:),'unit','normalized','fontSize',6,'parent',hPlots_Fig1.hPlot8);
+            plot(hPlots_Fig1.hPlot8,oValsUnique_Tuning,oriTuningData.data{1}(iElec,:),'Marker','o','color',colorNamesOriTuning(iElec,:,:));
+            text(0.7,iElec*0.05+0.1,['PO: ' num2str(oriTuningData.PO{1}(iElec)) ',OS: ' num2str(round(oriTuningData.OS{1}(iElec),2))],'color',colorNamesOriTuning(iElec,:,:),'unit','normalized','fontSize',6,'parent',hPlots_Fig1.hPlot8);
             hold(hPlots_Fig1.hPlot8,'on');
         end
         hold(hPlots_Fig1.hPlot8,'off');
@@ -1306,10 +1309,57 @@ fileNameStringListArray{pos} = allNames;
 end
 
 % Get ElectrodesList
-function [ElectrodeStringListAll,ElectrodeArrayListAll] = getElectrodesList(fileNameStringTMP,elecParams,timeRangeForComputation,folderSourceString)
+% function [ElectrodeArrayListAll,allGoodElectrodesStrArray,ElectrodeStringListAll,allGoodNs,allGoodSNRs,alld_elecs,numElecs] = getElectrodesList(fileNameStringTMP,elecParams,timeRangeForComputation,folderSourceString)
+% 
+% % [~,tmpElectrodeArrayList,~] = getGoodElectrodesDetails(fileNameStringTMP,oriSelectiveFlag,folderSourceString);
+% 
+% gridType = 'microelectrode';
+% 
+% numSessions = length(fileNameStringTMP);
+% tmpElectrodeStringList = cell(1,numSessions);
+% tmpElectrodeArrayList = cell(1,numSessions);
+% numElecs = 0;
+% 
+% Monkey1_ExpDates = dataInformationPlaidNorm('alpaH',gridType,0);
+% Monkey1_SessionNum = length(Monkey1_ExpDates);
+% % Monkey2_ExpDates = dataInformationPlaidNorm('kesariH',gridType,0);
+% % Monkey2_SessionNum = length(Monkey2_ExpDates);
+% allGoodNs = [];
+% allGoodSNRs = [];
+% alld_elecs = [];
+% 
+% for i = 1:numSessions
+%     clear monkeyName
+%     if strcmp(fileNameStringTMP{i}(1:5),'alpaH')
+%         monkeyName = 'alpaH';
+%         expDate = fileNameStringTMP{i}(6:11);
+%         protocolName = fileNameStringTMP{i}(12:end);
+%     elseif strcmp(fileNameStringTMP{i}(1:7),'kesariH')
+%         monkeyName = 'kesariH';
+%         expDate = fileNameStringTMP{i}(8:13);
+%         protocolName = fileNameStringTMP{i}(14:end);
+%     end
+%     if i == 1
+%         disp(['MonkeyName: ' ,monkeyName])
+%     elseif i == Monkey1_SessionNum+1 % 13 Sessions are from alpaH; 9 Sessions from kesariH;
+%         disp(['MonkeyName: ' ,monkeyName])
+%     end
+%     versionNum = 2;
+%     [tmpElectrodeStringList{i},tmpElectrodeStringArrayList{i},tmpElectrodeArrayList{i},goodNs,goodSNRs,d_elecs,goodElectrodes] = getGoodElectrodesSingleSession(monkeyName,expDate,protocolName,gridType,elecParams,timeRangeForComputation,folderSourceString,versionNum);
+%     allGoodNs = cat(2,allGoodNs,goodNs);
+%     allGoodSNRs = cat(2,allGoodSNRs,goodSNRs);
+%     alld_elecs = cat(2,alld_elecs,d_elecs);
+%     numElecs = numElecs+length(goodElectrodes);
+% end
+% allGoodElectrodesStrArray = tmpElectrodeStringArrayList;
+% ElectrodeStringListAll = tmpElectrodeStringList;
+% ElectrodeArrayListAll = tmpElectrodeArrayList;
+% end
+
+function [ElectrodeStringListAll,ElectrodeArrayListAll,ElectrodeList] = getElectrodesList(fileNameStringTMP,elecParams,timeRangeForComputation,folderSourceString)
 
 versionNum = 2;
-[tmpElectrodeStringList,tmpElectrodeArrayList,allElecs] = getGoodElectrodesDetails(fileNameStringTMP,elecParams,timeRangeForComputation,folderSourceString,versionNum);
+[tmpElectrodeStringList,tmpElectrodeArrayList,goodElectrodes,allElecs] = getGoodElectrodesDetails(fileNameStringTMP,elecParams,timeRangeForComputation,folderSourceString,versionNum);
 
 if length(tmpElectrodeStringList)> 1
     clear tmpElectrodeStringList
@@ -1318,6 +1368,7 @@ end
 
 ElectrodeStringListAll = tmpElectrodeStringList;
 ElectrodeArrayListAll = tmpElectrodeArrayList;
+ElectrodeList = goodElectrodes;
 end
 
 % Normalize data for ERP and Spike data
@@ -1350,6 +1401,27 @@ elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6||ana
         data.analysisDataBL{i} = data.analysisDataBL{i}(electrodeNum,:,:,:);
         data.analysisData_cBL{i} = data.analysisData_cBL{i}(electrodeNum,:,:,:);
         data.analysisDataST{i} = data.analysisDataST{i}(electrodeNum,:,:,:);
+    end
+end
+end
+
+% Get mean data for all electrode in a single session
+function data2 = getMeanDataAcrossElectrodes(data,analysisMeasure)
+if analysisMeasure == 1 || analysisMeasure ==2
+    data2.data = mean(data.data,1);
+    data2.analysisDataBL = mean(data.analysisDataBL,1);
+    data2.analysisData_cBL = mean(data.analysisData_cBL,1);
+    data2.analysisDataST = mean(data.analysisDataST,1);
+    data2.N = data.N(1,:,:,:);
+    
+elseif analysisMeasure == 4 || analysisMeasure == 5 || analysisMeasure == 6||analysisMeasure == 7
+    data2.dataBL = mean(data.dataBL,1);
+    data2.data_cBL = mean(data.data_cBL,1);
+    data2.dataST = mean(data.dataST,1);
+    for i = 1:length(data.analysisDataST)
+        data2.analysisDataBL{i} = mean(data.analysisDataBL{i},1);
+        data2.analysisData_cBL{i} = mean(data.analysisData_cBL{i},1);
+        data2.analysisDataST{i} = mean(data.analysisDataST{i},1);
     end
 end
 end

@@ -1,5 +1,5 @@
 function[erpData,firingRateData,fftData,energyData,energyDataTF,oriTuningData,NI_Data,electrodeArray,N_Stim] = ...
-    getData(folderSourceString,fileNameStringTMP,ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,elecParams,removeERPFlag)
+    getData_Counterphase(folderSourceString,fileNameStringTMP,ElectrodeListTMP,dataParameters,tapers_MT,freqRanges,elecParams,removeERPFlag)
 
 numDatasets = length(fileNameStringTMP);
 dataset_init = 1;
@@ -77,10 +77,6 @@ if length(fileNameStringTMP)>1
             NI_Data.denergy_Cohen{j} = cat(2, NI_Data.denergy_Cohen{j}, NI_DataTMP.denergy_Cohen{j});
         end
         
-%         oriTuningData.PO.Spikes = cat(2,oriTuningData.PO.Spikes,oriTuningDataTMP.PO.Spikes);
-%         oriTuningData.OS.Spikes = cat(2,oriTuningData.OS.Spikes,oriTuningDataTMP.OS.Spikes);
-%         oriTuningData.PO.Energy = cat(2,oriTuningData.PO.Energy,oriTuningDataTMP.PO.Energy);
-%         oriTuningData.OS.Energy = cat(2,oriTuningData.OS.Energy,oriTuningDataTMP.OS.Energy);
         for j =1:length(oriTuningData.data)
         oriTuningData.data{j} = cat(1,oriTuningData.data{j},oriTuningDataTMP.data{j});
         oriTuningData.OriPairData{j} = cat(1,oriTuningData.OriPairData{j},oriTuningDataTMP.OriPairData{j});
@@ -110,12 +106,12 @@ if strcmp(fileNameStringTMP(1:5),'alpaH')
     monkeyName = 'alpaH';
     expDate = fileNameStringTMP(6:11);
     protocolName = fileNameStringTMP(12:end);
-    oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % OriTuning protocol Number is always the immediate precedent of the main protocol
+    oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol
 elseif strcmp(fileNameStringTMP(1:7),'kesariH')
     monkeyName = 'kesariH';
     expDate = fileNameStringTMP(8:13);
     protocolName = fileNameStringTMP(14:end);
-    oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % OriTuning protocol Number is always the immediate precedent of the main protocol
+    oriTuning_protocolName = ['GRF_00' num2str(str2double(protocolName(5:end))-1)]; % The protocol Number is just the immediate precedent of the main protocol
 end
 
 
@@ -130,7 +126,7 @@ folderExtract = fullfile(folderName,'extractedData');
 folderSegment = fullfile(folderName,'segmentedData');
 folderLFP = fullfile(folderSegment,'LFP');
 folderSpikes = fullfile(folderSegment,'Spikes');
-folderSave = fullfile(strtok(folderSourceString,'\'),'Projects\Aritra_PlaidNormalizationProject\savedDataV2');
+folderSave = fullfile(strtok(folderSourceString,'\'),'Projects\Aritra_PlaidNormalizationProject\savedDataV2\Counterphase');
 folderSave_oriTuning = fullfile(strtok(folderSourceString,'\'),'Projects\Aritra_PlaidNormalizationProject\oriTuningData');
 
 if ~exist(folderSave,'dir')
@@ -141,7 +137,7 @@ if ~exist(folderSave_oriTuning,'dir')
 end
 
 % Load Orientation Tuning dataFile for ori Tuning protocol for all elecs
-oriTuningDataFile = fullfile(folderSave_oriTuning,[monkeyName,'_',gridType,'_',expDate,'_',oriTuning_protocolName,'_oriTuningData_' num2str(1000*dataParameters.stRange(1)) 'ms_' num2str(1000*dataParameters.stRange(2)) 'ms.mat']);
+oriTuningDataFile = fullfile(folderSave_oriTuning,[monkeyName,'_',gridType,'_',expDate,'_',oriTuning_protocolName,'oriTuningData_' num2str(1000*dataParameters.stRange(1)) 'ms_' num2str(1000*dataParameters.stRange(2)) 'ms.mat']);
 if exist(oriTuningDataFile,'file')
     disp(['Loading file ' oriTuningDataFile]);
     load(oriTuningDataFile); %#ok<*LOAD>
@@ -178,6 +174,7 @@ end
 oriTuningData.oValsUnique_Plaid = oValsUnique_Plaid*ones(1,length(ElectrodeListTMP{end}));
 oriTuningData.oValsUnique2_Plaid = oValsUnique2_Plaid*ones(1,length(ElectrodeListTMP{end}));
 oriTuningData.oValsUnique_Grating = repmat(oValsUnique_Grating,[length(ElectrodeListTMP{end}) 1]);
+
 
 if elecParams.oriSelectiveFlag
     fileToSave = fullfile(folderSave,[fileNameStringTMP ...
@@ -255,6 +252,7 @@ else
     movingwin = [winSize winStep];
     
     cListFlipped_Ori2 = flip(1:length(cValsUnique2)); % helps in plotting the responses from low to high contrast
+
     
     % Get bad trials
     badTrialFile = fullfile(strtok(folderSourceString,'\'),'Projects\Aritra_PlaidNormalizationProject\badTrials',[monkeyName expDate protocolName '_badTrials.mat']);
@@ -267,7 +265,7 @@ else
         badTrials = loadBadTrials(badTrialFile);
         disp([num2str(length(badTrials)) ' bad trials']);
     end
-    
+
     % Main Loop (Stores data in elec x tempFreq x Contrast of Ori 2 x
     % Contrast of Ori 1 x dataPoints)
     
@@ -279,6 +277,7 @@ else
         clear spikeData
         load(fullfile(folderSpikes,['elec' num2str(ElectrodeList(iElec)) '_SID' num2str(unitID) '.mat']));
         
+
         disp(['Processing electrode (' num2str(iElec) ') : ' num2str(ElectrodeList(iElec))]);
         
         for t = 1:length(tList)
@@ -301,18 +300,18 @@ else
                             disp('baseline and stimulus ranges are not the same');
                         else
                             
-                            if t == 1 % ERP and firing rate data processed only for static stimuli
+                            if t == 2 % ERP and firing rate data processed only for counterphase stimuli
                                 % Event-related potential
-                                erp = mean(analogData(goodPos,:),1);  %#ok<USENS>
-                                erpDataTMP(iElec,t,c_Ori2,c_Ori1,:) = erp;
-                                RMSvalsBL(iElec,t,c_Ori2,c_Ori1) = rms(erp(blPos));
-                                RMSvalsERP(iElec,t,c_Ori2,c_Ori1) = rms(erp(erpPos));
+                                erp = mean(analogData(goodPos,:),1); %#ok<USENS>
+                                erpDataTMP(iElec,t-1,c_Ori2,c_Ori1,:) = erp;
+                                RMSvalsBL(iElec,t-1,c_Ori2,c_Ori1) = rms(erp(blPos));
+                                RMSvalsERP(iElec,t-1,c_Ori2,c_Ori1) = rms(erp(erpPos));
                                 
                                 % PSTH & firing rate
-                                [psthData(iElec,t,c_Ori2,c_Ori1,:),xsFR] = getPSTH(spikeData(goodPos),10,[timeVals(1) timeVals(end)]);
-                                spikeRasterData{iElec,t,c_Ori2,c_Ori1} = spikeData(goodPos);
-                                firingRatesBL(iElec,t,c_Ori2,c_Ori1) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.blRange))/diff(dataParameters.blRange);
-                                firingRatesST(iElec,t,c_Ori2,c_Ori1) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.stRange))/diff(dataParameters.stRange);
+                                [psthData(iElec,t-1,c_Ori2,c_Ori1,:),xsFR] = getPSTH(spikeData(goodPos),10,[timeVals(1) timeVals(end)]);
+                                spikeRasterData{iElec,t-1,c_Ori2,c_Ori1} = spikeData(goodPos);
+                                firingRatesBL(iElec,t-1,c_Ori2,c_Ori1) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.blRange))/diff(dataParameters.blRange);
+                                firingRatesST(iElec,t-1,c_Ori2,c_Ori1) = mean(getSpikeCounts(spikeData(goodPos),dataParameters.stRange))/diff(dataParameters.stRange);
                             end
                             
                             % fft data is processed for both static and
@@ -348,29 +347,26 @@ else
                             
                             
                             % computing analysis Data for particular
-                            % frequency band 
-                            %(alpha, gamma, and high gamma for static stimuli
-                            % and SSVEP for counterphase stimuli)
+                            % frequency band only for counterphase stimuli
                             
-                            if t == 1
-                                for i=1:numFreqs-1
+                            if t == 2
+                                for i=1:numFreqs
                                     fftAmpBL{i}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{i}));
                                     fftAmpST{i}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{i}));
                                     energyValsBL{i}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{i}));
                                     energyValsST{i}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{i}));
                                 end
                                 
-                            elseif t == 2 %% fft and energy data for only SSVEP frequency
-                                fftAmpBL{numFreqs}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{numFreqs}));
-                                fftAmpST{numFreqs}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{numFreqs}));
-                                energyValsBL{numFreqs}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{numFreqs}));
-                                energyValsST{numFreqs}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{numFreqs}));
+%                             elseif t == 2 %% fft and energy data for only SSVEP frequency
+%                                 fftAmpBL{numFreqs}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(fftBL(:),freqVals,freqRanges{numFreqs}));
+%                                 fftAmpST{numFreqs}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(fftST(:),freqVals,freqRanges{numFreqs}));
+%                                 energyValsBL{numFreqs}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(tmpEBL(:),freqValsMT,freqRanges{numFreqs}));
+%                                 energyValsST{numFreqs}(iElec,c_Ori2,c_Ori1) = conv2Log(getMeanEnergyForAnalysis(tmpEST(:),freqValsMT,freqRanges{numFreqs}));
                             end
                             
-                            
                             % computing time-frequency spectrum by
-                            % multi-taper method (computed for both static
-                            % and counterphase stimuli)
+                            % multi-taper method for both static and CP
+                            % stimuli
                             [tmpE_tf,tmpT_tf,freqVals_tf] = mtspecgramc(analogData(goodPos,:)',movingwin,params);
                             
                             timeVals_tf_= tmpT_tf + timeVals(1);
@@ -379,7 +375,7 @@ else
                             
                             mEnergy_tf(iElec,t,c_Ori2,c_Ori1,:,:) = energy_tf;
                             mEnergyBL_tf(iElec,t,c_Ori2,c_Ori1,:,:) = repmat(energyBL_tf,1,length(timeVals_tf_));
-
+                            
                         end
                     end
                 end
@@ -533,13 +529,13 @@ eValue   = mean(mEnergy(posToAverage));
 end
 
 % get Common Baseline across all 5 (Ori 2) x 5 (Ori 1) contrast conditions
-function data_cBL = getCommonBaseline(data_BL)
+function data_BL = getCommonBaseline(data_BL)
 
-if iscell(data_BL) % whether it is analysis data for freq bands
+if iscell(data_BL)
     size_data_BL = size(data_BL,2);
     num_con_Ori2 = size(data_BL{1},2);
     num_con_Ori1 = size(data_BL{1},3);
-else % whether it is analysis data for rest
+else
     size_data_BL = numel(size(data_BL));
     num_con_Ori2 = size(data_BL,3);
     num_con_Ori1 = size(data_BL,4);
@@ -549,14 +545,14 @@ if size_data_BL == 4 % baseline for analysis data (elec x Num_Contrast_Ori2 x Nu
     if iscell(data_BL)
         for iElec = 1:size(data_BL{1},1)
             for k = 1:length(data_BL)
-                data_cBL{k}(iElec,:,:) = repmat(mean(mean(squeeze(data_BL{k}(iElec,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
+                data_BL{k}(iElec,:,:) = repmat(mean(mean(squeeze(data_BL{k}(iElec,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
             end
         end
        
-    else % Baseline for analysis Data spikes, any 4-D array data
+    else
         for iElec = 1:size(data_BL,1)
             for iTF = 1:size(data_BL,2)
-                data_cBL(iElec,iTF,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
+                data_BL(iElec,iTF,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
             end
         end
     end
@@ -564,16 +560,14 @@ if size_data_BL == 4 % baseline for analysis data (elec x Num_Contrast_Ori2 x Nu
 elseif size_data_BL == 5 % baseline for timeSeries/PSD data (elec x TF x Num_Contrast_Ori2 x Num_Contrast_Ori1 x time/FreqVals x (dataBL))
     for iElec = 1:size(data_BL,1)
         for iTF = 1:size(data_BL,2)
-%             data_BL(iElec,iTF,:,:,:) = reshape(repmat(squeeze(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:)),2),1))',[num_con_Ori2*num_con_Ori1 1]),[num_con_Ori2 num_con_Ori1 size(data_BL,5)]);
-            data_cBL(iElec,iTF,:,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:)),2),1),[num_con_Ori2 num_con_Ori1]);
-
+            data_BL(iElec,iTF,:,:,:) = reshape(repmat(squeeze(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:)),2),1))',[num_con_Ori2*num_con_Ori1 1]),[num_con_Ori2 num_con_Ori1 size(data_BL,5)]);
         end
     end
     
 elseif size_data_BL == 6 % baseline for time-Frequency data (elec x TF x Num_Contrast_Ori2 x Num_Contrast_Ori1 x time/FreqVals x (dataBL_tf))
     for iElec = 1:size(data_BL,1)
         for iTF = 1:size(data_BL,2)
-            data_cBL(iElec,iTF,:,:,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:,:)),2),1),num_con_Ori2);
+            data_BL(iElec,iTF,:,:,:,:) = repmat(mean(mean(squeeze(data_BL(iElec,iTF,:,:,:,:)),2),1),num_con_Ori2);
         end
     end
     
